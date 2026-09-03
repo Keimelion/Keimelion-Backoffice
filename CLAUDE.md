@@ -88,6 +88,16 @@ import type { UserRole } from '@keimelion/api/shared/enums/user-role'
 import type { PaginatedResponse, ApiError } from '@keimelion/api/shared/types/api'
 ```
 
+**Repo layout requirement**: the alias resolves to `../Keimelion-API/src/*`, so both repos must be cloned side-by-side in the same parent directory for `tsc` and Vitest to work:
+
+```
+<parent>/
+  Keimelion-API/
+  Keimelion-Backoffice/
+```
+
+If you clone the Backoffice alone, type-checking will fail on any `@keimelion/api/*` import. Clone the API alongside before running `npm install`.
+
 **Safe to import from the API** (no Drizzle/ORM dependencies):
 - `@keimelion/api/shared/enums/*`
 - `@keimelion/api/shared/types/api` (`ApiError`, `PaginatedResponse`)
