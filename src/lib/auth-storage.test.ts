@@ -7,7 +7,7 @@ import {
   getStoredUser,
   setAccessToken,
   setStoredUser,
-} from '@/features/auth/auth-storage'
+} from '@/lib/auth-storage'
 
 const STORED_USER_KEY = 'keimelion_user'
 

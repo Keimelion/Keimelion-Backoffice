@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useLogin } from '@/features/auth/hooks/use-login'
-import { getAccessToken, getStoredUser } from '@/features/auth/auth-storage'
+import { getAccessToken, getStoredUser } from '@/lib/auth-storage'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),

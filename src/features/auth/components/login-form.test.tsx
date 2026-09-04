@@ -17,13 +17,19 @@ vi.mock('@/lib/query-client', async () => {
   return { queryClient: new QueryClient() }
 })
 
-vi.mock('@/features/auth/auth-storage', () => ({
-  getAccessToken: vi.fn(() => null),
-  setAccessToken: vi.fn(),
-  setStoredUser: vi.fn(),
-  clearAccessToken: vi.fn(),
-  getStoredUser: vi.fn(() => null),
-}))
+import type * as AuthStorage from '@/lib/auth-storage'
+
+vi.mock('@/lib/auth-storage', async () => {
+  const actual = await vi.importActual<typeof AuthStorage>('@/lib/auth-storage')
+  return {
+    ...actual,
+    getAccessToken: vi.fn(() => null),
+    setAccessToken: vi.fn(),
+    setStoredUser: vi.fn(),
+    clearAccessToken: vi.fn(),
+    getStoredUser: vi.fn(() => null),
+  }
+})
 
 vi.mock('sonner', () => ({
   toast: {

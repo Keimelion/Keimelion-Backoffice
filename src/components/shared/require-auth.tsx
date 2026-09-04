@@ -9,7 +9,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserRoles } from '@keimelion/api/shared/enums/user-role'
-import { getAccessToken } from '@/features/auth/auth-storage'
+import { getAccessToken } from '@/lib/auth-storage'
 import { useCurrentUser } from '@/features/auth/hooks/use-current-user'
 
 interface RequireAuthProps {

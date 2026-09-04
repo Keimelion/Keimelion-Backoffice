@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import type { ApiUser } from '@/data-access/auth/auth.api'
-import { getAccessToken, getStoredUser } from '@/features/auth/auth-storage'
+import { getAccessToken, getStoredUser } from '@/lib/auth-storage'
 
 export const CURRENT_USER_QUERY_KEY = ['currentUser'] as const
 

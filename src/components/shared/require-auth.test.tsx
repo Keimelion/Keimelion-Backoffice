@@ -9,13 +9,13 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }))
 
-vi.mock('@/features/auth/auth-storage', () => ({
+vi.mock('@/lib/auth-storage', () => ({
   getAccessToken: vi.fn(),
   getStoredUser: vi.fn(),
 }))
 
 import type { ApiUser } from '@/data-access/auth/auth.api'
-import { getAccessToken, getStoredUser } from '@/features/auth/auth-storage'
+import { getAccessToken, getStoredUser } from '@/lib/auth-storage'
 import { RequireAuth } from '@/components/shared/require-auth'
 
 const ADMIN_USER = {
