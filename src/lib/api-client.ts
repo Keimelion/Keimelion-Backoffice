@@ -41,14 +41,23 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     ? Object.fromEntries(options.headers.entries())
     : (options?.headers as Record<string, string> | undefined) ?? {}
 
-  const response = await fetch(`${API_V1_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeaders,
-      ...existingHeaders,
-    },
-  })
+  let response: Response
+  try {
+    response = await fetch(`${API_V1_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders,
+        ...existingHeaders,
+      },
+    })
+  } catch {
+    throw new ApiRequestError(
+      'NETWORK_ERROR',
+      'Cannot reach the server. Check your connection and that the API is running.',
+      0,
+    )
+  }
 
   if (response.status === 401) {
     handleUnauthorized(path)
@@ -59,7 +68,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     return null as T
   }
 
-  const body = (await response.json()) as T | ApiError
+  let body: T | ApiError
+  try {
+    body = (await response.json()) as T | ApiError
+  } catch {
+    throw new ApiRequestError(
+      'INVALID_RESPONSE',
+      `The server returned a non-JSON response (status ${String(response.status)}). Check that NEXT_PUBLIC_API_URL is correct and the API is reachable.`,
+      response.status,
+    )
+  }
 
   if (!response.ok) {
     const error = body as ApiError

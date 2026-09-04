@@ -15,14 +15,12 @@ export function useLogout(): UseMutationResult<null, Error, null> {
       await logoutApi()
       return null
     },
+    meta: { silent: true },
     onSettled: () => {
       clearAccessToken()
       clearStoredUser()
       queryClient.clear()
       router.replace('/login')
-    },
-    onError: () => {
-      console.warn('Logout API call failed; clearing session anyway.')
     },
   })
 }

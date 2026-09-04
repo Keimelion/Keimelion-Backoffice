@@ -110,3 +110,34 @@ body {
   animation-duration: 500ms;
   animation-timing-function: ease-in-out;
 }
+
+[data-sonner-toast] {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-sonner-toast]::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  animation: keimelion-toast-shrink 5000ms linear forwards;
+}
+
+[data-sonner-toast]:hover::after {
+  animation-play-state: paused;
+}
+
+@keyframes keimelion-toast-shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}

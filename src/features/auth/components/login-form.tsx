@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,12 +12,12 @@ import { loginInputSchema } from '@/features/auth/login-schema'
 import { useLogin } from '@/features/auth/hooks/use-login'
 
 const BRAND_INITIAL = 'K'
+const VALIDATION_ERROR_MESSAGE = 'Please enter a valid email and password.'
 
 export function LoginForm(): React.JSX.Element {
   const router = useRouter()
   const login = useLogin()
   const passwordRef = useRef<HTMLInputElement>(null)
-  const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
     if (getAccessToken()) {
@@ -33,21 +33,18 @@ export function LoginForm(): React.JSX.Element {
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
-    setValidationError(null)
 
     const formData = new FormData(event.currentTarget)
     const parsed = loginInputSchema.safeParse(Object.fromEntries(formData))
 
     if (!parsed.success) {
-      setValidationError('Please enter a valid email and password.')
+      toast.error(VALIDATION_ERROR_MESSAGE)
       return
     }
 
     login.mutate(parsed.data)
   }
 
-  const loginErrorMessage = login.isError ? login.error.message : null
-  const errorMessage = validationError ?? loginErrorMessage
   const isPending = login.isPending
 
   return (
@@ -60,11 +57,6 @@ export function LoginForm(): React.JSX.Element {
         <CardDescription>Access the Keimelion Backoffice</CardDescription>
       </CardHeader>
       <CardContent>
-        {errorMessage ? (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        ) : null}
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">Email</Label>

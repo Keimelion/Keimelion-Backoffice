@@ -25,6 +25,16 @@ vi.mock('@/features/auth/auth-storage', () => ({
   getStoredUser: vi.fn(() => null),
 }))
 
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  },
+}))
+
+import { toast } from 'sonner'
 import { loginApi } from '@/data-access/auth/auth.api'
 import { LoginForm } from '@/features/auth/components/login-form'
 
@@ -82,7 +92,7 @@ describe('LoginForm', () => {
     })
   })
 
-  it('shows a validation error when password is blank', async () => {
+  it('shows a toast error when validation fails on blank password', async () => {
     renderLoginForm()
 
     const form = screen.getByRole('button', { name: /sign in/i }).closest('form')
@@ -92,23 +102,9 @@ describe('LoginForm', () => {
     if (form) fireEvent.submit(form)
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toBeInTheDocument()
+      expect(toast.error).toHaveBeenCalledWith('Please enter a valid email and password.')
     })
     expect(loginApi).not.toHaveBeenCalled()
-  })
-
-  it('shows the mutation error message when login fails', async () => {
-    vi.mocked(loginApi).mockRejectedValue(new Error('Invalid credentials'))
-
-    renderLoginForm()
-
-    await userEvent.type(screen.getByLabelText('Email'), 'bad@keimelion.app')
-    await userEvent.type(screen.getByLabelText('Password'), 'wrongpassword')
-    await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
-    })
   })
 
   it('clears the password field on mutation error', async () => {
