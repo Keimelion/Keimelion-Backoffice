@@ -1,15 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { ApiUser } from '@/data-access/auth/auth.api'
 import {
+  SESSION_COOKIE_NAME,
   clearAccessToken,
   clearStoredUser,
   getAccessToken,
   getStoredUser,
   setAccessToken,
   setStoredUser,
-} from '@/lib/auth-storage'
+  syncSessionCookie,
+} from '@/data-access/_auth-storage'
 
 const STORED_USER_KEY = 'keimelion_user'
+
+function readSessionCookie(): string | null {
+  const match = document.cookie.split('; ').find((entry) => entry.startsWith(`${SESSION_COOKIE_NAME}=`))
+  if (!match) return null
+  const value = match.split('=')[1] ?? ''
+  return value === '' ? null : value
+}
+
+function forceClearSessionCookie(): void {
+  document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`
+}
 
 const TEST_USER: ApiUser = {
   id: 'user-1',
@@ -29,10 +42,12 @@ const TEST_USER: ApiUser = {
 
 beforeEach(() => {
   localStorage.clear()
+  forceClearSessionCookie()
 })
 
 afterEach(() => {
   localStorage.clear()
+  forceClearSessionCookie()
 })
 
 describe('getAccessToken / setAccessToken / clearAccessToken', () => {
@@ -91,5 +106,32 @@ describe('ACCESS_TOKEN_KEY isolation', () => {
     clearAccessToken()
     expect(getAccessToken()).toBeNull()
     expect(getStoredUser()).toEqual(TEST_USER)
+  })
+})
+
+describe('session cookie', () => {
+  it('is set when setAccessToken is called', () => {
+    setAccessToken('tok')
+    expect(readSessionCookie()).toBe('1')
+  })
+
+  it('is cleared when clearAccessToken is called', () => {
+    setAccessToken('tok')
+    clearAccessToken()
+    expect(readSessionCookie()).toBeNull()
+  })
+
+  it('syncSessionCookie writes the flag when a token exists in localStorage', () => {
+    localStorage.setItem('keimelion_access_token', 'existing-tok')
+    expect(readSessionCookie()).toBeNull()
+    syncSessionCookie()
+    expect(readSessionCookie()).toBe('1')
+  })
+
+  it('syncSessionCookie clears the flag when no token exists', () => {
+    document.cookie = `${SESSION_COOKIE_NAME}=1; path=/; max-age=3600`
+    expect(readSessionCookie()).toBe('1')
+    syncSessionCookie()
+    expect(readSessionCookie()).toBeNull()
   })
 })

@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { logoutApi } from '@/data-access/auth/auth.api'
-import { clearAccessToken, clearStoredUser } from '@/lib/auth-storage'
+import { clearAccessToken, clearStoredUser } from '@/data-access/_auth-storage'
 import { queryClient } from '@/lib/query-client'
 
 export function useLogout(): UseMutationResult<null, Error, null> {

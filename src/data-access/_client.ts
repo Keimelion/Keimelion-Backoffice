@@ -1,5 +1,5 @@
 import type { ApiError } from '@keimelion/api/shared/types/api'
-import { getAccessToken } from '@/lib/auth-storage'
+import { getAccessToken } from '@/data-access/_auth-storage'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 const API_V1_URL = `${API_BASE_URL}/v1`

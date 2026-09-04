@@ -1,7 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ApiRequestError } from '@/data-access/_client'
-import { clearAccessToken, clearStoredUser } from '@/lib/auth-storage'
+import { clearAccessToken, clearStoredUser } from '@/data-access/_auth-storage'
 
 const STALE_TIME_MS = 1000 * 60 * 5
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.'

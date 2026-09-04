@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getAccessToken } from '@/lib/auth-storage'
+import { getAccessToken } from '@/data-access/_auth-storage'
 import { loginInputSchema } from '@/features/auth/login-schema'
 import { useLogin } from '@/features/auth/hooks/use-login'
 

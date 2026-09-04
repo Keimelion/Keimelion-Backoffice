@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 import type * as QueryClientModule from './query-client'
 import type * as ClientModule from '@/data-access/_client'
-import type * as AuthStorageModule from './auth-storage'
+import type * as AuthStorageModule from '@/data-access/_auth-storage'
 import type * as SonnerModule from 'sonner'
 
 vi.mock('sonner', () => ({
@@ -26,7 +26,7 @@ async function freshQueryClientModule(): Promise<FreshModules> {
   vi.resetModules()
   const queryClientModule = await import('./query-client')
   const clientModule = await import('@/data-access/_client')
-  const storageModule = await import('./auth-storage')
+  const storageModule = await import('@/data-access/_auth-storage')
   const sonnerModule = await import('sonner')
   return {
     createQueryClient: queryClientModule.createQueryClient,

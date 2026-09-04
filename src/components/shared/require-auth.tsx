@@ -1,15 +1,22 @@
 'use client'
 
 /**
- * Client-side defense-in-depth only — real access control is enforced by the API.
- * Do not rely on this for security. This guard prevents navigating to dashboard routes
- * when no valid token or insufficient role is detected client-side.
+ * Client-side guard — second layer of defense.
+ *
+ * Real access control is enforced by the API on every request. The Edge
+ * middleware (src/middleware.ts) is the first layer and blocks page renders
+ * for anyone without a session cookie. This component handles what the
+ * middleware cannot see: role checks (rejects `role === user` because the
+ * middleware only sees a boolean session flag) and edge cases like corrupt
+ * localStorage.
+ *
+ * Do not rely on this for security.
  */
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserRoles } from '@keimelion/api/shared/enums/user-role'
-import { getAccessToken } from '@/lib/auth-storage'
+import { getAccessToken } from '@/data-access/_auth-storage'
 import { useCurrentUser } from '@/features/auth/hooks/use-current-user'
 
 interface RequireAuthProps {

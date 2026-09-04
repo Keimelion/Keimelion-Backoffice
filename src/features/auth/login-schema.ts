@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { apiUserSchema } from '@/lib/auth-storage'
+import { apiUserSchema } from '@/data-access/_auth-storage'
 
 const MIN_PASSWORD_LENGTH = 1
 

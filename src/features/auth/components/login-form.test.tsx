@@ -17,10 +17,10 @@ vi.mock('@/lib/query-client', async () => {
   return { queryClient: new QueryClient() }
 })
 
-import type * as AuthStorage from '@/lib/auth-storage'
+import type * as AuthStorage from '@/data-access/_auth-storage'
 
-vi.mock('@/lib/auth-storage', async () => {
-  const actual = await vi.importActual<typeof AuthStorage>('@/lib/auth-storage')
+vi.mock('@/data-access/_auth-storage', async () => {
+  const actual = await vi.importActual<typeof AuthStorage>('@/data-access/_auth-storage')
   return {
     ...actual,
     getAccessToken: vi.fn(() => null),
