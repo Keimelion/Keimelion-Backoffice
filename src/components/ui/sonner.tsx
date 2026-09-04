@@ -22,11 +22,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={resolvedTheme}
       className="toaster group"
       icons={{
-        success: <CircleCheck className="h-5 w-5 text-emerald-500" />,
-        info: <Info className="h-5 w-5 text-blue-500" />,
-        warning: <TriangleAlert className="h-5 w-5 text-amber-500" />,
-        error: <OctagonX className="h-5 w-5 text-red-500" />,
-        loading: <LoaderCircle className="h-5 w-5 animate-spin" />,
+        success: <CircleCheck className="h-3.5 w-3.5 text-emerald-500" />,
+        info: <Info className="h-3.5 w-3.5 text-blue-500" />,
+        warning: <TriangleAlert className="h-3.5 w-3.5 text-amber-500" />,
+        error: <OctagonX className="h-3.5 w-3.5 text-red-500" />,
+        loading: <LoaderCircle className="h-3.5 w-3.5 animate-spin" />,
       }}
       toastOptions={{
         classNames: {
