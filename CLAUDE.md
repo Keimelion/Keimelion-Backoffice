@@ -1,5 +1,20 @@
 # Keimelion Backoffice — Claude context
 
+## Language — English only
+
+**Everything in this repo is written in English.** No French, no other language. This applies to every agent, subagent, and the main Claude — no exceptions.
+
+- **UI copy** — labels, buttons, headings, subtitles, toast messages, alt text, `sr-only` text, placeholders, `<title>`, meta descriptions, `<html lang="en">`
+- **Code** — identifiers, string constants, enum values, error messages, exceptions
+- **Comments and JSDoc** (rare per standards — but when present, English only)
+- **Git** — branch names, commit messages, PR titles, PR descriptions
+- **Notion tickets when written by an agent** — description, acceptance criteria, technical notes, comments
+- **Tests** — describe/it titles, assertion messages, fixture data
+
+If you catch French in a file you are editing (`Déconnexion`, `Tableau de bord`, `Utilisateurs`, comments in French, etc.), translate it as part of your change — do not leave it.
+
+The user is French-speaking and may write to you in French — respond in French in chat, but every artifact committed to the repo stays in English.
+
 ## Project
 
 Backoffice admin for Keimelion, a collaborative wishlist app. Built with Next.js (App Router) and TypeScript, consuming the Keimelion REST API.

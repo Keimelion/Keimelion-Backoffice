@@ -8,8 +8,8 @@ export interface NavItem {
 }
 
 export const dashboardNav: readonly NavItem[] = [
-  { label: 'Tableau de bord', href: '/', icon: LayoutDashboard },
-  { label: 'Listes', href: '/lists', icon: ListTodo },
-  { label: 'Produits', href: '/products', icon: Package },
-  { label: 'Utilisateurs', href: '/users', icon: Users },
+  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { label: 'Lists', href: '/lists', icon: ListTodo },
+  { label: 'Products', href: '/products', icon: Package },
+  { label: 'Users', href: '/users', icon: Users },
 ]

@@ -65,7 +65,7 @@ export function Sidebar(): React.JSX.Element {
         className="group mt-auto flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-500 ease-in-out hover:bg-destructive hover:text-destructive-foreground disabled:pointer-events-none disabled:opacity-50"
       >
         <LogOut className="h-5 w-5 transition-transform duration-500 ease-in-out group-hover:-translate-x-0.5" />
-        Déconnexion
+        Sign out
       </button>
     </aside>
   )
