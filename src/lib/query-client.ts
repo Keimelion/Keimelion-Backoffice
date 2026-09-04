@@ -1,6 +1,6 @@
 import { MutationCache, QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { ApiRequestError } from './api-client'
+import { ApiRequestError } from '@/data-access/_client'
 
 const STALE_TIME_MS = 1000 * 60 * 5
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.'

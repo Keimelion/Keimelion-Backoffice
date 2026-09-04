@@ -87,15 +87,15 @@ src/
 ├── components/
 │   ├── ui/                 # shadcn/ui generated components (do not edit)
 │   └── shared/             # sidebar, theme-toggle, user-menu…
-├── data-access/            # All API calls — one folder per resource
+├── data-access/            # All API calls — mirrors db/ in the API
+│   ├── _client.ts          # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete) shared by every resource
 │   ├── auth/               # loginApi, logoutApi, registerApi
 │   └── users/              # fetchUsers, fetchUser, updateUser, deleteUser
 ├── features/               # Feature modules (hooks + feature-specific components)
 │   ├── auth/
 │   └── users/
 ├── lib/
-│   ├── api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
-│   ├── query-client.ts     # TanStack Query client configuration
+│   ├── query-client.ts     # TanStack Query client configuration + global mutation error toast
 │   └── utils.ts            # cn() — class-merge helper for shadcn components
 └── types/                  # Local-only types (navigation, UI state…)
 ```

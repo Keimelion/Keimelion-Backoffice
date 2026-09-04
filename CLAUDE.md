@@ -63,7 +63,8 @@ src/
   components/
     ui/                 # shadcn/ui generated components — do not edit manually
     shared/             # Reusable app-level components (sidebar, page-header, data-table…)
-  data-access/          # All API calls — mirrors db/entities/ in the API
+  data-access/          # All API calls — mirrors db/ in the API
+    _client.ts          # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete) — the shared HTTP client all resource files use
     auth/
       auth.api.ts       # loginApi(), logoutApi(), registerApi()
     users/
@@ -76,8 +77,7 @@ src/
       components/       # UsersTable, UserForm, etc.
       hooks/            # useUsers, useUser, useUpdateUser, useDeleteUser
   lib/
-    api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
-    query-client.ts     # TanStack Query client configuration
+    query-client.ts     # TanStack Query client configuration + global mutation error toast
   types/                # Local-only types (nav items, UI state…)
 ```
 

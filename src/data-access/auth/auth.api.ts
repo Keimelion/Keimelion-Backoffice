@@ -1,6 +1,6 @@
 import type { AuthProvider } from '@keimelion/api/shared/enums/auth-provider'
 import type { UserRole } from '@keimelion/api/shared/enums/user-role'
-import { apiPost } from '@/lib/api-client'
+import { apiPost } from '@/data-access/_client'
 
 // ApiUser mirrors the API response shape — dates are strings over JSON
 export interface ApiUser {
