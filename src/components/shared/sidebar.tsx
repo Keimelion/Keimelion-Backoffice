@@ -1,20 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { LogOut } from 'lucide-react'
 import { dashboardNav } from '@/types/navigation'
 import { cn } from '@/lib/utils'
+import { useLogout } from '@/features/auth/hooks/use-logout'
 
 const BRAND_INITIAL = 'K'
 const BRAND_NAME = 'Keimelion'
 
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname()
-  const router = useRouter()
+  const logout = useLogout()
 
   const handleLogout = (): void => {
-    router.push('/login')
+    logout.mutate(null)
   }
 
   return (
@@ -60,7 +61,8 @@ export function Sidebar(): React.JSX.Element {
       <button
         type="button"
         onClick={handleLogout}
-        className="group mt-auto flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-500 ease-in-out hover:bg-destructive hover:text-destructive-foreground"
+        disabled={logout.isPending}
+        className="group mt-auto flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-500 ease-in-out hover:bg-destructive hover:text-destructive-foreground disabled:pointer-events-none disabled:opacity-50"
       >
         <LogOut className="h-5 w-5 transition-transform duration-500 ease-in-out group-hover:-translate-x-0.5" />
         Déconnexion

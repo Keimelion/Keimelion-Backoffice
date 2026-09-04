@@ -25,7 +25,8 @@ export interface LoginInput {
 }
 
 export interface LoginResponse {
-  token: string
+  accessToken: string
+  refreshToken: string
   user: ApiUser
 }
 
@@ -38,8 +39,8 @@ export function loginApi(input: LoginInput): Promise<LoginResponse> {
   return apiPost<LoginResponse>('/auth/login', input)
 }
 
-export function logoutApi(): Promise<void> {
-  return apiPost<void>('/auth/logout', {})
+export async function logoutApi(): Promise<void> {
+  await apiPost<null>('/auth/logout', {})
 }
 
 export function registerApi(input: RegisterInput): Promise<{ user: ApiUser }> {
