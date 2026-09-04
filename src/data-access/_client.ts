@@ -1,13 +1,8 @@
 import type { ApiError } from '@keimelion/api/shared/types/api'
-import { clearAccessToken, getAccessToken } from '@/features/auth/auth-storage'
-import { queryClient } from '@/lib/query-client'
+import { getAccessToken } from '@/features/auth/auth-storage'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 const API_V1_URL = `${API_BASE_URL}/v1`
-
-const LOGIN_PATH = '/auth/login'
-
-let redirectInFlight = false
 
 export class ApiRequestError extends Error {
   constructor(
@@ -24,15 +19,6 @@ function buildAuthHeaders(): Record<string, string> {
   const token = getAccessToken()
   if (!token) return {}
   return { Authorization: `Bearer ${token}` }
-}
-
-function handleUnauthorized(path: string): void {
-  if (path === LOGIN_PATH) return
-  if (redirectInFlight) return
-  redirectInFlight = true
-  clearAccessToken()
-  queryClient.clear()
-  window.location.assign('/login')
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -57,11 +43,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       'Cannot reach the server. Check your connection and that the API is running.',
       0,
     )
-  }
-
-  if (response.status === 401) {
-    handleUnauthorized(path)
-    throw new ApiRequestError('UNAUTHORIZED', 'Unauthorized', 401)
   }
 
   if (response.status === 204) {

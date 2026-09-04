@@ -18,6 +18,7 @@ export function useLogin(): UseMutationResult<null, Error, LoginInput> {
   const router = useRouter()
 
   return useMutation<null, Error, LoginInput>({
+    meta: { skipUnauthorizedRedirect: true },
     mutationFn: async (input: LoginInput) => {
       const raw = await loginApi(input)
       const parsed = loginResponseSchema.safeParse(raw)
