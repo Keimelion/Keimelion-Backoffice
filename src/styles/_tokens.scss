@@ -1,0 +1,108 @@
+// ============================================================================
+// Design tokens — single source of truth
+//
+// Values live here as SCSS variables and maps. `theme.scss` reads them to
+// emit :root {} and .dark {} CSS custom properties (consumed by Tailwind's
+// @theme inline in globals.css). Component SCSS files @use this partial to
+// reference the same values as literals (e.g. sonner.scss iterates
+// $variants to build its per-type styles).
+//
+// To change a color across the whole app: edit here only.
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// Brand palette — Refreshing Summer Fun
+// ----------------------------------------------------------------------------
+
+$brand-sky: #8ecae6;
+$brand-teal: #219ebc;
+$brand-navy: #023047;
+$brand-amber: #ffb703;
+$brand-tiger: #fb8500;
+
+// ----------------------------------------------------------------------------
+// Notification variant colors (used by toast, alerts, badges…)
+// ----------------------------------------------------------------------------
+
+$variant-error: #ef4444;
+$variant-success: #22c55e;
+$variant-warning: #f59e0b;
+$variant-info: #3b82f6;
+
+$variants: (
+  'error': $variant-error,
+  'success': $variant-success,
+  'warning': $variant-warning,
+  'info': $variant-info,
+);
+
+// ----------------------------------------------------------------------------
+// Neutral scale (stone) — used to derive semantic tokens below
+// ----------------------------------------------------------------------------
+
+$stone-50: #fafaf9;
+$stone-100: #f5f5f4;
+$stone-200: #e7e5e4;
+$stone-400: #a8a29e;
+$stone-500: #78716c;
+$stone-800: #292524;
+$stone-900: #1c1917;
+$stone-950: #0c0a09;
+
+// ----------------------------------------------------------------------------
+// Semantic tokens — light mode
+// ----------------------------------------------------------------------------
+
+$tokens-light: (
+  'background': #ffffff,
+  'foreground': $stone-900,
+  'card': #ffffff,
+  'card-foreground': $stone-900,
+  'popover': #ffffff,
+  'popover-foreground': $stone-900,
+  'primary': $brand-amber,
+  'primary-foreground': $brand-navy,
+  'secondary': $stone-100,
+  'secondary-foreground': $stone-900,
+  'muted': $stone-100,
+  'muted-foreground': $stone-500,
+  'accent': $stone-100,
+  'accent-foreground': $stone-900,
+  'destructive': #dc2626,
+  'destructive-foreground': $stone-50,
+  'border': $stone-200,
+  'input': $stone-200,
+  'ring': $brand-amber,
+);
+
+// ----------------------------------------------------------------------------
+// Semantic tokens — dark mode
+// ----------------------------------------------------------------------------
+
+$tokens-dark: (
+  'background': $stone-950,
+  'foreground': $stone-50,
+  'card': $stone-900,
+  'card-foreground': $stone-50,
+  'popover': $stone-900,
+  'popover-foreground': $stone-50,
+  'primary': $brand-amber,
+  'primary-foreground': $brand-navy,
+  'secondary': $stone-800,
+  'secondary-foreground': $stone-50,
+  'muted': $stone-800,
+  'muted-foreground': $stone-400,
+  'accent': $stone-800,
+  'accent-foreground': $stone-50,
+  'destructive': #7f1d1d,
+  'destructive-foreground': $stone-50,
+  'border': $stone-800,
+  'input': $stone-800,
+  'ring': $brand-amber,
+);
+
+// ----------------------------------------------------------------------------
+// Layout tokens
+// ----------------------------------------------------------------------------
+
+$radius: 0.5rem;

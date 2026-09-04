@@ -57,7 +57,7 @@ npx shadcn add <component-name>
 
 ## Design system
 
-Design tokens live in `src/app/globals.css` as Tailwind v4 `@theme` variables, with `.dark` overrides for dark mode.
+Design tokens live in **`src/styles/_tokens.scss`** as the single source of truth — brand palette, neutral scale (stone), semantic maps for light + dark modes, and notification variant colors. `src/styles/theme.scss` reads those maps and emits `:root {}` + `.dark {}` CSS custom properties, which Tailwind consumes via `@theme inline` in `src/app/globals.css`. Component SCSS files (`sonner.scss`, etc.) `@use` the partial to reference the same SCSS values (e.g. `$variants` map for toast colors) — one place to change a color, everything downstream stays in sync.
 
 ### Brand palette (Refreshing Summer Fun)
 

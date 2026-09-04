@@ -1,0 +1,26 @@
+// Emits :root {} and .dark {} CSS custom properties from the SCSS token maps
+// in _tokens.scss. This is the ONLY file that outputs global CSS variables —
+// component SCSS files @use the partial for SCSS values but never emit
+// duplicate :root {} blocks.
+
+@use 'tokens' as *;
+
+:root {
+  --brand-sky: #{$brand-sky};
+  --brand-teal: #{$brand-teal};
+  --brand-navy: #{$brand-navy};
+  --brand-amber: #{$brand-amber};
+  --brand-tiger: #{$brand-tiger};
+
+  @each $name, $value in $tokens-light {
+    --#{$name}: #{$value};
+  }
+
+  --radius: #{$radius};
+}
+
+.dark {
+  @each $name, $value in $tokens-dark {
+    --#{$name}: #{$value};
+  }
+}

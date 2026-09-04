@@ -1,9 +1,4 @@
-$variants: (
-  'error': #ef4444,
-  'success': #22c55e,
-  'warning': #f59e0b,
-  'info': #3b82f6,
-);
+@use '../../styles/tokens' as *;
 
 [data-sonner-toaster] [data-sonner-toast] {
   position: relative;
