@@ -11,22 +11,23 @@
 
 ## Getting started
 
-> Prerequisites: **Node.js v20+** and a running [Keimelion API](../Keimelion-API/README.md)
+> Prerequisites:
+> - **Node.js v20+**
+> - The [Keimelion API](https://github.com/Keimelion/Keimelion-API) cloned **as a sibling directory** — TypeScript path aliases resolve to `../Keimelion-API/src/*` for shared enum and type imports.
+> - The API running locally (see its README).
 
 ```bash
-# Install dependencies (from the workspace root)
-cd ..
+# Expected layout: both repos side-by-side
+# <parent>/
+#   ├── Keimelion-API/
+#   └── Keimelion-Backoffice/  ← you are here
+
 npm install
-
-# Copy environment variables
-cd Keimelion-Backoffice
 cp .env.example .env.local
-
-# Start the dev server
 npm run dev
 ```
 
-The backoffice is available at **http://localhost:3001**.
+The backoffice is available at **http://localhost:3001** (the API uses 3000).
 
 ### Adding UI components
 
