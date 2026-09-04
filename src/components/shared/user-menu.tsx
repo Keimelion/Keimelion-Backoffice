@@ -13,7 +13,7 @@ function getInitials(name: string): string {
 }
 
 export function UserMenu(): React.JSX.Element {
-  const { data: currentUser } = useCurrentUser()
+  const currentUser = useCurrentUser()
 
   if (!currentUser) return <></>
 

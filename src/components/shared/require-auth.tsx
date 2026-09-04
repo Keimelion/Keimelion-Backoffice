@@ -18,11 +18,11 @@ interface RequireAuthProps {
 
 export function RequireAuth({ children }: RequireAuthProps): React.JSX.Element {
   const router = useRouter()
-  const { data: currentUser } = useCurrentUser()
+  const currentUser = useCurrentUser()
 
   const hasToken = !!getAccessToken()
   const isUnauthorized =
-    !hasToken || currentUser === null || currentUser?.role === UserRoles.USER
+    !hasToken || currentUser === null || currentUser.role === UserRoles.USER
 
   useEffect(() => {
     if (isUnauthorized) {
