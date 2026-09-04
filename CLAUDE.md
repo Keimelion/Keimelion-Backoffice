@@ -112,7 +112,7 @@ If you clone the Backoffice alone, type-checking will fail on any `@keimelion/ap
 ## Commands
 
 ```bash
-npm run dev        # Start dev server (port 3000 by default)
+npm run dev        # Start dev server (port 3001 — the API uses 3000)
 npm run build      # Production build
 npm run lint       # ESLint
 npm run format     # Prettier

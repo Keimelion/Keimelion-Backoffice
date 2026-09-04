@@ -28,10 +28,13 @@ npm run dev
 
 The backoffice is available at **http://localhost:3001**.
 
-### Add UI components (first time only)
+### Adding UI components
+
+shadcn/ui is already initialized with a **Stone** base. To add a new component:
 
 ```bash
-npx shadcn init
+npx shadcn add <component-name>
+# example: npx shadcn add table dialog toast
 ```
 
 ---
@@ -42,9 +45,34 @@ npx shadcn init
 |---|---|
 | Framework | [Next.js 15](https://nextjs.org) — App Router, React Server Components |
 | UI | [shadcn/ui](https://ui.shadcn.com) — Radix primitives + Tailwind |
+| Icons | [lucide-react](https://lucide.dev) |
+| Theme | [next-themes](https://github.com/pacocoursey/next-themes) — light / dark / system |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com) |
+| Font | [Inter](https://fonts.google.com/specimen/Inter) via `next/font` |
 | Data fetching | [TanStack Query v5](https://tanstack.com/query) |
 | Validation | [Zod](https://zod.dev) |
+
+---
+
+## Design system
+
+Design tokens live in `src/app/globals.css` as Tailwind v4 `@theme` variables, with `.dark` overrides for dark mode.
+
+### Brand palette (Refreshing Summer Fun)
+
+| Token | Hex | Usage |
+|---|---|---|
+| `brand-sky` | `#8ecae6` | Light accent |
+| `brand-teal` | `#219ebc` | Secondary accent |
+| `brand-navy` | `#023047` | Deep accent — used as `--primary-foreground` |
+| `brand-amber` | `#ffb703` | **Primary** — buttons, active states, focus rings |
+| `brand-tiger` | `#fb8500` | Warm accent |
+
+Use semantic tokens for interactive elements — `bg-primary`, `text-primary-foreground`, `border-border`, `bg-destructive`, etc. — and the raw brand tokens (`bg-brand-teal`, `text-brand-navy`…) for one-off accents.
+
+### Dark mode
+
+Toggle in the topbar swaps light ↔ dark via the [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) (cross-fade) with a CSS fallback for Firefox. Default is `system`.
 
 ---
 
@@ -54,19 +82,21 @@ npx shadcn init
 src/
 ├── app/                    # Next.js App Router — pages and layouts only
 │   ├── (auth)/             # Route group: unauthenticated pages (login…)
-│   └── (dashboard)/        # Route group: authenticated pages with sidebar
+│   └── (dashboard)/        # Route group: dashboard, lists, products, users
 ├── components/
 │   ├── ui/                 # shadcn/ui generated components (do not edit)
-│   └── shared/             # Reusable app-level components (sidebar, data-table…)
+│   └── shared/             # sidebar, theme-toggle, user-menu…
 ├── data-access/            # All API calls — one folder per resource
 │   ├── auth/               # loginApi, logoutApi, registerApi
 │   └── users/              # fetchUsers, fetchUser, updateUser, deleteUser
 ├── features/               # Feature modules (hooks + feature-specific components)
 │   ├── auth/
 │   └── users/
-└── lib/
-    ├── api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
-    └── query-client.ts     # TanStack Query client configuration
+├── lib/
+│   ├── api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
+│   ├── query-client.ts     # TanStack Query client configuration
+│   └── utils.ts            # cn() — class-merge helper for shadcn components
+└── types/                  # Local-only types (navigation, UI state…)
 ```
 
 ### data-access/ vs features/

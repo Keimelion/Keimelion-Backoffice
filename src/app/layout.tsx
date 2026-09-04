@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
-import { QueryProvider } from '@/components/providers'
+import { Inter } from 'next/font/google'
+import { Providers } from '@/components/providers'
 import './globals.css'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
   title: 'Keimelion Backoffice',
@@ -12,9 +15,9 @@ export default function RootLayout({
   children: React.ReactNode
 }): React.JSX.Element {
   return (
-    <html lang="fr">
-      <body>
-        <QueryProvider>{children}</QueryProvider>
+    <html lang="fr" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
