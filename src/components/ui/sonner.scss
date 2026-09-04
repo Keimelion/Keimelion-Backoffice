@@ -1,0 +1,97 @@
+$variants: (
+  'error': #ef4444,
+  'success': #22c55e,
+  'warning': #f59e0b,
+  'info': #3b82f6,
+);
+
+[data-sonner-toaster] [data-sonner-toast] {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 44px 16px 16px;
+  min-height: 68px;
+  border-radius: 12px;
+  gap: 12px;
+  align-items: flex-start;
+
+  [data-icon] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    margin: 0;
+  }
+
+  [data-close-button] {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    left: auto;
+    transform: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted-foreground);
+    opacity: 0.7;
+    transition: all 150ms ease-out;
+
+    &:hover {
+      opacity: 1;
+      background: var(--muted);
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--muted-foreground);
+    opacity: 0.6;
+    transform-origin: left;
+    animation: keimelion-toast-shrink 5000ms linear forwards;
+  }
+
+  &:hover::after {
+    animation-play-state: paused;
+  }
+
+  @each $type, $color in $variants {
+    &[data-type='#{$type}'] {
+      [data-close-button] {
+        color: $color;
+        opacity: 1;
+
+        &:hover {
+          background: rgba($color, 0.12);
+        }
+      }
+
+      &::after {
+        background: $color;
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@keyframes keimelion-toast-shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
