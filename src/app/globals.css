@@ -124,13 +124,14 @@ textarea::placeholder {
   min-height: 68px;
   border-radius: 12px !important;
   gap: 12px !important;
-  align-items: center !important;
+  align-items: flex-start !important;
 }
 
 [data-sonner-toast] [data-icon] {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  height: 20px !important;
   margin: 0 !important;
 }
 
