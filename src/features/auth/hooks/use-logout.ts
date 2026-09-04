@@ -21,8 +21,8 @@ export function useLogout(): UseMutationResult<null, Error, null> {
       queryClient.clear()
       router.replace('/login')
     },
-    onError: (error) => {
-      console.warn('Logout API call failed, clearing session anyway:', error.message)
+    onError: () => {
+      console.warn('Logout API call failed; clearing session anyway.')
     },
   })
 }
