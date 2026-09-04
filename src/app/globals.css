@@ -105,6 +105,12 @@ body {
     color 400ms ease-in-out;
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.5;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 500ms;
@@ -118,11 +124,14 @@ body {
   min-height: 68px;
   border-radius: 12px !important;
   gap: 12px !important;
-  align-items: flex-start !important;
+  align-items: center !important;
 }
 
-[data-sonner-toast] [data-content] {
-  padding-top: 2px;
+[data-sonner-toast] [data-icon] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
 }
 
 [data-sonner-toast] [data-close-button] {
