@@ -19,7 +19,6 @@ export function Providers({ children }: ProvidersProps): React.JSX.Element {
         <AuthBootstrap>{children}</AuthBootstrap>
         <Toaster
           position="top-right"
-          richColors
           closeButton
           duration={TOAST_DURATION_MS}
         />

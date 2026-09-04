@@ -22,17 +22,18 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={resolvedTheme}
       className="toaster group"
       icons={{
-        success: <CircleCheck className="h-4 w-4" />,
-        info: <Info className="h-4 w-4" />,
-        warning: <TriangleAlert className="h-4 w-4" />,
-        error: <OctagonX className="h-4 w-4" />,
-        loading: <LoaderCircle className="h-4 w-4 animate-spin" />,
+        success: <CircleCheck className="h-5 w-5 text-emerald-500" />,
+        info: <Info className="h-5 w-5 text-blue-500" />,
+        warning: <TriangleAlert className="h-5 w-5 text-amber-500" />,
+        error: <OctagonX className="h-5 w-5 text-red-500" />,
+        loading: <LoaderCircle className="h-5 w-5 animate-spin" />,
       }}
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
+            "group toast group-[.toaster]:bg-card group-[.toaster]:text-card-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+          title: "group-[.toast]:font-semibold group-[.toast]:text-sm",
+          description: "group-[.toast]:text-muted-foreground group-[.toast]:text-sm",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
