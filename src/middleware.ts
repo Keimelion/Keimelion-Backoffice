@@ -1,39 +1,15 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { SESSION_COOKIE_NAME } from '@/data-access/_auth-storage'
-
-const LOGIN_PATH = '/login'
-const DASHBOARD_HOME = '/'
+import { requireSession } from '@/middlewares/require-session'
 
 /**
- * Edge middleware — first line of defense on route access.
- *
- * Reads a non-sensitive session flag cookie (written client-side by
- * auth-storage when the user logs in) to gate routes before the page renders:
- *   - visiting /login while logged in → redirect to /
- *   - visiting any protected route without the cookie → redirect to /login
- *
- * This is a UX + defense-in-depth layer only. The real access control is
- * enforced by the API on every request. The client-side RequireAuth guard
- * remains in place to handle role checks and edge cases (corrupt storage,
- * mid-session role change) that the middleware cannot see.
+ * Edge middleware entry — Next.js hard-requires this exact filename and
+ * location. Keep this file thin: it composes the individual middlewares in
+ * `src/middlewares/` in order. Each helper returns a NextResponse to short-
+ * circuit (redirect / rewrite / block) or null to hand off to the next.
  */
 export function middleware(request: NextRequest): NextResponse {
-  const { pathname } = request.nextUrl
-  const hasSession = request.cookies.has(SESSION_COOKIE_NAME)
-
-  if (pathname.startsWith(LOGIN_PATH)) {
-    if (hasSession) {
-      return NextResponse.redirect(new URL(DASHBOARD_HOME, request.url))
-    }
-    return NextResponse.next()
-  }
-
-  if (!hasSession) {
-    return NextResponse.redirect(new URL(LOGIN_PATH, request.url))
-  }
-
-  return NextResponse.next()
+  return requireSession(request) ?? NextResponse.next()
 }
 
 export const config = {

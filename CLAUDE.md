@@ -82,6 +82,9 @@ src/
       hooks/            # useUsers, useUser, useUpdateUser, useDeleteUser
   lib/
     query-client.ts     # TanStack Query client configuration + global mutation error toast
+  middleware.ts         # Edge middleware entry — Next.js requires this exact path. Keep thin: composes helpers from middlewares/
+  middlewares/          # Individual middleware helpers, each returns NextResponse | null (null = pass through)
+    require-session.ts  # Gates dashboard routes on the session cookie
   types/                # Local-only types (nav items, UI state…)
 ```
 
