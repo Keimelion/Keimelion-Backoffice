@@ -2,7 +2,6 @@ import type { AuthProvider } from '@keimelion/api/shared/enums/auth-provider'
 import type { UserRole } from '@keimelion/api/shared/enums/user-role'
 import { apiPost } from '@/data-access/_client'
 
-// ApiUser mirrors the API response shape — dates are strings over JSON
 export interface ApiUser {
   id: string
   email: string
@@ -35,6 +34,19 @@ export interface RegisterInput {
   password: string
 }
 
+export interface ForgotPasswordApiInput {
+  email: string
+}
+
+export interface ResetPasswordApiInput {
+  token: string
+  newPassword: string
+}
+
+export interface MessageResponse {
+  message: string
+}
+
 export function loginApi(input: LoginInput): Promise<LoginResponse> {
   return apiPost<LoginResponse>('/auth/login', input)
 }
@@ -45,4 +57,15 @@ export async function logoutApi(): Promise<void> {
 
 export function registerApi(input: RegisterInput): Promise<{ user: ApiUser }> {
   return apiPost<{ user: ApiUser }>('/auth/register', input)
+}
+
+export function forgotPasswordApi(input: ForgotPasswordApiInput): Promise<MessageResponse> {
+  return apiPost<MessageResponse>('/auth/forgot-password', input)
+}
+
+export function resetPasswordApi(input: ResetPasswordApiInput): Promise<MessageResponse> {
+  return apiPost<MessageResponse>('/auth/reset-password', {
+    token: input.token,
+    new_password: input.newPassword,
+  })
 }
