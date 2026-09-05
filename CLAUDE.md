@@ -51,6 +51,7 @@ Summary of rules that matter most in this codebase:
 - **`React.JSX.Element` return type** on all components
 - **Props as interface** — `interface ComponentProps { ... }`, not inline type or `type`
 - **One component per file** — file name matches component name in kebab-case (`user-form.tsx` exports `UserForm`)
+- **Folder-per-component when 2+ files** — if a component has more than one file (a `.tsx` plus `.test.tsx`, `.scss`, `.stories.tsx`…), wrap them in a folder named after the component and add an `index.ts` that re-exports so imports stay short. Example: `components/ui/input/{input.tsx, input.scss, index.ts}` — imported as `@/components/ui/input`. Single-file components stay flat.
 - **Hooks prefix** — all custom hooks start with `use` (`useUsers`, `useLogin`)
 
 ## Project structure
