@@ -6,13 +6,18 @@
  * without SRI, no user-generated HTML rendered in the Backoffice. Violating any
  * of these requires migrating to httpOnly cookies.
  *
- * A non-sensitive `keimelion_session` cookie mirrors the presence of the token
- * (value: "1") so the Edge middleware can gate dashboard routes before the
- * page renders. The cookie does NOT contain the token itself — only a flag.
- * It is written / cleared alongside the token so localStorage and cookie
- * stay in sync.
+ * The `keimelion_session` cookie carries the user's role (e.g. "admin",
+ * "moderator") so the Edge middleware can gate dashboard routes on role
+ * before the page renders. The cookie is NOT httpOnly and NOT trusted for
+ * security — the API remains the source of truth. It's a UX + defense-in-
+ * depth signal.
+ *
+ * saveSession / clearSession are atomic: token, user, and cookie are always
+ * written or cleared together to avoid drift.
  */
 
+import { UserRoles } from '@keimelion/api/shared/enums/user-role'
+import type { UserRole } from '@keimelion/api/shared/enums/user-role'
 import type { ApiUser } from '@/data-access/auth/auth.api'
 import { apiUserSchema } from '@/data-access/_schemas/user'
 
@@ -21,26 +26,27 @@ const STORED_USER_KEY = 'keimelion_user'
 export const SESSION_COOKIE_NAME = 'keimelion_session'
 const SESSION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
 
-function setSessionCookie(): void {
-  document.cookie = `${SESSION_COOKIE_NAME}=1; path=/; max-age=${String(SESSION_COOKIE_MAX_AGE_SECONDS)}; samesite=lax`
+const ALLOWED_BACKOFFICE_ROLES: readonly UserRole[] = [UserRoles.ADMIN, UserRoles.MODERATOR]
+
+/**
+ * Single source of truth for "who can enter the Backoffice". Used by useLogin
+ * (before persisting the session) and by the Edge middleware (on every
+ * dashboard request). Edge-safe: pure comparison, no browser APIs.
+ */
+export function isAllowedBackofficeRole(role: string): boolean {
+  return (ALLOWED_BACKOFFICE_ROLES as readonly string[]).includes(role)
 }
 
-function clearSessionCookie(): void {
+function writeSessionCookie(role: string): void {
+  document.cookie = `${SESSION_COOKIE_NAME}=${role}; path=/; max-age=${String(SESSION_COOKIE_MAX_AGE_SECONDS)}; samesite=lax`
+}
+
+function deleteSessionCookie(): void {
   document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0; samesite=lax`
 }
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY)
-}
-
-export function setAccessToken(token: string): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token)
-  setSessionCookie()
-}
-
-export function clearAccessToken(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  clearSessionCookie()
 }
 
 export function getStoredUser(): ApiUser | null {
@@ -60,23 +66,34 @@ export function getStoredUser(): ApiUser | null {
   }
 }
 
-export function setStoredUser(user: ApiUser): void {
+/**
+ * Atomic session write. Called on successful login.
+ */
+export function saveSession(accessToken: string, user: ApiUser): void {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
   localStorage.setItem(STORED_USER_KEY, JSON.stringify(user))
-}
-
-export function clearStoredUser(): void {
-  localStorage.removeItem(STORED_USER_KEY)
+  writeSessionCookie(user.role)
 }
 
 /**
- * Reconcile the session cookie with the localStorage token. Called once at
- * boot by AuthBootstrap so pre-existing sessions (created before the middleware
- * shipped) get a cookie, and stale cookies without a token get cleared.
+ * Atomic session wipe. Called on logout, on 401, on tampered storage.
+ */
+export function clearSession(): void {
+  localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(STORED_USER_KEY)
+  deleteSessionCookie()
+}
+
+/**
+ * Reconcile the session cookie with the stored user's role. Called once at
+ * boot by AuthBootstrap so pre-existing sessions (created before the
+ * middleware or the role-in-cookie shipped) get a correct cookie.
  */
 export function syncSessionCookie(): void {
-  if (getAccessToken()) {
-    setSessionCookie()
+  const user = getStoredUser()
+  if (user && isAllowedBackofficeRole(user.role)) {
+    writeSessionCookie(user.role)
     return
   }
-  clearSessionCookie()
+  deleteSessionCookie()
 }

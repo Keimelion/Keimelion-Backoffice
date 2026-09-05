@@ -19,11 +19,11 @@ vi.mock('@/lib/query-client', async () => {
 
 vi.mock('@/data-access/_auth-storage', () => ({
   getAccessToken: vi.fn(() => null),
-  setAccessToken: vi.fn(),
-  setStoredUser: vi.fn(),
-  clearAccessToken: vi.fn(),
   getStoredUser: vi.fn(() => null),
+  saveSession: vi.fn(),
+  clearSession: vi.fn(),
   syncSessionCookie: vi.fn(),
+  isAllowedBackofficeRole: (role: string) => role === 'admin' || role === 'moderator',
   SESSION_COOKIE_NAME: 'keimelion_session',
 }))
 

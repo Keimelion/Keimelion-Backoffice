@@ -17,8 +17,7 @@ vi.mock('sonner', () => ({
 interface FreshModules {
   createQueryClient: typeof QueryClientModule.createQueryClient
   ApiRequestError: typeof ClientModule.ApiRequestError
-  setAccessToken: typeof AuthStorageModule.setAccessToken
-  setStoredUser: typeof AuthStorageModule.setStoredUser
+  saveSession: typeof AuthStorageModule.saveSession
   toast: typeof SonnerModule.toast
 }
 
@@ -31,8 +30,7 @@ async function freshQueryClientModule(): Promise<FreshModules> {
   return {
     createQueryClient: queryClientModule.createQueryClient,
     ApiRequestError: clientModule.ApiRequestError,
-    setAccessToken: storageModule.setAccessToken,
-    setStoredUser: storageModule.setStoredUser,
+    saveSession: storageModule.saveSession,
     toast: sonnerModule.toast,
   }
 }
@@ -106,11 +104,10 @@ describe('QueryClient MutationCache onError', () => {
   })
 
   it('redirects to /login on 401 and clears storage + cache', async () => {
-    const { createQueryClient, ApiRequestError, setAccessToken, setStoredUser } =
+    const { createQueryClient, ApiRequestError, saveSession } =
       await freshQueryClientModule()
     const client = createQueryClient()
-    setAccessToken('doomed-token')
-    setStoredUser(TEST_USER)
+    saveSession('doomed-token', TEST_USER)
     client.setQueryData(['some', 'cached', 'data'], { value: 42 })
 
     await client

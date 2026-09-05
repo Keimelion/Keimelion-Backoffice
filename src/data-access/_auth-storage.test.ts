@@ -2,16 +2,16 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { ApiUser } from '@/data-access/auth/auth.api'
 import {
   SESSION_COOKIE_NAME,
-  clearAccessToken,
-  clearStoredUser,
+  clearSession,
   getAccessToken,
   getStoredUser,
-  setAccessToken,
-  setStoredUser,
+  isAllowedBackofficeRole,
+  saveSession,
   syncSessionCookie,
 } from '@/data-access/_auth-storage'
 
 const STORED_USER_KEY = 'keimelion_user'
+const ACCESS_TOKEN_KEY = 'keimelion_access_token'
 
 function readSessionCookie(): string | null {
   const match = document.cookie.split('; ').find((entry) => entry.startsWith(`${SESSION_COOKIE_NAME}=`))
@@ -24,7 +24,7 @@ function forceClearSessionCookie(): void {
   document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`
 }
 
-const TEST_USER: ApiUser = {
+const ADMIN_USER: ApiUser = {
   id: 'user-1',
   email: 'admin@keimelion.app',
   username: 'admin',
@@ -40,6 +40,9 @@ const TEST_USER: ApiUser = {
   updatedAt: '2024-01-01T00:00:00.000Z',
 }
 
+const MODERATOR_USER: ApiUser = { ...ADMIN_USER, role: 'moderator' as const }
+const REGULAR_USER: ApiUser = { ...ADMIN_USER, role: 'user' as const }
+
 beforeEach(() => {
   localStorage.clear()
   forceClearSessionCookie()
@@ -50,87 +53,85 @@ afterEach(() => {
   forceClearSessionCookie()
 })
 
-describe('getAccessToken / setAccessToken / clearAccessToken', () => {
-  it('returns null when no token is stored', () => {
-    expect(getAccessToken()).toBeNull()
+describe('isAllowedBackofficeRole', () => {
+  it('accepts admin', () => {
+    expect(isAllowedBackofficeRole('admin')).toBe(true)
   })
 
-  it('returns the stored token after setAccessToken', () => {
-    setAccessToken('my-token')
-    expect(getAccessToken()).toBe('my-token')
+  it('accepts moderator', () => {
+    expect(isAllowedBackofficeRole('moderator')).toBe(true)
   })
 
-  it('returns null after clearAccessToken', () => {
-    setAccessToken('my-token')
-    clearAccessToken()
-    expect(getAccessToken()).toBeNull()
+  it('rejects user', () => {
+    expect(isAllowedBackofficeRole('user')).toBe(false)
+  })
+
+  it('rejects unknown role strings', () => {
+    expect(isAllowedBackofficeRole('superadmin')).toBe(false)
+    expect(isAllowedBackofficeRole('')).toBe(false)
   })
 })
 
-describe('getStoredUser / setStoredUser / clearStoredUser', () => {
-  it('returns null when no user is stored', () => {
+describe('saveSession / clearSession', () => {
+  it('writes token, user, and role cookie atomically', () => {
+    saveSession('tok-abc', ADMIN_USER)
+    expect(getAccessToken()).toBe('tok-abc')
+    expect(getStoredUser()).toEqual(ADMIN_USER)
+    expect(readSessionCookie()).toBe('admin')
+  })
+
+  it('writes the moderator role in the cookie', () => {
+    saveSession('tok-mod', MODERATOR_USER)
+    expect(readSessionCookie()).toBe('moderator')
+  })
+
+  it('clears token, user, and cookie atomically', () => {
+    saveSession('tok', ADMIN_USER)
+    clearSession()
+    expect(getAccessToken()).toBeNull()
     expect(getStoredUser()).toBeNull()
+    expect(readSessionCookie()).toBeNull()
   })
+})
 
-  it('roundtrip: stored user is returned correctly', () => {
-    setStoredUser(TEST_USER)
-    const retrieved = getStoredUser()
-    expect(retrieved).toEqual(TEST_USER)
-  })
-
-  it('returns null after clearStoredUser', () => {
-    setStoredUser(TEST_USER)
-    clearStoredUser()
+describe('getStoredUser', () => {
+  it('returns null when no user is stored', () => {
     expect(getStoredUser()).toBeNull()
   })
 
   it('returns null and clears key when stored JSON is tampered', () => {
     localStorage.setItem(STORED_USER_KEY, '{not valid json at all!!!}')
-    const retrieved = getStoredUser()
-    expect(retrieved).toBeNull()
+    expect(getStoredUser()).toBeNull()
     expect(localStorage.getItem(STORED_USER_KEY)).toBeNull()
   })
 
   it('returns null and clears key when stored JSON has wrong shape', () => {
     localStorage.setItem(STORED_USER_KEY, JSON.stringify({ foo: 'bar' }))
-    const retrieved = getStoredUser()
-    expect(retrieved).toBeNull()
+    expect(getStoredUser()).toBeNull()
     expect(localStorage.getItem(STORED_USER_KEY)).toBeNull()
   })
 })
 
-describe('ACCESS_TOKEN_KEY isolation', () => {
-  it('token and user keys are independent', () => {
-    setAccessToken('tok')
-    setStoredUser(TEST_USER)
-    clearAccessToken()
-    expect(getAccessToken()).toBeNull()
-    expect(getStoredUser()).toEqual(TEST_USER)
-  })
-})
-
-describe('session cookie', () => {
-  it('is set when setAccessToken is called', () => {
-    setAccessToken('tok')
-    expect(readSessionCookie()).toBe('1')
-  })
-
-  it('is cleared when clearAccessToken is called', () => {
-    setAccessToken('tok')
-    clearAccessToken()
-    expect(readSessionCookie()).toBeNull()
-  })
-
-  it('syncSessionCookie writes the flag when a token exists in localStorage', () => {
-    localStorage.setItem('keimelion_access_token', 'existing-tok')
+describe('syncSessionCookie', () => {
+  it('writes the role when a valid stored user exists', () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, 'tok')
+    localStorage.setItem(STORED_USER_KEY, JSON.stringify(ADMIN_USER))
     expect(readSessionCookie()).toBeNull()
     syncSessionCookie()
-    expect(readSessionCookie()).toBe('1')
+    expect(readSessionCookie()).toBe('admin')
   })
 
-  it('syncSessionCookie clears the flag when no token exists', () => {
-    document.cookie = `${SESSION_COOKIE_NAME}=1; path=/; max-age=3600`
-    expect(readSessionCookie()).toBe('1')
+  it('clears the cookie when no user is stored', () => {
+    document.cookie = `${SESSION_COOKIE_NAME}=admin; path=/; max-age=3600`
+    expect(readSessionCookie()).toBe('admin')
+    syncSessionCookie()
+    expect(readSessionCookie()).toBeNull()
+  })
+
+  it('clears the cookie when the stored user has a disallowed role', () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, 'tok')
+    localStorage.setItem(STORED_USER_KEY, JSON.stringify(REGULAR_USER))
+    document.cookie = `${SESSION_COOKIE_NAME}=admin; path=/; max-age=3600`
     syncSessionCookie()
     expect(readSessionCookie()).toBeNull()
   })

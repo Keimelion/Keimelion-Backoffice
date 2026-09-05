@@ -3,9 +3,8 @@
 import { useMutation } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { UserRoles } from '@keimelion/api/shared/enums/user-role'
 import { loginApi } from '@/data-access/auth/auth.api'
-import { setAccessToken, setStoredUser } from '@/data-access/_auth-storage'
+import { isAllowedBackofficeRole, saveSession } from '@/data-access/_auth-storage'
 import { loginResponseSchema } from '@/data-access/auth/auth.schemas'
 import type { LoginInput } from '@/data-access/auth/auth.schemas'
 import { queryClient } from '@/lib/query-client'
@@ -28,12 +27,11 @@ export function useLogin(): UseMutationResult<null, Error, LoginInput> {
 
       const { accessToken, user } = parsed.data
 
-      if (user.role === UserRoles.USER) {
+      if (!isAllowedBackofficeRole(user.role)) {
         throw new Error(UNAUTHORIZED_ROLE_MESSAGE)
       }
 
-      setAccessToken(accessToken)
-      setStoredUser(user)
+      saveSession(accessToken, user)
       queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user)
       router.push('/')
       return null
