@@ -12,6 +12,32 @@ Implement and validate the ticket: **$ARGUMENTS**
 
 **Language**: all output must be in English — code, commit messages, PR titles and descriptions, Notion updates, GitHub comments.
 
+## Commit + PR title convention
+
+Every commit that ships the ticket AND the PR title must follow this pattern — same rule as the API repo, adapted to the Backoffice (which has routes and features instead of endpoints):
+
+```
+<type>: <identifier> <short description> (<TICKET-ID>)
+```
+
+- `<type>` — Conventional Commits: `feat` | `fix` | `refactor` | `chore` | `docs` | `perf` | `test` | `style` | `build` | `ci`. No scope in parens.
+- `<identifier>` — the primary thing the ticket touches. Pick the most specific form that fits:
+  - **Route path** for page work: `/login`, `/users`, `/lists`
+  - **Component or feature name** when no dedicated route: `LoginForm`, `Sidebar`, `RequireAuth`
+  - **Folder or module path** for infra/refactor work: `_client`, `_auth-storage`, `middleware`, `styles/tokens`
+- `<short description>` — plain sentence, no period, no filler ("wire", "add", "fix", "extract"…)
+- `<TICKET-ID>` — always at the end in parens: `(KEI-N)`
+
+Examples:
+- `feat: /login wire login form + client-side auth guard (KEI-41)`
+- `feat: /users list all Keimelion accounts (KEI-42)`
+- `fix: /products broken filter on category (KEI-43)`
+- `refactor: _auth-storage consolidate saveSession + role cookie (KEI-44)`
+- `chore: styles/tokens drop unused brand colors (KEI-45)`
+
+Follow-up / intra-branch commits (fixing review feedback, DevOps fixes, etc.) also follow the pattern; keep the identifier consistent with the parent PR when possible:
+- `fix: /login clear password field on error (KEI-41)`
+
 **Valid Notion statuses** (exact values, case-sensitive):
 `Todo` | `In Progress` | `In Review` | `Done` | `Validated`
 
@@ -79,7 +105,7 @@ Dev agent tasks:
 - Implement in order: `data-access` → hooks → components → page wiring
 - Run `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build` — all must be clean
 - Smoke-test manually in the browser (start `npm run dev`, walk the feature, kill the server)
-- Commit and push the branch, then create a PR targeting `dev` with `gh pr create --base dev`
+- Commit and push the branch, then create a PR targeting `dev` with `gh pr create --base dev`. Commit messages and the PR title must follow the **Commit + PR title convention** documented at the top of this skill.
 - Update ticket status → `In Review`, update the **"PR URL"** field, leave a comment with the PR URL and all files created/modified
 
 **Capture** (concise — bullet points only): branch name, PR URL, files created/modified, new shadcn primitives added (if any), new dependencies (if any).
@@ -105,7 +131,7 @@ Lead Dev agent tasks:
 
 **If APPROVED** → leave status at `In Review`, leave a comment "Lead Dev approved — ready for DevOps review", continue to Step 3
 
-**If CHANGES REQUIRED** → fix the blocking issues directly, re-run checks, commit and push (`git add <files> && git commit -m "fix: address lead dev review (KEI-X)" && git push`), leave status at `In Review`, leave a comment "Lead Dev approved (after fixes) — ready for DevOps review" listing what was changed, continue to Step 3
+**If CHANGES REQUIRED** → fix the blocking issues directly, re-run checks, commit and push. The commit message must follow the **Commit + PR title convention** — reuse the same identifier as the parent PR, e.g. `fix: /login clear password field on error (KEI-41)`. Then leave status at `In Review`, leave a comment "Lead Dev approved (after fixes) — ready for DevOps review" listing what was changed, continue to Step 3
 
 **Capture** (concise — bullet points only): verdict, files modified (if any), key issues found/fixed.
 
@@ -128,7 +154,7 @@ DevOps agent tasks:
 
 **If APPROVED** → leave status at `In Review`, leave a comment "DevOps approved — ready for testing", continue to Step 4
 
-**If ISSUES FOUND** → fix the issues directly, re-run checks, commit and push (`git add <files> && git commit -m "fix: address devops review (KEI-X)" && git push`), leave status at `In Review`, leave a comment "DevOps approved (after fixes) — ready for testing" listing what was changed, continue to Step 4
+**If ISSUES FOUND** → fix the issues directly, re-run checks, commit and push. Commit message follows the **Commit + PR title convention** with the parent PR's identifier, e.g. `fix: _client harden 401 handling (KEI-41)`. Then leave status at `In Review`, leave a comment "DevOps approved (after fixes) — ready for testing" listing what was changed, continue to Step 4
 
 **Capture** (concise — bullet points only): verdict, files modified (if any), key issues found/fixed.
 
@@ -151,7 +177,7 @@ Tester agent tasks:
 
 **If VALIDATED** → update status to `Validated`
 
-**If BUGS FOUND** → fix the bugs directly, re-run browser walk-through + static checks, commit and push (`git add <files> && git commit -m "fix: address tester bugs (KEI-X)" && git push`), status → `Validated`, leave a comment with the test report listing what was fixed
+**If BUGS FOUND** → fix the bugs directly, re-run browser walk-through + static checks, commit and push. Commit message follows the **Commit + PR title convention** with the parent PR's identifier, e.g. `fix: /login toast keeps showing after retry (KEI-41)`. Then status → `Validated`, leave a comment with the test report listing what was fixed
 
 ---
 

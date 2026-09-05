@@ -144,11 +144,11 @@ Dev agent tasks — for each comment:
 
 ## Step 3 — Commit and push (YOU do this, after both agents complete)
 
-Once all changes are applied, commit and push from the main context:
+Once all changes are applied, commit and push from the main context. The commit message follows the `<type>: <identifier> <description> (KEI-N)` convention documented in the `build-feature` skill — reuse the identifier of the parent PR (route path, component, or module):
 
 ```bash
 git add <all modified files — explicit, never git add .>
-git commit -m "fix: apply PR review feedback (KEI-X)"  # replace KEI-X with the actual ticket ID from Step 0
+git commit -m "fix: <identifier> apply PR review feedback (KEI-X)"  # e.g. "fix: /login apply PR review feedback (KEI-41)"
 git push
 ```
 
