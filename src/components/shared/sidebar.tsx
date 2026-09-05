@@ -2,10 +2,23 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LogOut } from 'lucide-react'
-import { dashboardNav } from '@/types/navigation'
+import { LayoutDashboard, ListTodo, LogOut, Package, Users } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLogout } from '@/features/auth/hooks/use-logout'
+
+interface NavItem {
+  label: string
+  href: string
+  icon: LucideIcon
+}
+
+const NAV_ITEMS: readonly NavItem[] = [
+  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { label: 'Lists', href: '/lists', icon: ListTodo },
+  { label: 'Products', href: '/products', icon: Package },
+  { label: 'Users', href: '/users', icon: Users },
+]
 
 const BRAND_INITIAL = 'K'
 const BRAND_NAME = 'Keimelion'
@@ -31,7 +44,7 @@ export function Sidebar(): React.JSX.Element {
         Menu
       </div>
       <nav className="flex flex-col gap-1">
-        {dashboardNav.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
           return (

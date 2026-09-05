@@ -99,8 +99,7 @@ src/
 │   ├── query-client.ts     # TanStack Query client configuration + global mutation error toast
 │   └── utils.ts            # cn() — class-merge helper for shadcn components
 ├── middleware.ts           # Edge middleware entry (Next.js requires this path); composes helpers from middlewares/
-├── middlewares/            # Individual middlewares (require-session.ts, …) — each returns NextResponse | null
-└── types/                  # Local-only types (navigation, UI state…)
+└── middlewares/            # Individual middlewares (require-session.ts, …) — each returns NextResponse | null
 ```
 
 ### data-access/ vs features/
