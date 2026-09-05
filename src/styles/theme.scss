@@ -6,11 +6,8 @@
 @use 'tokens' as *;
 
 :root {
-  --brand-sky: #{$brand-sky};
-  --brand-teal: #{$brand-teal};
   --brand-navy: #{$brand-navy};
   --brand-amber: #{$brand-amber};
-  --brand-tiger: #{$brand-tiger};
 
   @each $name, $value in $tokens-light {
     --#{$name}: #{$value};

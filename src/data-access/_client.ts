@@ -23,9 +23,7 @@ function buildAuthHeaders(): Record<string, string> {
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const authHeaders = buildAuthHeaders()
-  const existingHeaders = options?.headers instanceof Headers
-    ? Object.fromEntries(options.headers.entries())
-    : (options?.headers as Record<string, string> | undefined) ?? {}
+  const existingHeaders = (options?.headers as Record<string, string> | undefined) ?? {}
 
   let response: Response
   try {

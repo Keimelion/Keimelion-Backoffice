@@ -12,13 +12,13 @@
 
 // ----------------------------------------------------------------------------
 // Brand palette — Refreshing Summer Fun
+// (Only amber + navy are used today, exposed as --primary / --primary-foreground.
+// The full 5-color palette lives in the design system doc — re-add here as
+// $brand-* and expose in theme.scss / @theme inline when needed.)
 // ----------------------------------------------------------------------------
 
-$brand-sky: #8ecae6;
-$brand-teal: #219ebc;
 $brand-navy: #023047;
 $brand-amber: #ffb703;
-$brand-tiger: #fb8500;
 
 // ----------------------------------------------------------------------------
 // Notification variant colors (used by toast, alerts, badges…)

@@ -63,13 +63,12 @@ Design tokens live in **`src/styles/_tokens.scss`** as the single source of trut
 
 | Token | Hex | Usage |
 |---|---|---|
-| `brand-sky` | `#8ecae6` | Light accent |
-| `brand-teal` | `#219ebc` | Secondary accent |
 | `brand-navy` | `#023047` | Deep accent — used as `--primary-foreground` |
 | `brand-amber` | `#ffb703` | **Primary** — buttons, active states, focus rings |
-| `brand-tiger` | `#fb8500` | Warm accent |
 
-Use semantic tokens for interactive elements — `bg-primary`, `text-primary-foreground`, `border-border`, `bg-destructive`, etc. — and the raw brand tokens (`bg-brand-teal`, `text-brand-navy`…) for one-off accents.
+The full 5-color palette (adding `brand-sky #8ecae6`, `brand-teal #219ebc`, `brand-tiger #fb8500`) is available in the design system doc — re-expose as CSS vars + `@theme inline` when a use case appears.
+
+Use semantic tokens for interactive elements — `bg-primary`, `text-primary-foreground`, `border-border`, `bg-destructive`, etc. — and the raw brand tokens (`bg-brand-amber`, `text-brand-navy`) for one-off accents.
 
 ### Dark mode
 

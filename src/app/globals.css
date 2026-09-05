@@ -4,11 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-brand-sky: var(--brand-sky);
-  --color-brand-teal: var(--brand-teal);
   --color-brand-navy: var(--brand-navy);
   --color-brand-amber: var(--brand-amber);
-  --color-brand-tiger: var(--brand-tiger);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

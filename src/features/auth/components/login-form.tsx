@@ -1,29 +1,17 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getAccessToken } from '@/data-access/_auth-storage'
 import { loginInputSchema } from '@/features/auth/login-schema'
 import { useLogin } from '@/features/auth/hooks/use-login'
 
-const BRAND_INITIAL = 'K'
-const VALIDATION_ERROR_MESSAGE = 'Please enter a valid email and password.'
-
 export function LoginForm(): React.JSX.Element {
-  const router = useRouter()
   const login = useLogin()
   const passwordRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (getAccessToken()) {
-      router.replace('/')
-    }
-  }, [router])
 
   useEffect(() => {
     if (login.isError && passwordRef.current) {
@@ -38,7 +26,7 @@ export function LoginForm(): React.JSX.Element {
     const parsed = loginInputSchema.safeParse(Object.fromEntries(formData))
 
     if (!parsed.success) {
-      toast.error(VALIDATION_ERROR_MESSAGE)
+      toast.error('Please enter a valid email and password.')
       return
     }
 
@@ -51,7 +39,7 @@ export function LoginForm(): React.JSX.Element {
     <Card className="w-full max-w-md border-border shadow-sm">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <span className="text-xl font-bold">{BRAND_INITIAL}</span>
+          <span className="text-xl font-bold">K</span>
         </div>
         <CardTitle className="text-2xl">Sign in</CardTitle>
         <CardDescription>Access the Keimelion Backoffice</CardDescription>
