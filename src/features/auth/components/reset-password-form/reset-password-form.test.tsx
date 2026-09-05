@@ -15,6 +15,15 @@ vi.mock('@/data-access/auth/auth.api', () => ({
   resetPasswordApi: vi.fn(),
 }))
 
+vi.mock('@/data-access/_auth-storage', () => ({
+  clearSession: vi.fn(),
+}))
+
+vi.mock('@/lib/query-client', async () => {
+  const { QueryClient } = await import('@tanstack/react-query')
+  return { queryClient: new QueryClient() }
+})
+
 vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
@@ -26,6 +35,7 @@ vi.mock('sonner', () => ({
 
 import { toast } from 'sonner'
 import { resetPasswordApi } from '@/data-access/auth/auth.api'
+import { clearSession } from '@/data-access/_auth-storage'
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
 
 function renderResetPasswordForm(): void {
@@ -98,6 +108,20 @@ describe('ResetPasswordForm', () => {
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/login?reset=success')
+    })
+  })
+
+  it('clears the local session on success so a stale token cannot outlive the reset', async () => {
+    vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
+
+    renderResetPasswordForm()
+
+    await userEvent.type(screen.getByLabelText('New password'), 'newpassword123')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'newpassword123')
+    await userEvent.click(screen.getByRole('button', { name: /update password/i }))
+
+    await waitFor(() => {
+      expect(clearSession).toHaveBeenCalled()
     })
   })
 })
