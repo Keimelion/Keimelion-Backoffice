@@ -19,10 +19,6 @@ export const forgotPasswordInputSchema = z.object({
   email: z.email().transform((value) => value.trim().toLowerCase()),
 })
 
-export const forgotPasswordResponseSchema = z.object({
-  message: z.string(),
-})
-
 export const resetPasswordInputSchema = z
   .object({
     token: z.string().min(1),
@@ -33,10 +29,6 @@ export const resetPasswordInputSchema = z
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   })
-
-export const resetPasswordResponseSchema = z.object({
-  message: z.string(),
-})
 
 export type LoginInput = z.infer<typeof loginInputSchema>
 export type LoginResponseParsed = z.infer<typeof loginResponseSchema>

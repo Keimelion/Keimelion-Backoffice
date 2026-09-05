@@ -12,6 +12,7 @@ export function useResetPassword(): UseMutationResult<null, Error, ResetPassword
   const router = useRouter()
 
   return useMutation<null, Error, ResetPasswordApiInput>({
+    meta: { silent: true },
     mutationFn: async (input: ResetPasswordApiInput) => {
       await resetPasswordApi(input)
       return null

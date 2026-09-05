@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import { useResetPassword } from '@/features/auth/hooks/use-reset-password'
 import { ApiRequestError } from '@/data-access/_client'
 
 const INVALID_TOKEN_ERROR_CODE = 'INVALID_RESET_TOKEN'
+const FORGOT_PASSWORD_PATH = '/forgot-password'
 
 export function ResetPasswordForm(): React.JSX.Element {
   const searchParams = useSearchParams()
@@ -29,6 +31,14 @@ export function ResetPasswordForm(): React.JSX.Element {
             This reset link is missing the required token. Please request a new password reset.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <Link
+            href={FORGOT_PASSWORD_PATH}
+            className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Request a new reset link
+          </Link>
+        </CardContent>
       </Card>
     )
   }
@@ -38,9 +48,29 @@ export function ResetPasswordForm(): React.JSX.Element {
       resetPassword.error instanceof ApiRequestError &&
       resetPassword.error.code === INVALID_TOKEN_ERROR_CODE
 
-    const errorMessage = isInvalidToken
-      ? 'This reset link has expired or has already been used. Please request a new one.'
-      : 'An unexpected error occurred. Please try again.'
+    if (isInvalidToken) {
+      return (
+        <Card className="w-full max-w-md border-border shadow-sm">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <span className="text-xl font-bold">K</span>
+            </div>
+            <CardTitle className="text-2xl">Reset link no longer valid</CardTitle>
+            <CardDescription>
+              This reset link has expired or has already been used. Please request a new one.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link
+              href={FORGOT_PASSWORD_PATH}
+              className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Request a new reset link
+            </Link>
+          </CardContent>
+        </Card>
+      )
+    }
 
     return (
       <Card className="w-full max-w-md border-border shadow-sm">
@@ -49,8 +79,24 @@ export function ResetPasswordForm(): React.JSX.Element {
             <span className="text-xl font-bold">K</span>
           </div>
           <CardTitle className="text-2xl">Reset failed</CardTitle>
-          <CardDescription>{errorMessage}</CardDescription>
+          <CardDescription>An unexpected error occurred. Please try again.</CardDescription>
         </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <Button
+            type="button"
+            onClick={() => {
+              resetPassword.reset()
+            }}
+          >
+            Try again
+          </Button>
+          <Link
+            href={FORGOT_PASSWORD_PATH}
+            className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Request a new reset link
+          </Link>
+        </CardContent>
       </Card>
     )
   }

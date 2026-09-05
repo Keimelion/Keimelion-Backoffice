@@ -4,16 +4,16 @@ import { SESSION_COOKIE_NAME, isAllowedBackofficeRole } from '@/data-access/_aut
 
 const LOGIN_PATH = '/login'
 const DASHBOARD_HOME = '/'
-const PUBLIC_PATHS = [LOGIN_PATH, '/forgot-password', '/reset-password']
+const PUBLIC_PATHS = new Set<string>([LOGIN_PATH, '/forgot-password', '/reset-password'])
 
 export function requireSession(request: NextRequest): NextResponse | null {
   const { pathname } = request.nextUrl
   const cookieValue = request.cookies.get(SESSION_COOKIE_NAME)?.value
   const hasValidSession = cookieValue !== undefined && isAllowedBackofficeRole(cookieValue)
-  const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path))
+  const isPublicPath = PUBLIC_PATHS.has(pathname)
 
   if (isPublicPath) {
-    if (hasValidSession && pathname.startsWith(LOGIN_PATH)) {
+    if (hasValidSession && pathname === LOGIN_PATH) {
       return NextResponse.redirect(new URL(DASHBOARD_HOME, request.url))
     }
     return null
