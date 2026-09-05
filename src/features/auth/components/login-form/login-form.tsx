@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { loginInputSchema } from '@/features/auth/login-schema'
+import { loginInputSchema } from '@/data-access/auth/auth.schemas'
 import { useLogin } from '@/features/auth/hooks/use-login'
 
 export function LoginForm(): React.JSX.Element {

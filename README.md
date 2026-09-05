@@ -88,7 +88,9 @@ src/
 │   └── shared/             # sidebar, theme-toggle, user-menu…
 ├── data-access/            # All API calls — mirrors db/ in the API
 │   ├── _client.ts          # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete) shared by every resource
-│   ├── auth/               # loginApi, logoutApi, registerApi
+│   ├── _auth-storage.ts    # Token + user + session-cookie storage
+│   ├── _schemas/           # Cross-resource Zod schemas (user.ts, …)
+│   ├── auth/               # auth.api.ts + auth.schemas.ts (loginInputSchema, loginResponseSchema, …)
 │   └── users/              # fetchUsers, fetchUser, updateUser, deleteUser
 ├── features/               # Feature modules (hooks + feature-specific components)
 │   ├── auth/

@@ -17,19 +17,15 @@ vi.mock('@/lib/query-client', async () => {
   return { queryClient: new QueryClient() }
 })
 
-import type * as AuthStorage from '@/data-access/_auth-storage'
-
-vi.mock('@/data-access/_auth-storage', async () => {
-  const actual = await vi.importActual<typeof AuthStorage>('@/data-access/_auth-storage')
-  return {
-    ...actual,
-    getAccessToken: vi.fn(() => null),
-    setAccessToken: vi.fn(),
-    setStoredUser: vi.fn(),
-    clearAccessToken: vi.fn(),
-    getStoredUser: vi.fn(() => null),
-  }
-})
+vi.mock('@/data-access/_auth-storage', () => ({
+  getAccessToken: vi.fn(() => null),
+  setAccessToken: vi.fn(),
+  setStoredUser: vi.fn(),
+  clearAccessToken: vi.fn(),
+  getStoredUser: vi.fn(() => null),
+  syncSessionCookie: vi.fn(),
+  SESSION_COOKIE_NAME: 'keimelion_session',
+}))
 
 vi.mock('sonner', () => ({
   toast: {

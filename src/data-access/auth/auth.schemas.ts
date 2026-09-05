@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { apiUserSchema } from '@/data-access/_auth-storage'
+import { apiUserSchema } from '@/data-access/_schemas/user'
 
 export const loginInputSchema = z.object({
   email: z.email().transform((value) => value.trim().toLowerCase()),
