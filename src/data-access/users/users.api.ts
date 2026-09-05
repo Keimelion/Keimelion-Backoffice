@@ -1,6 +1,6 @@
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import type { ApiUser } from '@/data-access/auth/auth.api'
-import { apiGet, apiPatch, apiDelete } from '@/lib/api-client'
+import { apiGet, apiPatch, apiDelete } from '@/data-access/_client'
 
 export interface ListUsersParams {
   page?: number

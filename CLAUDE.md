@@ -1,5 +1,20 @@
 # Keimelion Backoffice — Claude context
 
+## Language — English only
+
+**Everything in this repo is written in English.** No French, no other language. This applies to every agent, subagent, and the main Claude — no exceptions.
+
+- **UI copy** — labels, buttons, headings, subtitles, toast messages, alt text, `sr-only` text, placeholders, `<title>`, meta descriptions, `<html lang="en">`
+- **Code** — identifiers, string constants, enum values, error messages, exceptions
+- **Comments and JSDoc** (rare per standards — but when present, English only)
+- **Git** — branch names, commit messages, PR titles, PR descriptions
+- **Notion tickets when written by an agent** — description, acceptance criteria, technical notes, comments
+- **Tests** — describe/it titles, assertion messages, fixture data
+
+If you catch French in a file you are editing (`Déconnexion`, `Tableau de bord`, `Utilisateurs`, comments in French, etc.), translate it as part of your change — do not leave it.
+
+The user is French-speaking and may write to you in French — respond in French in chat, but every artifact committed to the repo stays in English.
+
 ## Project
 
 Backoffice admin for Keimelion, a collaborative wishlist app. Built with Next.js (App Router) and TypeScript, consuming the Keimelion REST API.
@@ -36,6 +51,7 @@ Summary of rules that matter most in this codebase:
 - **`React.JSX.Element` return type** on all components
 - **Props as interface** — `interface ComponentProps { ... }`, not inline type or `type`
 - **One component per file** — file name matches component name in kebab-case (`user-form.tsx` exports `UserForm`)
+- **Folder-per-component when 2+ files** — if a component has more than one file (a `.tsx` plus `.test.tsx`, `.scss`, `.stories.tsx`…), wrap them in a folder named after the component and add an `index.ts` that re-exports so imports stay short. Example: `components/ui/input/{input.tsx, input.scss, index.ts}` — imported as `@/components/ui/input`. Single-file components stay flat.
 - **Hooks prefix** — all custom hooks start with `use` (`useUsers`, `useLogin`)
 
 ## Project structure
@@ -48,9 +64,13 @@ src/
   components/
     ui/                 # shadcn/ui generated components — do not edit manually
     shared/             # Reusable app-level components (sidebar, page-header, data-table…)
-  data-access/          # All API calls — mirrors db/entities/ in the API
+  data-access/          # All API calls — mirrors db/ in the API
+    _client.ts          # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete) — the shared HTTP client all resource files use
+    _auth-storage.ts    # Token + user + session-cookie storage — shared infra used by the client, middleware, and hooks
+    _schemas/           # Cross-resource Zod schemas (user.ts…) — used by multiple auth.schemas / storage
     auth/
       auth.api.ts       # loginApi(), logoutApi(), registerApi()
+      auth.schemas.ts   # Zod schemas for the auth endpoints (loginInputSchema, loginResponseSchema…)
     users/
       users.api.ts      # fetchUsers(), fetchUser(), updateUser(), deleteUser()
   features/             # Feature logic: TanStack Query hooks + feature-specific components
@@ -61,9 +81,10 @@ src/
       components/       # UsersTable, UserForm, etc.
       hooks/            # useUsers, useUser, useUpdateUser, useDeleteUser
   lib/
-    api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
-    query-client.ts     # TanStack Query client configuration
-  types/                # Local-only types (nav items, UI state…)
+    query-client.ts     # TanStack Query client configuration + global mutation error toast
+  middleware.ts         # Edge middleware entry — Next.js requires this exact path. Keep thin: composes helpers from middlewares/
+  middlewares/          # Individual middleware helpers, each returns NextResponse | null (null = pass through)
+    require-session.ts  # Gates dashboard routes on the session cookie
 ```
 
 ### data-access/ layer
@@ -71,7 +92,10 @@ src/
 `data-access/` is the direct equivalent of `db/entities/` in the API:
 - Each file exports plain async functions that call the API — no TanStack Query, no hooks
 - Functions return the raw API response type (`Promise<PaginatedResponse<ApiUser>>`, etc.)
-- All API call logic lives here; features never call `fetch` or `api-client` directly
+- All API call logic lives here; features never call `fetch` or `_client` directly
+- **Schemas colocated**: `<resource>.schemas.ts` next to `<resource>.api.ts` for the endpoint I/O Zod schemas (input + response)
+- **Shared schemas**: reused across resources go in `data-access/_schemas/` (e.g. `_schemas/user.ts` — used by `auth.schemas.ts`, `_auth-storage.ts`, and any future admin endpoint)
+- **`_` prefix** on files/dirs signals shared infra (not a resource): `_client.ts`, `_auth-storage.ts`, `_schemas/`
 
 ### features/ layer
 

@@ -57,19 +57,18 @@ npx shadcn add <component-name>
 
 ## Design system
 
-Design tokens live in `src/app/globals.css` as Tailwind v4 `@theme` variables, with `.dark` overrides for dark mode.
+Design tokens live in **`src/styles/_tokens.scss`** as the single source of truth — brand palette, neutral scale (stone), semantic maps for light + dark modes, and notification variant colors. `src/styles/theme.scss` reads those maps and emits `:root {}` + `.dark {}` CSS custom properties, which Tailwind consumes via `@theme inline` in `src/app/globals.css`. Component SCSS files (`sonner.scss`, etc.) `@use` the partial to reference the same SCSS values (e.g. `$variants` map for toast colors) — one place to change a color, everything downstream stays in sync.
 
 ### Brand palette (Refreshing Summer Fun)
 
 | Token | Hex | Usage |
 |---|---|---|
-| `brand-sky` | `#8ecae6` | Light accent |
-| `brand-teal` | `#219ebc` | Secondary accent |
 | `brand-navy` | `#023047` | Deep accent — used as `--primary-foreground` |
 | `brand-amber` | `#ffb703` | **Primary** — buttons, active states, focus rings |
-| `brand-tiger` | `#fb8500` | Warm accent |
 
-Use semantic tokens for interactive elements — `bg-primary`, `text-primary-foreground`, `border-border`, `bg-destructive`, etc. — and the raw brand tokens (`bg-brand-teal`, `text-brand-navy`…) for one-off accents.
+The full 5-color palette (adding `brand-sky #8ecae6`, `brand-teal #219ebc`, `brand-tiger #fb8500`) is available in the design system doc — re-expose as CSS vars + `@theme inline` when a use case appears.
+
+Use semantic tokens for interactive elements — `bg-primary`, `text-primary-foreground`, `border-border`, `bg-destructive`, etc. — and the raw brand tokens (`bg-brand-amber`, `text-brand-navy`) for one-off accents.
 
 ### Dark mode
 
@@ -87,17 +86,20 @@ src/
 ├── components/
 │   ├── ui/                 # shadcn/ui generated components (do not edit)
 │   └── shared/             # sidebar, theme-toggle, user-menu…
-├── data-access/            # All API calls — one folder per resource
-│   ├── auth/               # loginApi, logoutApi, registerApi
+├── data-access/            # All API calls — mirrors db/ in the API
+│   ├── _client.ts          # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete) shared by every resource
+│   ├── _auth-storage.ts    # Token + user + session-cookie storage
+│   ├── _schemas/           # Cross-resource Zod schemas (user.ts, …)
+│   ├── auth/               # auth.api.ts + auth.schemas.ts (loginInputSchema, loginResponseSchema, …)
 │   └── users/              # fetchUsers, fetchUser, updateUser, deleteUser
 ├── features/               # Feature modules (hooks + feature-specific components)
 │   ├── auth/
 │   └── users/
 ├── lib/
-│   ├── api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
-│   ├── query-client.ts     # TanStack Query client configuration
+│   ├── query-client.ts     # TanStack Query client configuration + global mutation error toast
 │   └── utils.ts            # cn() — class-merge helper for shadcn components
-└── types/                  # Local-only types (navigation, UI state…)
+├── middleware.ts           # Edge middleware entry (Next.js requires this path); composes helpers from middlewares/
+└── middlewares/            # Individual middlewares (require-session.ts, …) — each returns NextResponse | null
 ```
 
 ### data-access/ vs features/
