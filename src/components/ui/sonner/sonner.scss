@@ -80,6 +80,37 @@
       }
     }
   }
+
+  // Persistent variant: filled colored background, close button in white,
+  // no auto-dismiss progress bar. Signals "important, sticky" vs ephemeral.
+  &.notify-persistent {
+    &::after {
+      display: none;
+    }
+
+    [data-close-button] {
+      color: #ffffff;
+      opacity: 0.9;
+
+      &:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.18);
+      }
+    }
+
+    @each $type, $color in $variants {
+      &[data-type='#{$type}'] {
+        background: $color;
+        border-color: darken($color, 10%);
+        color: #ffffff;
+
+        [data-title],
+        [data-description] {
+          color: #ffffff;
+        }
+      }
+    }
+  }
 }
 
 @keyframes keimelion-toast-shrink {
