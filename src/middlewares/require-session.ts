@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { SESSION_COOKIE_NAME, isAllowedBackofficeRole } from '@/data-access/_auth-storage'
+import {
+  FORGOT_PASSWORD_PATH,
+  LOGIN_PATH,
+  RESET_PASSWORD_PATH,
+} from '@/data-access/auth/auth.constants'
 
-const LOGIN_PATH = '/login'
 const DASHBOARD_HOME = '/'
-const PUBLIC_PATHS = new Set<string>([LOGIN_PATH, '/forgot-password', '/reset-password'])
+const PUBLIC_PATHS = new Set<string>([LOGIN_PATH, FORGOT_PASSWORD_PATH, RESET_PASSWORD_PATH])
 
 export function requireSession(request: NextRequest): NextResponse | null {
   const { pathname } = request.nextUrl
