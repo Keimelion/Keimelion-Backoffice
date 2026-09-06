@@ -4,8 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+const mockReplace = vi.fn()
+
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
   useSearchParams: () => new URLSearchParams(),
 }))
 
@@ -55,7 +57,7 @@ describe('ForgotPasswordForm', () => {
     })
   })
 
-  it('shows a neutral success message after submission', async () => {
+  it('redirects to /login?forgot=requested on success', async () => {
     vi.mocked(forgotPasswordApi).mockResolvedValue({ message: 'ok' })
 
     renderForgotPasswordForm()
@@ -64,9 +66,8 @@ describe('ForgotPasswordForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/check your inbox/i)).toBeInTheDocument()
+      expect(mockReplace).toHaveBeenCalledWith('/login?forgot=requested')
     })
-    expect(screen.getByText(/if an account with that email exists/i)).toBeInTheDocument()
   })
 
   it('shows a toast error when the email field is empty on submit', async () => {

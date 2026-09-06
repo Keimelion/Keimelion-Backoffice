@@ -7,11 +7,12 @@ import { resetPasswordApi } from '@/data-access/auth/auth.api'
 import type { ResetPasswordApiInput } from '@/data-access/auth/auth.api'
 import { clearSession } from '@/data-access/_auth-storage'
 import { ApiRequestError } from '@/data-access/_client'
+import {
+  AUTH_ERROR_CODE,
+  FORGOT_PASSWORD_EXPIRED_LINK_URL,
+  LOGIN_RESET_SUCCESS_URL,
+} from '@/data-access/auth/auth.constants'
 import { queryClient } from '@/lib/query-client'
-
-const RESET_SUCCESS_REDIRECT = '/login?reset=success'
-const FORGOT_PASSWORD_EXPIRED_LINK = '/forgot-password?reason=expired-link'
-const INVALID_TOKEN_ERROR_CODE = 'INVALID_RESET_TOKEN'
 
 export function useResetPassword(): UseMutationResult<null, Error, ResetPasswordApiInput> {
   const router = useRouter()
@@ -30,13 +31,14 @@ export function useResetPassword(): UseMutationResult<null, Error, ResetPassword
       // is guaranteed to land on the /login banner with a clean cache.
       clearSession()
       queryClient.clear()
-      router.replace(RESET_SUCCESS_REDIRECT)
+      router.replace(LOGIN_RESET_SUCCESS_URL)
     },
     onError: (error) => {
       const isInvalidToken =
-        error instanceof ApiRequestError && error.code === INVALID_TOKEN_ERROR_CODE
+        error instanceof ApiRequestError &&
+        error.code === AUTH_ERROR_CODE.INVALID_RESET_TOKEN
       if (isInvalidToken) {
-        router.replace(FORGOT_PASSWORD_EXPIRED_LINK)
+        router.replace(FORGOT_PASSWORD_EXPIRED_LINK_URL)
       }
     },
   })

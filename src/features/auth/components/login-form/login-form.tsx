@@ -8,28 +8,38 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { loginInputSchema } from '@/data-access/auth/auth.schemas'
+import {
+  LOGIN_NOTICE_PARAM,
+  LOGIN_NOTICE_VALUE,
+} from '@/data-access/auth/auth.constants'
 import { useLogin } from '@/features/auth/hooks/use-login'
+import { useOnMount } from '@/lib/hooks/use-on-mount'
 import { notify } from '@/lib/notify'
 
-const RESET_SUCCESS_PARAM = 'reset'
-const RESET_SUCCESS_VALUE = 'success'
-const PASSWORD_RESET_TOAST_ID = 'password-reset-success'
+const RESET_SUCCESS_TOAST_ID = 'login-reset-success'
+const FORGOT_REQUESTED_TOAST_ID = 'login-forgot-requested'
+
+const FORGOT_REQUESTED_MESSAGE =
+  'If an account with that email exists, you will receive a password reset email shortly.'
+const RESET_SUCCESS_MESSAGE = 'Password updated. Please sign in with your new password.'
 
 export function LoginForm(): React.JSX.Element {
   const login = useLogin()
   const passwordRef = useRef<HTMLInputElement>(null)
   const searchParams = useSearchParams()
-  const passwordResetFiredRef = useRef(false)
 
-  useEffect(() => {
-    if (passwordResetFiredRef.current) return
-    if (searchParams.get(RESET_SUCCESS_PARAM) !== RESET_SUCCESS_VALUE) return
-    passwordResetFiredRef.current = true
-    notify.success('Password updated. Please sign in with your new password.', {
-      persistent: true,
-      id: PASSWORD_RESET_TOAST_ID,
-    })
-  }, [searchParams])
+  useOnMount(() => {
+    if (searchParams.get(LOGIN_NOTICE_PARAM.RESET) === LOGIN_NOTICE_VALUE.RESET_SUCCESS) {
+      notify.success(RESET_SUCCESS_MESSAGE, { persistent: true, id: RESET_SUCCESS_TOAST_ID })
+      return
+    }
+    if (searchParams.get(LOGIN_NOTICE_PARAM.FORGOT) === LOGIN_NOTICE_VALUE.FORGOT_REQUESTED) {
+      notify.success(FORGOT_REQUESTED_MESSAGE, {
+        persistent: true,
+        id: FORGOT_REQUESTED_TOAST_ID,
+      })
+    }
+  })
 
   useEffect(() => {
     if (login.isError && passwordRef.current) {

@@ -8,6 +8,8 @@ interface NotifyOptions {
 
 const PERSISTENT_CLASS = 'notify-persistent'
 
+const persistentIds = new Set<string | number>()
+
 function buildOptions(options?: NotifyOptions): ExternalToast | undefined {
   if (!options) return undefined
   const base: ExternalToast = {}
@@ -20,16 +22,22 @@ function buildOptions(options?: NotifyOptions): ExternalToast | undefined {
 }
 
 function callToast(
-  fn: (message: string, data?: ExternalToast) => void,
+  fn: (message: string, data?: ExternalToast) => string | number,
   message: string,
   options?: NotifyOptions,
 ): void {
   const built = buildOptions(options)
-  if (built === undefined) {
-    fn(message)
-    return
+  const id = built === undefined ? fn(message) : fn(message, built)
+  if (options?.persistent === true) {
+    persistentIds.add(id)
   }
-  fn(message, built)
+}
+
+export function dismissAllPersistent(): void {
+  persistentIds.forEach((id) => {
+    toast.dismiss(id)
+  })
+  persistentIds.clear()
 }
 
 export const notify = {

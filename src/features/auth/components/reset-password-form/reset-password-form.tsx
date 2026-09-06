@@ -7,11 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { resetPasswordInputSchema } from '@/data-access/auth/auth.schemas'
+import { AUTH_ERROR_CODE } from '@/data-access/auth/auth.constants'
 import { useResetPassword } from '@/features/auth/hooks/use-reset-password'
 import { ApiRequestError } from '@/data-access/_client'
 import { notify } from '@/lib/notify'
-
-const INVALID_TOKEN_ERROR_CODE = 'INVALID_RESET_TOKEN'
 
 export function ResetPasswordForm(): React.JSX.Element {
   const searchParams = useSearchParams()
@@ -23,7 +22,7 @@ export function ResetPasswordForm(): React.JSX.Element {
   // password when they hit Retry.
   const isInvalidToken =
     resetPassword.error instanceof ApiRequestError &&
-    resetPassword.error.code === INVALID_TOKEN_ERROR_CODE
+    resetPassword.error.code === AUTH_ERROR_CODE.INVALID_RESET_TOKEN
   const showErrorDialog = resetPassword.isError && !isInvalidToken
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
