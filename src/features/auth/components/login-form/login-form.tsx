@@ -4,8 +4,8 @@ import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
+import { AuthCard } from '@/components/shared/auth-card'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { loginInputSchema } from '@/data-access/auth/auth.schemas'
@@ -43,15 +43,8 @@ export function LoginForm(): React.JSX.Element {
   const isPending = login.isPending
 
   return (
-    <Card className="w-full max-w-md border-border shadow-sm">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <span className="text-xl font-bold">K</span>
-        </div>
-        <CardTitle className="text-2xl">Sign in</CardTitle>
-        <CardDescription>Access the Keimelion Backoffice</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <AuthCard title="Sign in" description="Access the Keimelion Backoffice">
+      <div className="flex flex-col gap-4">
         {isPasswordReset && (
           <p className="rounded-md bg-green-50 px-4 py-3 text-center text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
             Password updated. Please sign in with your new password.
@@ -95,7 +88,7 @@ export function LoginForm(): React.JSX.Element {
             {isPending ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </AuthCard>
   )
 }

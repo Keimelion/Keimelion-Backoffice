@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { AuthCard } from '@/components/shared/auth-card'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { forgotPasswordInputSchema } from '@/data-access/auth/auth.schemas'
@@ -31,64 +31,47 @@ export function ForgotPasswordForm(): React.JSX.Element {
 
   if (forgotPassword.isSuccess) {
     return (
-      <Card className="w-full max-w-md border-border shadow-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <span className="text-xl font-bold">K</span>
-          </div>
-          <CardTitle className="text-2xl">Check your inbox</CardTitle>
-          <CardDescription>{NEUTRAL_SUCCESS_MESSAGE}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link
-            href="/login"
-            className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            Back to sign in
-          </Link>
-        </CardContent>
-      </Card>
+      <AuthCard title="Check your inbox" description={NEUTRAL_SUCCESS_MESSAGE}>
+        <Link
+          href="/login"
+          className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+        >
+          Back to sign in
+        </Link>
+      </AuthCard>
     )
   }
 
   const isPending = forgotPassword.isPending
 
   return (
-    <Card className="w-full max-w-md border-border shadow-sm">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <span className="text-xl font-bold">K</span>
+    <AuthCard
+      title="Forgot password?"
+      description="Enter your email and we'll send you a reset link."
+    >
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="you@keimelion.app"
+            autoComplete="email"
+            required
+            disabled={isPending}
+          />
         </div>
-        <CardTitle className="text-2xl">Forgot password?</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a reset link.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@keimelion.app"
-              autoComplete="email"
-              required
-              disabled={isPending}
-            />
-          </div>
-          <Button type="submit" className="mt-2" disabled={isPending}>
-            {isPending ? 'Sending…' : 'Send reset link'}
-          </Button>
-          <Link
-            href="/login"
-            className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            Back to sign in
-          </Link>
-        </form>
-      </CardContent>
-    </Card>
+        <Button type="submit" className="mt-2" disabled={isPending}>
+          {isPending ? 'Sending…' : 'Send reset link'}
+        </Button>
+        <Link
+          href="/login"
+          className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+        >
+          Back to sign in
+        </Link>
+      </form>
+    </AuthCard>
   )
 }
