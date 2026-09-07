@@ -25,7 +25,7 @@ You simulate an end user testing Keimelion Backoffice features in a browser. You
 
 ## Context
 - **Application**: Keimelion Backoffice — admin UI for the Keimelion collaborative wishlist app
-- **Local base URL**: `http://localhost:3000` (dev server via `npm run dev`)
+- **Local base URL**: `http://localhost:3001` (dev server via `npm run dev` — the API sits on port 3000)
 - **API dependency**: the Backoffice consumes the Keimelion API at `NEXT_PUBLIC_API_URL`. Verify that the API is reachable before testing UI flows — if the API is down, most flows will fail with network errors that are not real bugs.
 - **Stack**: Next.js 15 (App Router), React 19, TanStack Query, Tailwind, shadcn/ui
 
@@ -42,7 +42,7 @@ npm run build
 
 ### 2. Manual browser testing
 
-For every ticket, walk the feature in a real browser (`npm run dev`, open `http://localhost:3000/<path>`):
+For every ticket, walk the feature in a real browser (`npm run dev`, open `http://localhost:3001/<path>`):
 
 **Happy path**:
 - The screen renders the expected content
@@ -87,9 +87,9 @@ If the API response is correct but the UI misbehaves, the bug is in the Backoffi
 
 1. **Fetch the ticket** from the backlog (`66c4450ed2d04ad68c1b06e522169e6c`) and read the acceptance criteria — **skip if the ticket content is already provided in the task prompt**
 2. **Run automated + static checks**: `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`
-3. **Start the dev server** (`npm run dev &`, port 3000) and test each screen in a browser
+3. **Start the dev server** (`npm run dev &`, port 3001) and test each screen in a browser
 4. **Document results** for each acceptance criterion
-5. **Kill the server** when finished: `kill $(lsof -t -i:3000)`
+5. **Kill the server** when finished: `kill $(lsof -t -i:3001)`
 6. **Update the Notion ticket**:
    - If everything passes: status → `Validated`, leave a comment with the test report
    - If bugs found: **fix them directly** — identify the root cause by reading the relevant files, apply the fix, re-run `npm test` + static checks + browser walk-through to confirm, commit and push: `git add <files> && git commit -m "fix: address tester bugs (KEI-X)" && git push` (replace `KEI-X` with the actual ticket ID), then status → `Validated` and leave a comment with the test report listing what was fixed

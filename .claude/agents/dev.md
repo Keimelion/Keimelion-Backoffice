@@ -135,7 +135,7 @@ git checkout -b feat/KEI-40-users-table-page
    - `npx tsc --noEmit` must be clean
    - `npm run lint` must be clean
    - `npm run build` must succeed (catches Server/Client boundary errors that dev mode misses)
-   - **Smoke test**: start the dev server (`npm run dev &`, port 3000), open the implemented page in a browser, walk through the happy path and every acceptance criterion, then kill the server (`kill $(lsof -t -i:3000)`). The feature must render and behave correctly before you mark it `In Review`.
+   - **Smoke test**: start the dev server (`npm run dev &`, port 3001 — the API sits on 3000), open the implemented page in a browser, walk through the happy path and every acceptance criterion, then kill the server (`kill $(lsof -t -i:3001)`). The feature must render and behave correctly before you mark it `In Review`.
 7. **Commit and push**:
    - Stage all modified files: `git add <files>` (never `git add .` — be explicit)
    - Commit: `git commit -m "type: short description (KEI-X)"` — replace `KEI-X` with the actual ticket ID (e.g. `KEI-40`)
@@ -171,7 +171,7 @@ git add <files>                      # Stage specific files (never git add .)
 git commit -m "feat: desc (KEI-X)"   # Commit — conventional commits, with ticket ID
 git push -u origin <branch>          # Push and set upstream
 gh pr create --base dev ...          # Create PR targeting dev
-npm run dev                          # Start dev server (port 3000)
+npm run dev                          # Start dev server (port 3001 — the API sits on 3000)
 npm run build                        # Production build — catches Server/Client boundary errors
 npm run lint                         # ESLint
 npx tsc --noEmit                     # Type check
