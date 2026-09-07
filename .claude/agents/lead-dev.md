@@ -133,7 +133,7 @@ Read `.claude/coding-standards.md` in full and verify every rule against the mod
    npm run lint
    npm run build
    ```
-4. **Smoke test**: start the dev server (`npm run dev &`), open the modified page(s) in a browser, walk the happy path, then kill the server (`kill $(lsof -t -i:3000)`) — if the server fails to start or a page renders an error, it is a blocker
+4. **Smoke test**: start the dev server (`npm run dev &`, port 3001 — the API sits on 3000), open the modified page(s) in a browser, walk the happy path, then kill the server (`kill $(lsof -t -i:3001)`) — if the server fails to start or a page renders an error, it is a blocker
 5. **Produce a structured review report** (see format below)
 6. **Update the Notion ticket**:
    - If approved: leave status at `In Review`, fill "Review Notes" with the report, leave a comment "Lead Dev approved — ready for DevOps review"
