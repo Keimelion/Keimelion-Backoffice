@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
@@ -24,7 +24,6 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import { toast } from 'sonner'
 import { forgotPasswordApi } from '@/data-access/auth/auth.api'
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form'
 
@@ -70,16 +69,16 @@ describe('ForgotPasswordForm', () => {
     })
   })
 
-  it('shows a toast error when the email field is empty on submit', async () => {
+  it('shows an inline error and blocks submit when the email field is empty', async () => {
     renderForgotPasswordForm()
 
     const form = screen.getByRole('button', { name: /send reset link/i }).closest('form')
-    const { fireEvent } = await import('@testing-library/react')
     if (form) fireEvent.submit(form)
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Please enter a valid email address.')
+      expect(screen.getByText('Enter a valid email address.')).toBeInTheDocument()
     })
     expect(forgotPasswordApi).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /send reset link/i })).toBeDisabled()
   })
 })

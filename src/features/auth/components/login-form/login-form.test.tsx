@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
@@ -37,7 +37,6 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import { toast } from 'sonner'
 import { loginApi } from '@/data-access/auth/auth.api'
 import { LoginForm } from '@/features/auth/components/login-form'
 
@@ -95,19 +94,19 @@ describe('LoginForm', () => {
     })
   })
 
-  it('shows a toast error when validation fails on blank password', async () => {
+  it('shows an inline error and blocks submit when the password is blank', async () => {
     renderLoginForm()
 
-    const form = screen.getByRole('button', { name: /sign in/i }).closest('form')
     await userEvent.type(screen.getByLabelText('Email'), 'admin@keimelion.app')
 
-    const { fireEvent } = await import('@testing-library/react')
+    const form = screen.getByRole('button', { name: /sign in/i }).closest('form')
     if (form) fireEvent.submit(form)
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Please enter a valid email and password.')
+      expect(screen.getByText('Password is required.')).toBeInTheDocument()
     })
     expect(loginApi).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled()
   })
 
   it('clears the password field on mutation error', async () => {

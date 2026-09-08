@@ -33,7 +33,6 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import { toast } from 'sonner'
 import { resetPasswordApi } from '@/data-access/auth/auth.api'
 import { clearSession } from '@/data-access/_auth-storage'
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
@@ -71,7 +70,7 @@ describe('ResetPasswordForm', () => {
     })
   })
 
-  it('shows a toast error when passwords do not match', async () => {
+  it('shows an inline error and blocks submit when passwords do not match', async () => {
     renderResetPasswordForm()
 
     await userEvent.type(screen.getByLabelText('New password'), 'newpassword123')
@@ -79,12 +78,13 @@ describe('ResetPasswordForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /update password/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Passwords do not match')
+      expect(screen.getByText('Passwords do not match.')).toBeInTheDocument()
     })
     expect(resetPasswordApi).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled()
   })
 
-  it('shows a toast error when password is too short', async () => {
+  it('shows an inline error and blocks submit when password is too short', async () => {
     renderResetPasswordForm()
 
     await userEvent.type(screen.getByLabelText('New password'), 'short')
@@ -92,9 +92,12 @@ describe('ResetPasswordForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /update password/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalled()
+      expect(
+        screen.getByText('Password must be at least 8 characters.'),
+      ).toBeInTheDocument()
     })
     expect(resetPasswordApi).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled()
   })
 
   it('redirects to /login?reset=success on success', async () => {

@@ -1,6 +1,6 @@
 @use 'styles/tokens' as *;
 
-[data-sonner-toaster] [data-sonner-toast] {
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] {
   position: relative;
   overflow: hidden;
   padding: 16px 44px 16px 16px;
@@ -96,6 +96,11 @@
         opacity: 1;
         background: rgba(255, 255, 255, 0.18);
       }
+    }
+
+    [data-icon] svg {
+      color: #ffffff;
+      stroke: #ffffff;
     }
 
     @each $type, $color in $variants {

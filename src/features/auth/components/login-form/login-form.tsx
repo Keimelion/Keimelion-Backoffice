@@ -1,13 +1,23 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { AuthCard } from '@/components/shared/auth-card'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { loginInputSchema } from '@/data-access/auth/auth.schemas'
+import { PasswordInput } from '@/components/ui/password-input'
+import { loginInputSchema, type LoginInput } from '@/data-access/auth/auth.schemas'
 import {
   LOGIN_NOTICE_PARAM,
   LOGIN_NOTICE_VALUE,
@@ -25,8 +35,14 @@ const RESET_SUCCESS_MESSAGE = 'Password updated. Please sign in with your new pa
 
 export function LoginForm(): React.JSX.Element {
   const login = useLogin()
-  const passwordRef = useRef<HTMLInputElement>(null)
   const searchParams = useSearchParams()
+
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginInputSchema),
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
+    defaultValues: { email: '', password: '' },
+  })
 
   useOnMount(() => {
     if (searchParams.get(LOGIN_NOTICE_PARAM.RESET) === LOGIN_NOTICE_VALUE.RESET_SUCCESS) {
@@ -42,67 +58,77 @@ export function LoginForm(): React.JSX.Element {
   })
 
   useEffect(() => {
-    if (login.isError && passwordRef.current) {
-      passwordRef.current.value = ''
+    if (login.isError) {
+      form.setValue('password', '')
     }
-  }, [login.isError])
+  }, [login.isError, form])
 
-  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-    const parsed = loginInputSchema.safeParse(Object.fromEntries(formData))
-
-    if (!parsed.success) {
-      notify.error('Please enter a valid email and password.')
-      return
-    }
-
-    login.mutate(parsed.data)
+  const handleSubmit = (values: LoginInput): void => {
+    login.mutate(values)
   }
 
   const isPending = login.isPending
+  const hasErrors = Object.keys(form.formState.errors).length > 0
+  const isSubmitDisabled = isPending || hasErrors
 
   return (
     <AuthCard title="Sign in" description="Access the Keimelion Backoffice">
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
+      <Form {...form}>
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(event) => {
+            void form.handleSubmit(handleSubmit)(event)
+          }}
+          noValidate
+        >
+          <FormField
+            control={form.control}
             name="email"
-            type="email"
-            placeholder="you@keimelion.app"
-            autoComplete="email"
-            required
-            disabled={isPending}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="you@keimelion.app"
+                    autoComplete="email"
+                    disabled={isPending}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link
-              href="/forgot-password"
-              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <Input
-            id="password"
+          <FormField
+            control={form.control}
             name="password"
-            type="password"
-            placeholder="••••••••"
-            autoComplete="current-password"
-            required
-            disabled={isPending}
-            ref={passwordRef}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    disabled={isPending}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <Button type="submit" className="mt-2" disabled={isPending}>
-          {isPending ? 'Signing in…' : 'Sign in'}
-        </Button>
-      </form>
+          <Link
+            href="/forgot-password"
+            className="-mt-2 self-end text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Forgot password?
+          </Link>
+          <Button type="submit" className="mt-2" disabled={isSubmitDisabled}>
+            {isPending ? 'Signing in…' : 'Sign in'}
+          </Button>
+        </form>
+      </Form>
     </AuthCard>
   )
 }
