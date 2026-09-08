@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -15,46 +14,44 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
-import { loginInputSchema, type LoginInput } from '@/data-access/auth/auth.schemas'
-import { NOTICE_PARAM } from '@/data-access/auth/auth.constants'
-import { useLogin } from '@/features/auth/hooks/use-login'
-import { notify } from '@/lib/notify'
+import {
+  resetPasswordInputSchema,
+  type ResetPasswordInput,
+} from '@/data-access/auth/auth.schemas'
+import { useResetPassword } from '@/features/auth/hooks/use-reset-password'
 
-export function LoginForm(): React.JSX.Element {
-  const login = useLogin()
+export function ResetPasswordForm(): React.JSX.Element {
   const searchParams = useSearchParams()
+  const token = searchParams.get('token') ?? ''
+  const resetPassword = useResetPassword()
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginInputSchema),
+  const form = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordInputSchema),
     mode: 'onTouched',
     reValidateMode: 'onChange',
-    defaultValues: { email: '', password: '' },
+    defaultValues: { newPassword: '', confirmPassword: '' },
   })
 
-  useEffect(() => {
-    const notice = searchParams.get(NOTICE_PARAM)
-    if (!notice) return
-    notify.success(notice, { persistent: true, id: notice })
-  }, [searchParams])
+  const newPassword = form.watch('newPassword')
+  const confirmPasswordTouched = form.formState.touchedFields.confirmPassword === true
 
   useEffect(() => {
-    if (login.isError) {
-      form.setValue('password', '')
+    if (confirmPasswordTouched) {
+      void form.trigger('confirmPassword')
     }
-  }, [login.isError, form])
+  }, [newPassword, confirmPasswordTouched, form])
 
-  const handleSubmit = (values: LoginInput): void => {
-    login.mutate(values)
+  const handleSubmit = (values: ResetPasswordInput): void => {
+    resetPassword.mutate({ token, newPassword: values.newPassword })
   }
 
-  const isPending = login.isPending
+  const isPending = resetPassword.isPending
   const hasErrors = Object.keys(form.formState.errors).length > 0
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard title="Sign in" description="Access the Keimelion Backoffice">
+    <AuthCard title="Reset your password" description="Enter your new password below.">
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -65,15 +62,14 @@ export function LoginForm(): React.JSX.Element {
         >
           <FormField
             control={form.control}
-            name="email"
+            name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>New password</FormLabel>
                 <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="you@keimelion.app"
-                    autoComplete="email"
+                  <PasswordInput
+                    placeholder="••••••••"
+                    autoComplete="new-password"
                     disabled={isPending}
                     {...field}
                   />
@@ -84,14 +80,14 @@ export function LoginForm(): React.JSX.Element {
           />
           <FormField
             control={form.control}
-            name="password"
+            name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Confirm password</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     disabled={isPending}
                     {...field}
                   />
@@ -100,14 +96,8 @@ export function LoginForm(): React.JSX.Element {
               </FormItem>
             )}
           />
-          <Link
-            href="/forgot-password"
-            className="-mt-2 self-end text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            Forgot password?
-          </Link>
           <Button type="submit" className="mt-2" disabled={isSubmitDisabled}>
-            {isPending ? 'Signing in…' : 'Sign in'}
+            {isPending ? 'Updating…' : 'Update password'}
           </Button>
         </form>
       </Form>

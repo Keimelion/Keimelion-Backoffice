@@ -161,7 +161,7 @@ Exception: well-known, unambiguous domain acronyms (`id`, `url`, `uuid`, `http`,
 
 ## No comments — self-explaining names
 
-A comment is a sign that the code needs a better name. Rename the function or variable instead of annotating it.
+If you feel the need to explain what code does, the code is wrong. Rename functions, variables, or extract a helper — never annotate. This applies to "what" comments *and* "why" comments: a block explaining why we call `clearSession()` after a reset should be replaced by a named helper like `wipeSessionForRefreshedAuth()`, not documented in prose.
 
 ```typescript
 // ❌
@@ -178,6 +178,8 @@ if (isListOwnedByUser(list, currentUser.id)) { ... }
 The only acceptable comments are:
 - Workarounds for external library bugs (with a link to the issue)
 - Non-obvious legal or compliance requirements
+
+JSDoc is not exempt — a JSDoc block on `useCurrentUser` that says "Read the current user from the TanStack Query cache" is exactly the case to delete. The identifier already carries that meaning.
 
 ---
 
@@ -530,6 +532,36 @@ interface DeleteUserButtonProps {
 }
 function DeleteUserButton({ onConfirm, onCancel }: DeleteUserButtonProps): React.JSX.Element { ... }
 ```
+
+---
+
+## Prefer inline over premature dispatchers
+
+A `Record<K, V>` lookup table, a helper function, or a config object is worth its abstraction only when it removes real duplication. A 2-entry dispatcher for two mutually-exclusive branches is not real duplication — it is ceremony.
+
+```typescript
+// ❌ — two entries, two lookups, two indirections for two cases
+const REASON_TOASTS: Record<string, { message: string; id: string }> = {
+  'invalid-link': { message: 'This reset link is invalid…', id: 'reset-link-invalid' },
+  'expired-link': { message: 'This reset link has expired…', id: 'reset-link-expired' },
+}
+const entry = REASON_TOASTS[reason ?? '']
+if (entry) notify.error(entry.message, { persistent: true, id: entry.id })
+
+// ✅ — inline the pair, or better: encode the message directly in the URL and read it back
+const message = searchParams.get('notice')
+if (message) notify.error(message, { persistent: true, id: message })
+```
+
+Prefer the direct form until the case count justifies the table (typically 4+ genuinely-similar cases). "We might add more later" is not a reason.
+
+---
+
+## Delete unused exports — do not hoard scaffolding
+
+An export with no consumer is dead code, even if it looks like it *might* be needed later. Delete it; recreate it when the actual consumer arrives. Git history is the scaffolding archive — the working tree is not.
+
+The exception is a public API surface with external consumers outside the repo (this project has none).
 
 ---
 

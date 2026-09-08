@@ -16,45 +16,44 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
-import { loginInputSchema, type LoginInput } from '@/data-access/auth/auth.schemas'
+import {
+  forgotPasswordInputSchema,
+  type ForgotPasswordInput,
+} from '@/data-access/auth/auth.schemas'
 import { NOTICE_PARAM } from '@/data-access/auth/auth.constants'
-import { useLogin } from '@/features/auth/hooks/use-login'
+import { useForgotPassword } from '@/features/auth/hooks/use-forgot-password'
 import { notify } from '@/lib/notify'
 
-export function LoginForm(): React.JSX.Element {
-  const login = useLogin()
+export function ForgotPasswordForm(): React.JSX.Element {
+  const forgotPassword = useForgotPassword()
   const searchParams = useSearchParams()
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginInputSchema),
+  const form = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordInputSchema),
     mode: 'onTouched',
     reValidateMode: 'onChange',
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: '' },
   })
 
   useEffect(() => {
     const notice = searchParams.get(NOTICE_PARAM)
     if (!notice) return
-    notify.success(notice, { persistent: true, id: notice })
+    notify.error(notice, { persistent: true, id: notice })
   }, [searchParams])
 
-  useEffect(() => {
-    if (login.isError) {
-      form.setValue('password', '')
-    }
-  }, [login.isError, form])
-
-  const handleSubmit = (values: LoginInput): void => {
-    login.mutate(values)
+  const handleSubmit = (values: ForgotPasswordInput): void => {
+    forgotPassword.mutate(values)
   }
 
-  const isPending = login.isPending
+  const isPending = forgotPassword.isPending
   const hasErrors = Object.keys(form.formState.errors).length > 0
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard title="Sign in" description="Access the Keimelion Backoffice">
+    <AuthCard
+      title="Forgot password?"
+      description="Enter your email and we'll send you a reset link."
+    >
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -82,33 +81,15 @@ export function LoginForm(): React.JSX.Element {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    disabled={isPending}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Link
-            href="/forgot-password"
-            className="-mt-2 self-end text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            Forgot password?
-          </Link>
           <Button type="submit" className="mt-2" disabled={isSubmitDisabled}>
-            {isPending ? 'Signing in…' : 'Sign in'}
+            {isPending ? 'Sending…' : 'Send reset link'}
           </Button>
+          <Link
+            href="/login"
+            className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Back to sign in
+          </Link>
         </form>
       </Form>
     </AuthCard>

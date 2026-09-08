@@ -1,6 +1,6 @@
 @use 'styles/tokens' as *;
 
-[data-sonner-toaster] [data-sonner-toast] {
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] {
   position: relative;
   overflow: hidden;
   padding: 16px 44px 16px 16px;
@@ -77,6 +77,42 @@
       &::after {
         background: $color;
         opacity: 1;
+      }
+    }
+  }
+
+  // Persistent variant: filled colored background, close button in white,
+  // no auto-dismiss progress bar. Signals "important, sticky" vs ephemeral.
+  &.notify-persistent {
+    &::after {
+      display: none;
+    }
+
+    [data-close-button] {
+      color: #ffffff;
+      opacity: 0.9;
+
+      &:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.18);
+      }
+    }
+
+    [data-icon] svg {
+      color: #ffffff;
+      stroke: #ffffff;
+    }
+
+    @each $type, $color in $variants {
+      &[data-type='#{$type}'] {
+        background: $color;
+        border-color: darken($color, 10%);
+        color: #ffffff;
+
+        [data-title],
+        [data-description] {
+          color: #ffffff;
+        }
       }
     }
   }

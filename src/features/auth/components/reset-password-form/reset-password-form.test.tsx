@@ -1,0 +1,131 @@
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const mockReplace = vi.fn()
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
+  useSearchParams: () => new URLSearchParams('token=test-token-abc'),
+}))
+
+vi.mock('@/data-access/auth/auth.api', () => ({
+  resetPasswordApi: vi.fn(),
+}))
+
+vi.mock('@/data-access/_auth-storage', () => ({
+  clearSession: vi.fn(),
+}))
+
+vi.mock('@/lib/query-client', async () => {
+  const { QueryClient } = await import('@tanstack/react-query')
+  return { queryClient: new QueryClient() }
+})
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  },
+}))
+
+import { resetPasswordApi } from '@/data-access/auth/auth.api'
+import { LOGIN_RESET_SUCCESS_URL } from '@/data-access/auth/auth.constants'
+import { clearSession } from '@/data-access/_auth-storage'
+import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
+
+function renderResetPasswordForm(): void {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  render(
+    <QueryClientProvider client={client}>
+      <ResetPasswordForm />
+    </QueryClientProvider>,
+  )
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+describe('ResetPasswordForm', () => {
+  it('calls resetPasswordApi with token and new password on submit', async () => {
+    vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
+
+    renderResetPasswordForm()
+
+    await userEvent.type(screen.getByLabelText('New password'), 'newpassword123')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'newpassword123')
+    await userEvent.click(screen.getByRole('button', { name: /update password/i }))
+
+    await waitFor(() => {
+      expect(resetPasswordApi).toHaveBeenCalledWith({
+        token: 'test-token-abc',
+        newPassword: 'newpassword123',
+      })
+    })
+  })
+
+  it('shows an inline error and blocks submit when passwords do not match', async () => {
+    renderResetPasswordForm()
+
+    await userEvent.type(screen.getByLabelText('New password'), 'newpassword123')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'differentpassword')
+    await userEvent.click(screen.getByRole('button', { name: /update password/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Passwords do not match.')).toBeInTheDocument()
+    })
+    expect(resetPasswordApi).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled()
+  })
+
+  it('shows an inline error and blocks submit when password is too short', async () => {
+    renderResetPasswordForm()
+
+    await userEvent.type(screen.getByLabelText('New password'), 'short')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'short')
+    await userEvent.click(screen.getByRole('button', { name: /update password/i }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Password must be at least 8 characters.'),
+      ).toBeInTheDocument()
+    })
+    expect(resetPasswordApi).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled()
+  })
+
+  it('redirects to /login with the reset-success notice on success', async () => {
+    vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
+
+    renderResetPasswordForm()
+
+    await userEvent.type(screen.getByLabelText('New password'), 'newpassword123')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'newpassword123')
+    await userEvent.click(screen.getByRole('button', { name: /update password/i }))
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(LOGIN_RESET_SUCCESS_URL)
+    })
+  })
+
+  it('clears the local session on success so a stale token cannot outlive the reset', async () => {
+    vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
+
+    renderResetPasswordForm()
+
+    await userEvent.type(screen.getByLabelText('New password'), 'newpassword123')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'newpassword123')
+    await userEvent.click(screen.getByRole('button', { name: /update password/i }))
+
+    await waitFor(() => {
+      expect(clearSession).toHaveBeenCalled()
+    })
+  })
+})
