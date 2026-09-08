@@ -34,6 +34,7 @@ vi.mock('sonner', () => ({
 }))
 
 import { resetPasswordApi } from '@/data-access/auth/auth.api'
+import { LOGIN_RESET_SUCCESS_URL } from '@/data-access/auth/auth.constants'
 import { clearSession } from '@/data-access/_auth-storage'
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
 
@@ -100,7 +101,7 @@ describe('ResetPasswordForm', () => {
     expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled()
   })
 
-  it('redirects to /login?reset=success on success', async () => {
+  it('redirects to /login with the reset-success notice on success', async () => {
     vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
 
     renderResetPasswordForm()
@@ -110,7 +111,7 @@ describe('ResetPasswordForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /update password/i }))
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/login?reset=success')
+      expect(mockReplace).toHaveBeenCalledWith(LOGIN_RESET_SUCCESS_URL)
     })
   })
 

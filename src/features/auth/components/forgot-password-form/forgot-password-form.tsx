@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -19,25 +20,9 @@ import {
   forgotPasswordInputSchema,
   type ForgotPasswordInput,
 } from '@/data-access/auth/auth.schemas'
-import {
-  FORGOT_PASSWORD_REASON,
-  FORGOT_PASSWORD_REASON_PARAM,
-} from '@/data-access/auth/auth.constants'
+import { NOTICE_PARAM } from '@/data-access/auth/auth.constants'
 import { useForgotPassword } from '@/features/auth/hooks/use-forgot-password'
-import { useOnMount } from '@/lib/hooks/use-on-mount'
 import { notify } from '@/lib/notify'
-
-const REASON_TOASTS: Record<string, { message: string; id: string }> = {
-  [FORGOT_PASSWORD_REASON.INVALID_LINK]: {
-    message: 'This reset link is invalid. Please request a new one.',
-    id: 'reset-link-invalid',
-  },
-  [FORGOT_PASSWORD_REASON.EXPIRED_LINK]: {
-    message:
-      'This reset link has expired or has already been used. Please request a new one.',
-    id: 'reset-link-expired',
-  },
-}
 
 export function ForgotPasswordForm(): React.JSX.Element {
   const forgotPassword = useForgotPassword()
@@ -50,13 +35,11 @@ export function ForgotPasswordForm(): React.JSX.Element {
     defaultValues: { email: '' },
   })
 
-  useOnMount(() => {
-    const reason = searchParams.get(FORGOT_PASSWORD_REASON_PARAM)
-    if (reason === null) return
-    const entry = REASON_TOASTS[reason]
-    if (!entry) return
-    notify.error(entry.message, { persistent: true, id: entry.id })
-  })
+  useEffect(() => {
+    const notice = searchParams.get(NOTICE_PARAM)
+    if (!notice) return
+    notify.error(notice, { persistent: true, id: notice })
+  }, [searchParams])
 
   const handleSubmit = (values: ForgotPasswordInput): void => {
     forgotPassword.mutate(values)

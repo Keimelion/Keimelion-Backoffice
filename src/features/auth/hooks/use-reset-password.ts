@@ -27,11 +27,6 @@ export function useResetPassword(): UseMutationResult<null, Error, ResetPassword
       return null
     },
     onSuccess: () => {
-      // The API revokes all sessions on successful reset. Wipe any local
-      // session state so a currently logged-in user who resets their own
-      // password isn't caught with a dead token (which would trigger a
-      // /login -> / -> 401 -> /login redirect loop via the middleware) and
-      // is guaranteed to land on the /login banner with a clean cache.
       clearSession()
       queryClient.clear()
       router.replace(LOGIN_RESET_SUCCESS_URL)

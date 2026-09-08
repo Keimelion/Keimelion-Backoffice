@@ -2,27 +2,29 @@ export const AUTH_ERROR_CODE = {
   INVALID_RESET_TOKEN: 'INVALID_RESET_TOKEN',
 } as const
 
-export const FORGOT_PASSWORD_REASON_PARAM = 'reason'
-export const FORGOT_PASSWORD_REASON = {
-  INVALID_LINK: 'invalid-link',
-  EXPIRED_LINK: 'expired-link',
-} as const
-
-export const LOGIN_NOTICE_PARAM = {
-  RESET: 'reset',
-  FORGOT: 'forgot',
-} as const
-
-export const LOGIN_NOTICE_VALUE = {
-  RESET_SUCCESS: 'success',
-  FORGOT_REQUESTED: 'requested',
-} as const
+export const NOTICE_PARAM = 'notice'
 
 export const LOGIN_PATH = '/login'
 export const FORGOT_PASSWORD_PATH = '/forgot-password'
 export const RESET_PASSWORD_PATH = '/reset-password'
 
-export const FORGOT_PASSWORD_INVALID_LINK_URL = `${FORGOT_PASSWORD_PATH}?${FORGOT_PASSWORD_REASON_PARAM}=${FORGOT_PASSWORD_REASON.INVALID_LINK}`
-export const FORGOT_PASSWORD_EXPIRED_LINK_URL = `${FORGOT_PASSWORD_PATH}?${FORGOT_PASSWORD_REASON_PARAM}=${FORGOT_PASSWORD_REASON.EXPIRED_LINK}`
-export const LOGIN_RESET_SUCCESS_URL = `${LOGIN_PATH}?${LOGIN_NOTICE_PARAM.RESET}=${LOGIN_NOTICE_VALUE.RESET_SUCCESS}`
-export const LOGIN_FORGOT_REQUESTED_URL = `${LOGIN_PATH}?${LOGIN_NOTICE_PARAM.FORGOT}=${LOGIN_NOTICE_VALUE.FORGOT_REQUESTED}`
+function buildNoticeUrl(path: string, message: string): string {
+  return `${path}?${NOTICE_PARAM}=${encodeURIComponent(message)}`
+}
+
+export const FORGOT_PASSWORD_INVALID_LINK_URL = buildNoticeUrl(
+  FORGOT_PASSWORD_PATH,
+  'This reset link is invalid. Please request a new one.',
+)
+export const FORGOT_PASSWORD_EXPIRED_LINK_URL = buildNoticeUrl(
+  FORGOT_PASSWORD_PATH,
+  'This reset link has expired or has already been used. Please request a new one.',
+)
+export const LOGIN_RESET_SUCCESS_URL = buildNoticeUrl(
+  LOGIN_PATH,
+  'Password updated. Please sign in with your new password.',
+)
+export const LOGIN_FORGOT_REQUESTED_URL = buildNoticeUrl(
+  LOGIN_PATH,
+  'If an account with that email exists, you will receive a password reset email shortly.',
+)

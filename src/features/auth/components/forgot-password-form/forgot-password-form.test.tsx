@@ -25,6 +25,7 @@ vi.mock('sonner', () => ({
 }))
 
 import { forgotPasswordApi } from '@/data-access/auth/auth.api'
+import { LOGIN_FORGOT_REQUESTED_URL } from '@/data-access/auth/auth.constants'
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form'
 
 function renderForgotPasswordForm(): void {
@@ -56,7 +57,7 @@ describe('ForgotPasswordForm', () => {
     })
   })
 
-  it('redirects to /login?forgot=requested on success', async () => {
+  it('redirects to /login with the request-confirmation notice on success', async () => {
     vi.mocked(forgotPasswordApi).mockResolvedValue({ message: 'ok' })
 
     renderForgotPasswordForm()
@@ -65,7 +66,7 @@ describe('ForgotPasswordForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/login?forgot=requested')
+      expect(mockReplace).toHaveBeenCalledWith(LOGIN_FORGOT_REQUESTED_URL)
     })
   })
 

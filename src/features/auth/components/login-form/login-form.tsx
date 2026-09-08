@@ -18,20 +18,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { loginInputSchema, type LoginInput } from '@/data-access/auth/auth.schemas'
-import {
-  LOGIN_NOTICE_PARAM,
-  LOGIN_NOTICE_VALUE,
-} from '@/data-access/auth/auth.constants'
+import { NOTICE_PARAM } from '@/data-access/auth/auth.constants'
 import { useLogin } from '@/features/auth/hooks/use-login'
-import { useOnMount } from '@/lib/hooks/use-on-mount'
 import { notify } from '@/lib/notify'
-
-const RESET_SUCCESS_TOAST_ID = 'login-reset-success'
-const FORGOT_REQUESTED_TOAST_ID = 'login-forgot-requested'
-
-const FORGOT_REQUESTED_MESSAGE =
-  'If an account with that email exists, you will receive a password reset email shortly.'
-const RESET_SUCCESS_MESSAGE = 'Password updated. Please sign in with your new password.'
 
 export function LoginForm(): React.JSX.Element {
   const login = useLogin()
@@ -44,18 +33,11 @@ export function LoginForm(): React.JSX.Element {
     defaultValues: { email: '', password: '' },
   })
 
-  useOnMount(() => {
-    if (searchParams.get(LOGIN_NOTICE_PARAM.RESET) === LOGIN_NOTICE_VALUE.RESET_SUCCESS) {
-      notify.success(RESET_SUCCESS_MESSAGE, { persistent: true, id: RESET_SUCCESS_TOAST_ID })
-      return
-    }
-    if (searchParams.get(LOGIN_NOTICE_PARAM.FORGOT) === LOGIN_NOTICE_VALUE.FORGOT_REQUESTED) {
-      notify.success(FORGOT_REQUESTED_MESSAGE, {
-        persistent: true,
-        id: FORGOT_REQUESTED_TOAST_ID,
-      })
-    }
-  })
+  useEffect(() => {
+    const notice = searchParams.get(NOTICE_PARAM)
+    if (!notice) return
+    notify.success(notice, { persistent: true, id: notice })
+  }, [searchParams])
 
   useEffect(() => {
     if (login.isError) {

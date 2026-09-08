@@ -2,12 +2,6 @@ import { z } from 'zod'
 import { AUTH_PROVIDER_VALUES } from '@keimelion/api/shared/enums/auth-provider'
 import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
 
-/**
- * Zod validator for the API's User shape. Shared across resources — used by
- * auth-storage (fail-close on tampered localStorage), by auth response
- * schemas (login, register, refresh…), and by any future admin/user endpoint
- * that returns a User payload.
- */
 export const apiUserSchema = z.object({
   id: z.string(),
   email: z.string(),
