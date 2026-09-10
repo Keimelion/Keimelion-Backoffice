@@ -1,17 +1,13 @@
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { ApiRequestError, apiGet } from '@/data-access/_client'
+import { buildListSearchParams } from '@/data-access/_list-query'
 import type { AdminApiUser } from '@/data-access/_schemas/admin-user'
 import { listUsersResponseSchema, type ListUsersQuery } from '@/data-access/users/users.schemas'
 
-export async function fetchUsers(params: Partial<ListUsersQuery>): Promise<PaginatedResponse<AdminApiUser>> {
-  const query = new URLSearchParams()
-  if (params.page !== undefined) query.set('page', String(params.page))
-  if (params.limit !== undefined) query.set('limit', String(params.limit))
-  if (params.email) query.set('email', params.email)
-  if (params.username) query.set('username', params.username)
-  if (params.role) query.set('role', params.role)
-  if (params.sort) query.set('sort', params.sort)
+const USERS_FILTER_KEYS = ['email', 'username', 'role', 'sort'] as const
 
+export async function fetchUsers(params: Partial<ListUsersQuery>): Promise<PaginatedResponse<AdminApiUser>> {
+  const query = buildListSearchParams<ListUsersQuery>(params, USERS_FILTER_KEYS)
   const raw = await apiGet<unknown>(`/admin/users?${query.toString()}`)
   const parsed = listUsersResponseSchema.safeParse(raw)
   if (!parsed.success) {
