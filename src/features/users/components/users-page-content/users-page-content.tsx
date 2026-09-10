@@ -15,7 +15,7 @@ import { listUsersQuerySchema } from '@/data-access/users/users.schemas'
 import type { AdminApiUser } from '@/data-access/_shared/schemas/admin-user'
 import { useUsers } from '@/features/users/hooks/use-users'
 import { RoleBadge } from '@/features/users/components/role-badge'
-import { RoleFilter } from '@/features/users/components/role-filter'
+import { ROLE_PARAM, RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
 
 const EMPTY_LABEL = 'No users match these filters.'
@@ -35,7 +35,7 @@ const USERS_FILTERS: FilterDefinition[] = [
   },
 ]
 
-const USERS_CLEARABLE_PARAMS = ['email', 'username', 'role']
+const USERS_CLEARABLE_PARAMS = [...USERS_FILTERS.map((filter) => filter.paramName), ROLE_PARAM]
 
 const USERS_COLUMNS: DataTableColumn<AdminApiUser>[] = [
   {

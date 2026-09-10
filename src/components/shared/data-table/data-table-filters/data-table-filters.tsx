@@ -2,7 +2,6 @@
 
 import { Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -11,20 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useUrlParams } from '@/components/shared/use-url-params'
 
-export interface TextFilterDefinition {
+interface TextFilterDefinition {
   type: 'text'
   paramName: string
   label: string
   placeholder: string
 }
 
-export interface SelectOption {
+interface SelectOption {
   value: string
   label: string
 }
 
-export interface SelectFilterDefinition {
+interface SelectFilterDefinition {
   type: 'select'
   paramName: string
   label: string
@@ -39,12 +39,10 @@ interface DataTableFiltersProps {
 }
 
 const DEBOUNCE_DELAY_MS = 300
-const PAGINATION_PARAM = 'page'
 const ALL_VALUE = '__all__'
 
 export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.Element {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const { searchParams } = useUrlParams()
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -53,17 +51,13 @@ export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.
           <TextFilter
             key={filter.paramName}
             definition={filter}
-            initialValue={searchParams.get(filter.paramName) ?? ''}
-            searchParams={searchParams}
-            router={router}
+            currentValue={searchParams.get(filter.paramName) ?? ''}
           />
         ) : (
           <SelectFilter
             key={filter.paramName}
             definition={filter}
-            initialValue={searchParams.get(filter.paramName) ?? ''}
-            searchParams={searchParams}
-            router={router}
+            currentValue={searchParams.get(filter.paramName) ?? ''}
           />
         ),
       )}
@@ -73,29 +67,24 @@ export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.
 
 interface TextFilterProps {
   definition: TextFilterDefinition
-  initialValue: string
-  searchParams: URLSearchParams
-  router: ReturnType<typeof useRouter>
+  currentValue: string
 }
 
-function TextFilter({ definition, initialValue, searchParams, router }: TextFilterProps): React.JSX.Element {
-  const [value, setValue] = useState(initialValue)
+function TextFilter({ definition, currentValue }: TextFilterProps): React.JSX.Element {
+  const { setFilterParam } = useUrlParams()
+  const [value, setValue] = useState(currentValue)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    setValue(searchParams.get(definition.paramName) ?? '')
-  }, [searchParams, definition.paramName])
+    setValue(currentValue)
+  }, [currentValue])
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const next = event.target.value
     setValue(next)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.delete(definition.paramName)
-      if (next) params.set(definition.paramName, next)
-      params.delete(PAGINATION_PARAM)
-      router.replace(`?${params.toString()}`, { scroll: false })
+      setFilterParam(definition.paramName, next)
     }, DEBOUNCE_DELAY_MS)
   }
 
@@ -116,22 +105,18 @@ function TextFilter({ definition, initialValue, searchParams, router }: TextFilt
 
 interface SelectFilterProps {
   definition: SelectFilterDefinition
-  initialValue: string
-  searchParams: URLSearchParams
-  router: ReturnType<typeof useRouter>
+  currentValue: string
 }
 
-function SelectFilter({ definition, initialValue, searchParams, router }: SelectFilterProps): React.JSX.Element {
+function SelectFilter({ definition, currentValue }: SelectFilterProps): React.JSX.Element {
+  const { setFilterParam } = useUrlParams()
+
   const handleValueChange = (selected: string): void => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete(definition.paramName)
-    if (selected !== ALL_VALUE) params.set(definition.paramName, selected)
-    params.delete(PAGINATION_PARAM)
-    router.replace(`?${params.toString()}`, { scroll: false })
+    setFilterParam(definition.paramName, selected === ALL_VALUE ? null : selected)
   }
 
   return (
-    <Select value={initialValue || ALL_VALUE} onValueChange={handleValueChange}>
+    <Select value={currentValue || ALL_VALUE} onValueChange={handleValueChange}>
       <SelectTrigger
         id={`select-${definition.paramName}`}
         aria-label={definition.label}

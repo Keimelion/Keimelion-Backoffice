@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -75,23 +75,30 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+function firstDataRow(): HTMLElement {
+  const rows = screen.getAllByRole('row')
+  const row = rows[1]
+  if (row === undefined) throw new Error('No data row rendered')
+  return row
+}
+
 describe('UsersPageContent', () => {
   it('renders RoleBadge with correct label for admin', () => {
     vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser({ role: 'admin' })]))
     renderContent()
-    expect(screen.getAllByText('Admin')).toHaveLength(2)
+    expect(within(firstDataRow()).getByText('Admin')).toBeInTheDocument()
   })
 
   it('renders RoleBadge with correct label for moderator', () => {
     vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser({ role: 'moderator' })]))
     renderContent()
-    expect(screen.getAllByText('Moderator')).toHaveLength(2)
+    expect(within(firstDataRow()).getByText('Moderator')).toBeInTheDocument()
   })
 
   it('renders UserStatusBadge as Active for a normal user', () => {
     vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser()]))
     renderContent()
-    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(within(firstDataRow()).getByText('Active')).toBeInTheDocument()
   })
 
   it('renders UserStatusBadge as Deleted for a soft-deleted user', () => {
@@ -99,7 +106,7 @@ describe('UsersPageContent', () => {
       makeQueryResult([makeUser({ deletedAt: '2024-06-01T00:00:00.000Z' })]),
     )
     renderContent()
-    expect(screen.getByText('Deleted')).toBeInTheDocument()
+    expect(within(firstDataRow()).getByText('Deleted')).toBeInTheDocument()
   })
 
   it('renders UserStatusBadge as Banned for a banned user', () => {
@@ -107,7 +114,7 @@ describe('UsersPageContent', () => {
       makeQueryResult([makeUser({ bannedAt: '2024-06-01T00:00:00.000Z' })]),
     )
     renderContent()
-    expect(screen.getByText('Banned')).toBeInTheDocument()
+    expect(within(firstDataRow()).getByText('Banned')).toBeInTheDocument()
   })
 
   it('shows empty state message when no users match', () => {

@@ -1,1 +1,1 @@
-export { RoleFilter } from './role-filter'
+export { RoleFilter, ROLE_PARAM } from './role-filter'

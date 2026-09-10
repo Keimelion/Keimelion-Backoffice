@@ -1,8 +1,8 @@
 'use client'
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { useUrlParams } from '@/components/shared/use-url-params'
 
 interface DataTablePaginationProps {
   page: number
@@ -10,20 +10,11 @@ interface DataTablePaginationProps {
   total: number
 }
 
-const PAGINATION_PARAM = 'page'
-
 export function DataTablePagination({ page, pageSize, total }: DataTablePaginationProps): React.JSX.Element {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const { setPage } = useUrlParams()
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const isFirstPage = page <= 1
   const isLastPage = page >= totalPages
-
-  const navigateToPage = (targetPage: number): void => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set(PAGINATION_PARAM, String(targetPage))
-    router.replace(`?${params.toString()}`, { scroll: false })
-  }
 
   return (
     <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -35,9 +26,7 @@ export function DataTablePagination({ page, pageSize, total }: DataTablePaginati
           variant="outline"
           size="sm"
           disabled={isFirstPage}
-          onClick={() => {
-            navigateToPage(page - 1)
-          }}
+          onClick={() => { setPage(page - 1) }}
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
@@ -46,9 +35,7 @@ export function DataTablePagination({ page, pageSize, total }: DataTablePaginati
           variant="outline"
           size="sm"
           disabled={isLastPage}
-          onClick={() => {
-            navigateToPage(page + 1)
-          }}
+          onClick={() => { setPage(page + 1) }}
         >
           Next
           <ChevronRight className="h-4 w-4" />
