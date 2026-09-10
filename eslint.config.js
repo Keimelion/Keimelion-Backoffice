@@ -23,6 +23,12 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['.next/**', 'node_modules/**', 'src/components/ui/**'],
+    ignores: ['.next/**', 'node_modules/**'],
+  },
+  {
+    files: ['src/components/ui/**'],
+    rules: {
+      '@typescript-eslint/no-deprecated': 'off',
+    },
   },
 )
