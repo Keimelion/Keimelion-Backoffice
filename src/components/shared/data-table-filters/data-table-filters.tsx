@@ -1,5 +1,6 @@
 'use client'
 
+import { Search, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -36,30 +37,32 @@ export type FilterDefinition = TextFilterDefinition | SelectFilterDefinition
 
 interface DataTableFiltersProps {
   filters: FilterDefinition[]
+  extraClearParams?: string[]
 }
 
 const DEBOUNCE_DELAY_MS = 300
 const PAGINATION_PARAM = 'page'
 const ALL_VALUE = '__all__'
 
-export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.Element {
+export function DataTableFilters({ filters, extraClearParams }: DataTableFiltersProps): React.JSX.Element {
   const router = useRouter()
   const searchParams = useSearchParams()
   const filterParamNames = filters.map((filter) => filter.paramName)
+  const allClearableParams = [...filterParamNames, ...(extraClearParams ?? [])]
 
-  const hasActiveFilters = filterParamNames.some((name) => searchParams.has(name))
+  const hasActiveFilters = allClearableParams.some((name) => searchParams.has(name))
 
   const handleClearFilters = useCallback((): void => {
     const next = new URLSearchParams(searchParams.toString())
-    for (const name of filterParamNames) {
+    for (const name of allClearableParams) {
       next.delete(name)
     }
     next.delete(PAGINATION_PARAM)
     router.replace(`?${next.toString()}`, { scroll: false })
-  }, [filterParamNames, router, searchParams])
+  }, [allClearableParams, router, searchParams])
 
   return (
-    <div className="mb-4 flex flex-wrap items-end gap-3">
+    <div className="flex flex-wrap items-center gap-2">
       {filters.map((filter) =>
         filter.type === 'text' ? (
           <TextFilter
@@ -80,8 +83,9 @@ export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.
         ),
       )}
       {hasActiveFilters ? (
-        <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-          Clear filters
+        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-muted-foreground" onClick={handleClearFilters}>
+          <X className="h-3.5 w-3.5" />
+          Clear
         </Button>
       ) : null}
     </div>
@@ -120,16 +124,15 @@ function TextFilter({ definition, initialValue, searchParams, router }: TextFilt
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-muted-foreground" htmlFor={definition.paramName}>
-        {definition.label}
-      </label>
+    <div className="relative">
+      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
       <Input
         id={definition.paramName}
+        aria-label={definition.label}
         placeholder={definition.placeholder}
         value={value}
         onChange={handleChange}
-        className="h-8 w-48 text-sm"
+        className="h-8 w-56 pl-8 text-sm"
       />
     </div>
   )
@@ -155,23 +158,22 @@ function SelectFilter({ definition, initialValue, searchParams, router }: Select
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-muted-foreground" htmlFor={`select-${definition.paramName}`}>
-        {definition.label}
-      </label>
-      <Select value={initialValue || ALL_VALUE} onValueChange={handleValueChange}>
-        <SelectTrigger id={`select-${definition.paramName}`} className="h-8 w-36 text-sm">
-          <SelectValue placeholder={definition.placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL_VALUE}>{definition.placeholder}</SelectItem>
-          {definition.options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={initialValue || ALL_VALUE} onValueChange={handleValueChange}>
+      <SelectTrigger
+        id={`select-${definition.paramName}`}
+        aria-label={definition.label}
+        className="h-8 w-40 text-sm"
+      >
+        <SelectValue placeholder={definition.placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ALL_VALUE}>{definition.placeholder}</SelectItem>
+        {definition.options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }

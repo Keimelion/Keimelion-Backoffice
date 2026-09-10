@@ -13,38 +13,28 @@ import { listUsersQuerySchema } from '@/data-access/users/users.schemas'
 import type { AdminApiUser } from '@/data-access/_schemas/admin-user'
 import { useUsers } from '@/features/users/hooks/use-users'
 import { RoleBadge } from '@/features/users/components/role-badge'
+import { RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
-import { USER_ROLE_VALUES, UserRoles } from '@keimelion/api/shared/enums/user-role'
 import { cn } from '@/lib/utils'
 
 const EMPTY_LABEL = 'No users match these filters.'
-
-const ROLE_OPTIONS = USER_ROLE_VALUES.map((role) => ({
-  value: role,
-  label: roleLabelFromValue(role),
-}))
 
 const USERS_FILTERS: FilterDefinition[] = [
   {
     type: 'text',
     paramName: 'email',
     label: 'Email',
-    placeholder: 'Filter by email…',
+    placeholder: 'Search by email…',
   },
   {
     type: 'text',
     paramName: 'username',
     label: 'Username',
-    placeholder: 'Filter by username…',
-  },
-  {
-    type: 'select',
-    paramName: 'role',
-    label: 'Role',
-    placeholder: 'All roles',
-    options: ROLE_OPTIONS,
+    placeholder: 'Search by username…',
   },
 ]
+
+const USERS_EXTRA_CLEAR_PARAMS = ['role']
 
 const USERS_COLUMNS: DataTableColumn<AdminApiUser>[] = [
   {
@@ -140,26 +130,30 @@ export function UsersPageContent(): React.JSX.Element {
   const total = usersQuery.data?.pagination.total ?? 0
 
   return (
-    <div>
-      <DataTableFilters filters={USERS_FILTERS} />
-      <DataTable
-        columns={USERS_COLUMNS}
-        data={data}
-        isLoading={usersQuery.isLoading}
-        error={usersQuery.error}
-        emptyLabel={EMPTY_LABEL}
-        pageSize={filters.limit}
-        onRetry={() => { void usersQuery.refetch() }}
-        getRowClassName={resolveRowClassName}
-        footer={
-          <DataTablePagination
-            page={filters.page}
-            pageSize={filters.limit}
-            total={total}
-          />
-        }
-      />
-    </div>
+    <DataTable
+      columns={USERS_COLUMNS}
+      data={data}
+      isLoading={usersQuery.isLoading}
+      error={usersQuery.error}
+      emptyLabel={EMPTY_LABEL}
+      pageSize={filters.limit}
+      onRetry={() => { void usersQuery.refetch() }}
+      getRowClassName={resolveRowClassName}
+      toolbar={
+        <div className="flex flex-wrap items-center gap-3">
+          <DataTableFilters filters={USERS_FILTERS} extraClearParams={USERS_EXTRA_CLEAR_PARAMS} />
+          <div className="h-6 w-px bg-border" />
+          <RoleFilter />
+        </div>
+      }
+      footer={
+        <DataTablePagination
+          page={filters.page}
+          pageSize={filters.limit}
+          total={total}
+        />
+      }
+    />
   )
 }
 
@@ -181,17 +175,4 @@ function resolveRowClassName(user: AdminApiUser): string | undefined {
     return cn('opacity-50')
   }
   return undefined
-}
-
-function roleLabelFromValue(role: string): string {
-  switch (role) {
-    case UserRoles.ADMIN:
-      return 'Admin'
-    case UserRoles.MODERATOR:
-      return 'Moderator'
-    case UserRoles.USER:
-      return 'User'
-    default:
-      return role
-  }
 }

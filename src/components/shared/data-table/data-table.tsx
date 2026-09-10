@@ -29,6 +29,7 @@ interface DataTableProps<TRow> {
   pageSize: number
   onRetry: () => void
   getRowClassName?: (row: TRow) => string | undefined
+  toolbar?: ReactNode
   footer?: ReactNode
 }
 
@@ -43,6 +44,7 @@ export function DataTable<TRow>({
   pageSize,
   onRetry,
   getRowClassName,
+  toolbar,
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
   if (error) {
@@ -65,6 +67,11 @@ export function DataTable<TRow>({
 
   return (
     <div className="overflow-hidden rounded-lg border border-border">
+      {toolbar !== undefined ? (
+        <div className="border-b border-border bg-muted/30 px-4 py-3">
+          {toolbar}
+        </div>
+      ) : null}
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -122,7 +129,7 @@ function renderDataRows<TRow>(
   return data.map((row, rowIndex) => (
     <TableRow
       key={rowIndex}
-      className={cn('even:bg-muted/40 hover:bg-primary/10', getRowClassName?.(row))}
+      className={cn('hover:bg-primary/10', getRowClassName?.(row))}
     >
       {columns.map((column) => (
         <TableCell key={column.key} className={column.className}>

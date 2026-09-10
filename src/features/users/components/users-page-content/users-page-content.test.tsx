@@ -79,13 +79,13 @@ describe('UsersPageContent', () => {
   it('renders RoleBadge with correct label for admin', () => {
     vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser({ role: 'admin' })]))
     renderContent()
-    expect(screen.getByText('Admin')).toBeInTheDocument()
+    expect(screen.getAllByText('Admin')).toHaveLength(2)
   })
 
   it('renders RoleBadge with correct label for moderator', () => {
     vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser({ role: 'moderator' })]))
     renderContent()
-    expect(screen.getByText('Moderator')).toBeInTheDocument()
+    expect(screen.getAllByText('Moderator')).toHaveLength(2)
   })
 
   it('renders UserStatusBadge as Active for a normal user', () => {
