@@ -67,32 +67,4 @@ describe('DataTableFilters', () => {
     expect(calledUrl).not.toContain('page=')
   })
 
-  it('does not show Clear filters button when no filters are active', () => {
-    render(<DataTableFilters filters={TEXT_ONLY_FILTERS} />)
-    expect(screen.queryByRole('button', { name: /^clear$/i })).not.toBeInTheDocument()
-  })
-
-  it('shows Clear filters button when a filter param is active', () => {
-    useSearchParamsMock.mockReturnValue(new URLSearchParams('email=foo'))
-    render(<DataTableFilters filters={TEXT_ONLY_FILTERS} />)
-    expect(screen.getByRole('button', { name: /^clear$/i })).toBeInTheDocument()
-  })
-
-  it('calls router.replace without filter params when Clear filters is clicked', () => {
-    useSearchParamsMock.mockReturnValue(new URLSearchParams('email=foo&page=2'))
-    render(<DataTableFilters filters={TEXT_ONLY_FILTERS} />)
-    fireEvent.click(screen.getByRole('button', { name: /^clear$/i }))
-    const calledUrl = replaceMock.mock.calls[0]?.[0] as string
-    expect(calledUrl).not.toContain('email=')
-    expect(calledUrl).not.toContain('page=')
-  })
-
-  it('does not remove non-owned params when clearing', () => {
-    useSearchParamsMock.mockReturnValue(new URLSearchParams('email=foo&sort=createdAt:desc'))
-    render(<DataTableFilters filters={TEXT_ONLY_FILTERS} />)
-    fireEvent.click(screen.getByRole('button', { name: /^clear$/i }))
-    const calledUrl = replaceMock.mock.calls[0]?.[0] as string
-    expect(calledUrl).toContain('sort=')
-    expect(calledUrl).not.toContain('email=')
-  })
 })

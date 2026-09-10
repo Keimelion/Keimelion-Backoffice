@@ -1,9 +1,8 @@
 'use client'
 
-import { Search, X } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Search } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -37,29 +36,15 @@ export type FilterDefinition = TextFilterDefinition | SelectFilterDefinition
 
 interface DataTableFiltersProps {
   filters: FilterDefinition[]
-  extraClearParams?: string[]
 }
 
 const DEBOUNCE_DELAY_MS = 300
 const PAGINATION_PARAM = 'page'
 const ALL_VALUE = '__all__'
 
-export function DataTableFilters({ filters, extraClearParams }: DataTableFiltersProps): React.JSX.Element {
+export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.Element {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const filterParamNames = filters.map((filter) => filter.paramName)
-  const allClearableParams = [...filterParamNames, ...(extraClearParams ?? [])]
-
-  const hasActiveFilters = allClearableParams.some((name) => searchParams.has(name))
-
-  const handleClearFilters = useCallback((): void => {
-    const next = new URLSearchParams(searchParams.toString())
-    for (const name of allClearableParams) {
-      next.delete(name)
-    }
-    next.delete(PAGINATION_PARAM)
-    router.replace(`?${next.toString()}`, { scroll: false })
-  }, [allClearableParams, router, searchParams])
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -82,12 +67,6 @@ export function DataTableFilters({ filters, extraClearParams }: DataTableFilters
           />
         ),
       )}
-      {hasActiveFilters ? (
-        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-muted-foreground" onClick={handleClearFilters}>
-          <X className="h-3.5 w-3.5" />
-          Clear
-        </Button>
-      ) : null}
     </div>
   )
 }

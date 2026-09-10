@@ -2,12 +2,13 @@
 
 import { Pencil, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { ClearFiltersButton } from '@/components/shared/clear-filters-button'
 import { DataTable } from '@/components/shared/data-table'
 import type { DataTableColumn } from '@/components/shared/data-table'
 import { DataTableFilters } from '@/components/shared/data-table-filters'
 import type { FilterDefinition } from '@/components/shared/data-table-filters'
 import { DataTablePagination } from '@/components/shared/data-table-pagination'
+import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { listUsersQuerySchema } from '@/data-access/users/users.schemas'
 import type { AdminApiUser } from '@/data-access/_schemas/admin-user'
@@ -34,7 +35,7 @@ const USERS_FILTERS: FilterDefinition[] = [
   },
 ]
 
-const USERS_EXTRA_CLEAR_PARAMS = ['role']
+const USERS_CLEARABLE_PARAMS = ['email', 'username', 'role']
 
 const USERS_COLUMNS: DataTableColumn<AdminApiUser>[] = [
   {
@@ -90,26 +91,12 @@ const USERS_COLUMNS: DataTableColumn<AdminApiUser>[] = [
     className: 'w-28 text-right',
     cell: () => (
       <div className="flex justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          disabled
-          title="Update — coming soon"
-        >
-          <Pencil className="h-4 w-4" />
-          <span className="sr-only">Update user</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:text-destructive"
-          disabled
-          title="Delete — coming soon"
-        >
-          <Trash2 className="h-4 w-4" />
-          <span className="sr-only">Delete user</span>
-        </Button>
+        <IconButton label="Update user">
+          <Pencil />
+        </IconButton>
+        <IconButton label="Delete user" tone="destructive">
+          <Trash2 />
+        </IconButton>
       </div>
     ),
   },
@@ -141,9 +128,10 @@ export function UsersPageContent(): React.JSX.Element {
       getRowClassName={resolveRowClassName}
       toolbar={
         <div className="flex flex-wrap items-center gap-3">
-          <DataTableFilters filters={USERS_FILTERS} extraClearParams={USERS_EXTRA_CLEAR_PARAMS} />
+          <DataTableFilters filters={USERS_FILTERS} />
           <div className="h-6 w-px bg-border" />
           <RoleFilter />
+          <ClearFiltersButton paramNames={USERS_CLEARABLE_PARAMS} />
         </div>
       }
       footer={
