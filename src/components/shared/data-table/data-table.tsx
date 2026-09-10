@@ -115,7 +115,7 @@ function renderDataRows<TRow>(
   return data.map((row, rowIndex) => (
     <TableRow
       key={rowIndex}
-      className={cn(getRowClassName?.(row))}
+      className={cn('even:bg-muted/40 hover:bg-muted', getRowClassName?.(row))}
     >
       {columns.map((column) => (
         <TableCell key={column.key} className={column.className}>

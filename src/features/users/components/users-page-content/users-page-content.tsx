@@ -1,6 +1,8 @@
 'use client'
 
+import { Pencil, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/shared/data-table'
 import type { DataTableColumn } from '@/components/shared/data-table'
 import { DataTableFilters } from '@/components/shared/data-table-filters'
@@ -90,6 +92,35 @@ const USERS_COLUMNS: DataTableColumn<AdminApiUser>[] = [
     header: 'Status',
     cell: (user) => (
       <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
+    ),
+  },
+  {
+    key: 'actions',
+    header: 'Actions',
+    className: 'w-28 text-right',
+    cell: () => (
+      <div className="flex justify-end gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          disabled
+          title="Update — coming soon"
+        >
+          <Pencil className="h-4 w-4" />
+          <span className="sr-only">Update user</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:text-destructive"
+          disabled
+          title="Delete — coming soon"
+        >
+          <Trash2 className="h-4 w-4" />
+          <span className="sr-only">Delete user</span>
+        </Button>
+      </div>
     ),
   },
 ]

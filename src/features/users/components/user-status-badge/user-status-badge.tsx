@@ -5,12 +5,16 @@ interface UserStatusBadgeProps {
   bannedAt: string | null
 }
 
+const ACTIVE_CLASSES = 'border-transparent bg-emerald-500 text-white hover:bg-emerald-500/80'
+const DELETED_CLASSES = 'border-transparent bg-slate-400 text-white hover:bg-slate-400/80'
+const BANNED_CLASSES = 'border-transparent bg-red-500 text-white hover:bg-red-500/80'
+
 export function UserStatusBadge({ deletedAt, bannedAt }: UserStatusBadgeProps): React.JSX.Element {
   if (deletedAt !== null) {
-    return <Badge variant="outline" className="text-muted-foreground">Deleted</Badge>
+    return <Badge className={DELETED_CLASSES}>Deleted</Badge>
   }
   if (bannedAt !== null) {
-    return <Badge variant="destructive">Banned</Badge>
+    return <Badge className={BANNED_CLASSES}>Banned</Badge>
   }
-  return <Badge variant="secondary" className="text-green-700 dark:text-green-400">Active</Badge>
+  return <Badge className={ACTIVE_CLASSES}>Active</Badge>
 }
