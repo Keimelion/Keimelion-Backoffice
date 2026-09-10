@@ -2,12 +2,13 @@
 
 import { Pencil, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ClearFiltersButton } from '@/components/shared/clear-filters-button'
-import { DataTable } from '@/components/shared/data-table'
-import type { DataTableColumn } from '@/components/shared/data-table'
-import { DataTableFilters } from '@/components/shared/data-table-filters'
-import type { FilterDefinition } from '@/components/shared/data-table-filters'
-import { DataTablePagination } from '@/components/shared/data-table-pagination'
+import {
+  ClearFiltersButton,
+  DataTable,
+  DataTableFilters,
+  DataTablePagination,
+} from '@/components/shared/data-table'
+import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { listUsersQuerySchema } from '@/data-access/users/users.schemas'

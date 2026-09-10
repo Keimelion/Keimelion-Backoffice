@@ -1,2 +1,6 @@
 export { DataTable } from './data-table'
 export type { DataTableColumn } from './data-table'
+export { DataTableFilters } from './data-table-filters'
+export type { FilterDefinition } from './data-table-filters'
+export { DataTablePagination } from './data-table-pagination'
+export { ClearFiltersButton } from './clear-filters-button'
