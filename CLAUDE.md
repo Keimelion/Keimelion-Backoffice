@@ -65,9 +65,11 @@ src/
     ui/                 # shadcn/ui generated components — do not edit manually
     shared/             # Reusable app-level components (sidebar, page-header, data-table…)
   data-access/          # All API calls — mirrors db/ in the API
-    _client.ts          # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete) — the shared HTTP client all resource files use
-    _auth-storage.ts    # Token + user + session-cookie storage — shared infra used by the client, middleware, and hooks
-    _schemas/           # Cross-resource Zod schemas (user.ts…) — used by multiple auth.schemas / storage
+    _shared/            # Shared infra used across resources (not itself a resource)
+      client.ts         # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
+      auth-storage.ts   # Token + user + session-cookie storage — used by client, middleware, hooks
+      list-query.ts     # buildListSearchParams helper — pagination + config-driven filter loop
+      schemas/          # Cross-resource Zod schemas (user.ts, admin-user.ts…)
     auth/
       auth.api.ts       # loginApi(), logoutApi(), registerApi()
       auth.schemas.ts   # Zod schemas for the auth endpoints (loginInputSchema, loginResponseSchema…)
@@ -92,10 +94,10 @@ src/
 `data-access/` is the direct equivalent of `db/entities/` in the API:
 - Each file exports plain async functions that call the API — no TanStack Query, no hooks
 - Functions return the raw API response type (`Promise<PaginatedResponse<ApiUser>>`, etc.)
-- All API call logic lives here; features never call `fetch` or `_client` directly
+- All API call logic lives here; features never call `fetch` or `_shared/client` directly
 - **Schemas colocated**: `<resource>.schemas.ts` next to `<resource>.api.ts` for the endpoint I/O Zod schemas (input + response)
-- **Shared schemas**: reused across resources go in `data-access/_schemas/` (e.g. `_schemas/user.ts` — used by `auth.schemas.ts`, `_auth-storage.ts`, and any future admin endpoint)
-- **`_` prefix** on files/dirs signals shared infra (not a resource): `_client.ts`, `_auth-storage.ts`, `_schemas/`
+- **Shared schemas**: reused across resources go in `data-access/_shared/schemas/` (e.g. `schemas/user.ts` — used by `auth.schemas.ts`, `_shared/auth-storage.ts`, and any future admin endpoint)
+- **`_shared/`** groups every non-resource helper (client, storage, list-query, cross-resource schemas). The `_` prefix marks it as shared infra, not a resource
 
 ### features/ layer
 

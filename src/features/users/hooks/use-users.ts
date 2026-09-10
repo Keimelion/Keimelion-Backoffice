@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { fetchUsers } from '@/data-access/users/users.api'
-import type { AdminApiUser } from '@/data-access/_schemas/admin-user'
+import type { AdminApiUser } from '@/data-access/_shared/schemas/admin-user'
 import type { ListUsersQuery } from '@/data-access/users/users.schemas'
 
 type UsersListFilters = Partial<ListUsersQuery>

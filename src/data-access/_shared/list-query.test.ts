@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildListSearchParams } from './_list-query'
+import { buildListSearchParams } from './list-query'
 
 interface TestQuery {
   page: number

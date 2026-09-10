@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
-import { adminUserSchema } from '@/data-access/_schemas/admin-user'
+import { adminUserSchema } from '@/data-access/_shared/schemas/admin-user'
 
 const SORT_VALUES = ['createdAt:desc', 'createdAt:asc'] as const
 

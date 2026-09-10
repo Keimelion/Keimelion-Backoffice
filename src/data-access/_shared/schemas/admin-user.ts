@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { apiUserSchema } from '@/data-access/_schemas/user'
+import { apiUserSchema } from '@/data-access/_shared/schemas/user'
 
 export const adminUserSchema = apiUserSchema.extend({
   bannedAt: z.string().nullable(),

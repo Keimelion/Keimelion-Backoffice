@@ -15,7 +15,7 @@ vi.mock('@/data-access/auth/auth.api', () => ({
   resetPasswordApi: vi.fn(),
 }))
 
-vi.mock('@/data-access/_auth-storage', () => ({
+vi.mock('@/data-access/_shared/auth-storage', () => ({
   clearSession: vi.fn(),
 }))
 
@@ -35,7 +35,7 @@ vi.mock('sonner', () => ({
 
 import { resetPasswordApi } from '@/data-access/auth/auth.api'
 import { LOGIN_RESET_SUCCESS_URL } from '@/data-access/auth/auth.constants'
-import { clearSession } from '@/data-access/_auth-storage'
+import { clearSession } from '@/data-access/_shared/auth-storage'
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
 
 function renderResetPasswordForm(): void {

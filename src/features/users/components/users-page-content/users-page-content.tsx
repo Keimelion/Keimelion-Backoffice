@@ -12,7 +12,7 @@ import type { DataTableColumn, FilterDefinition } from '@/components/shared/data
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { listUsersQuerySchema } from '@/data-access/users/users.schemas'
-import type { AdminApiUser } from '@/data-access/_schemas/admin-user'
+import type { AdminApiUser } from '@/data-access/_shared/schemas/admin-user'
 import { useUsers } from '@/features/users/hooks/use-users'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { RoleFilter } from '@/features/users/components/role-filter'

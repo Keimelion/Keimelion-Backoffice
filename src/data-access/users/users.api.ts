@@ -1,7 +1,7 @@
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { ApiRequestError, apiGet } from '@/data-access/_client'
-import { buildListSearchParams } from '@/data-access/_list-query'
-import type { AdminApiUser } from '@/data-access/_schemas/admin-user'
+import { ApiRequestError, apiGet } from '@/data-access/_shared/client'
+import { buildListSearchParams } from '@/data-access/_shared/list-query'
+import type { AdminApiUser } from '@/data-access/_shared/schemas/admin-user'
 import { listUsersResponseSchema, type ListUsersQuery } from '@/data-access/users/users.schemas'
 
 const USERS_FILTER_KEYS = ['email', 'username', 'role', 'sort'] as const

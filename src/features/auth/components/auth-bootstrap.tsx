@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getStoredUser, syncSessionCookie } from '@/data-access/_auth-storage'
+import { getStoredUser, syncSessionCookie } from '@/data-access/_shared/auth-storage'
 import { queryClient } from '@/lib/query-client'
 import { CURRENT_USER_QUERY_KEY } from '@/features/auth/hooks/use-current-user'
 
