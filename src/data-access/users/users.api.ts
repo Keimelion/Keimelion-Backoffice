@@ -1,33 +1,15 @@
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import type { ApiUser } from '@/data-access/auth/auth.api'
-import { apiGet, apiPatch, apiDelete } from '@/data-access/_client'
+import { apiGet } from '@/data-access/_client'
+import type { AdminApiUser } from '@/data-access/_schemas/admin-user'
+import type { ListUsersQuery } from '@/data-access/users/users.schemas'
 
-export interface ListUsersParams {
-  page?: number
-  limit?: number
-}
-
-export interface UpdateUserInput {
-  username?: string
-  role?: string
-  isMarketingOptedIn?: boolean
-}
-
-export function fetchUsers(params: ListUsersParams): Promise<PaginatedResponse<ApiUser>> {
+export function fetchUsers(params: Partial<ListUsersQuery>): Promise<PaginatedResponse<AdminApiUser>> {
   const query = new URLSearchParams()
   if (params.page !== undefined) query.set('page', String(params.page))
   if (params.limit !== undefined) query.set('limit', String(params.limit))
-  return apiGet<PaginatedResponse<ApiUser>>(`/admin/users?${query.toString()}`)
-}
-
-export function fetchUser(userId: string): Promise<{ user: ApiUser }> {
-  return apiGet<{ user: ApiUser }>(`/admin/users/${userId}`)
-}
-
-export function updateUser(userId: string, input: UpdateUserInput): Promise<{ user: ApiUser }> {
-  return apiPatch<{ user: ApiUser }>(`/admin/users/${userId}`, input)
-}
-
-export function deleteUser(userId: string): Promise<void> {
-  return apiDelete(`/admin/users/${userId}`)
+  if (params.email) query.set('email', params.email)
+  if (params.username) query.set('username', params.username)
+  if (params.role) query.set('role', params.role)
+  if (params.sort) query.set('sort', params.sort)
+  return apiGet<PaginatedResponse<AdminApiUser>>(`/admin/users?${query.toString()}`)
 }
