@@ -92,11 +92,8 @@ function TextFilter({ definition, initialValue, searchParams, router }: TextFilt
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString())
-      if (next) {
-        params.set(definition.paramName, next)
-      } else {
-        params.delete(definition.paramName)
-      }
+      params.delete(definition.paramName)
+      if (next) params.set(definition.paramName, next)
       params.delete(PAGINATION_PARAM)
       router.replace(`?${params.toString()}`, { scroll: false })
     }, DEBOUNCE_DELAY_MS)
@@ -127,11 +124,8 @@ interface SelectFilterProps {
 function SelectFilter({ definition, initialValue, searchParams, router }: SelectFilterProps): React.JSX.Element {
   const handleValueChange = (selected: string): void => {
     const params = new URLSearchParams(searchParams.toString())
-    if (selected === ALL_VALUE) {
-      params.delete(definition.paramName)
-    } else {
-      params.set(definition.paramName, selected)
-    }
+    params.delete(definition.paramName)
+    if (selected !== ALL_VALUE) params.set(definition.paramName, selected)
     params.delete(PAGINATION_PARAM)
     router.replace(`?${params.toString()}`, { scroll: false })
   }

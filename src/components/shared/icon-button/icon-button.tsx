@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
-export type IconButtonTone = 'default' | 'destructive'
+type IconButtonTone = 'default' | 'destructive'
 
 interface IconButtonProps {
   label: string

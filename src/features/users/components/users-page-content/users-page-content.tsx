@@ -16,7 +16,6 @@ import { useUsers } from '@/features/users/hooks/use-users'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
-import { cn } from '@/lib/utils'
 
 const EMPTY_LABEL = 'No users match these filters.'
 
@@ -159,8 +158,6 @@ function formatDate(isoString: string): string {
 }
 
 function resolveRowClassName(user: AdminApiUser): string | undefined {
-  if (user.deletedAt !== null) {
-    return cn('opacity-50')
-  }
+  if (user.deletedAt !== null) return 'opacity-50'
   return undefined
 }

@@ -15,11 +15,8 @@ export function RoleFilter(): React.JSX.Element {
 
   const handleToggle = (role: UserRole): void => {
     const params = new URLSearchParams(searchParams.toString())
-    if (activeRole === role) {
-      params.delete(ROLE_PARAM)
-    } else {
-      params.set(ROLE_PARAM, role)
-    }
+    params.delete(ROLE_PARAM)
+    if (activeRole !== role) params.set(ROLE_PARAM, role)
     params.delete(PAGINATION_PARAM)
     router.replace(`?${params.toString()}`, { scroll: false })
   }
