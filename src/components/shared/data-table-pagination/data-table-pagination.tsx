@@ -1,5 +1,6 @@
 'use client'
 
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
@@ -25,9 +26,9 @@ export function DataTablePagination({ page, pageSize, total }: DataTablePaginati
   }
 
   return (
-    <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-      <span>
-        Page {page} of {totalPages}
+    <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <span className="font-medium text-foreground">
+        Page {page} / {totalPages}
       </span>
       <div className="flex gap-2">
         <Button
@@ -38,6 +39,7 @@ export function DataTablePagination({ page, pageSize, total }: DataTablePaginati
             navigateToPage(page - 1)
           }}
         >
+          <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
         <Button
@@ -49,6 +51,7 @@ export function DataTablePagination({ page, pageSize, total }: DataTablePaginati
           }}
         >
           Next
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

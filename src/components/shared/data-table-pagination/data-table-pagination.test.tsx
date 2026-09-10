@@ -19,7 +19,7 @@ beforeEach(() => {
 describe('DataTablePagination', () => {
   it('displays correct page info', () => {
     render(<DataTablePagination page={2} pageSize={20} total={60} />)
-    expect(screen.getByText('Page 2 of 3')).toBeInTheDocument()
+    expect(screen.getByText('Page 2 / 3')).toBeInTheDocument()
   })
 
   it('navigates to next page on Next click', async () => {
@@ -44,13 +44,13 @@ describe('DataTablePagination', () => {
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
   })
 
-  it('shows Page 1 of 1 when total is less than pageSize', () => {
+  it('shows Page 1 / 1 when total is less than pageSize', () => {
     render(<DataTablePagination page={1} pageSize={20} total={5} />)
-    expect(screen.getByText('Page 1 of 1')).toBeInTheDocument()
+    expect(screen.getByText('Page 1 / 1')).toBeInTheDocument()
   })
 
   it('computes pages correctly with exact multiple', () => {
     render(<DataTablePagination page={1} pageSize={10} total={30} />)
-    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument()
+    expect(screen.getByText('Page 1 / 3')).toBeInTheDocument()
   })
 })

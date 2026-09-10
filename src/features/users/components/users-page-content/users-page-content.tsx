@@ -151,11 +151,13 @@ export function UsersPageContent(): React.JSX.Element {
         pageSize={filters.limit}
         onRetry={() => { void usersQuery.refetch() }}
         getRowClassName={resolveRowClassName}
-      />
-      <DataTablePagination
-        page={filters.page}
-        pageSize={filters.limit}
-        total={total}
+        footer={
+          <DataTablePagination
+            page={filters.page}
+            pageSize={filters.limit}
+            total={total}
+          />
+        }
       />
     </div>
   )
@@ -167,10 +169,10 @@ function resolveAvatarInitial(user: AdminApiUser): string {
 }
 
 function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString('en-US', {
+  return new Date(isoString).toLocaleDateString('en-GB', {
     year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   })
 }
 

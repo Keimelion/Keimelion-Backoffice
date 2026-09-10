@@ -29,6 +29,7 @@ interface DataTableProps<TRow> {
   pageSize: number
   onRetry: () => void
   getRowClassName?: (row: TRow) => string | undefined
+  footer?: ReactNode
 }
 
 const SKELETON_OPACITY_STEP = 0.15
@@ -42,6 +43,7 @@ export function DataTable<TRow>({
   pageSize,
   onRetry,
   getRowClassName,
+  footer,
 }: DataTableProps<TRow>): React.JSX.Element {
   if (error) {
     return (
@@ -62,10 +64,10 @@ export function DataTable<TRow>({
   }
 
   return (
-    <div className="rounded-lg border border-border">
+    <div className="overflow-hidden rounded-lg border border-border">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
             {columns.map((column) => (
               <TableHead key={column.key} className={column.className}>
                 {column.header}
@@ -77,6 +79,11 @@ export function DataTable<TRow>({
           {isLoading ? renderSkeletonRows(columns, pageSize) : renderDataRows(columns, data, emptyLabel, getRowClassName)}
         </TableBody>
       </Table>
+      {footer !== undefined ? (
+        <div className="border-t border-border bg-muted/30 px-4 py-3">
+          {footer}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -115,7 +122,7 @@ function renderDataRows<TRow>(
   return data.map((row, rowIndex) => (
     <TableRow
       key={rowIndex}
-      className={cn('even:bg-muted/40 hover:bg-muted', getRowClassName?.(row))}
+      className={cn('even:bg-muted/40 hover:bg-primary/10', getRowClassName?.(row))}
     >
       {columns.map((column) => (
         <TableCell key={column.key} className={column.className}>
