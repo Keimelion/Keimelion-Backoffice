@@ -22,15 +22,6 @@ export interface NotifyInput {
   action?: NotifyAction
 }
 
-const persistentIds = new Set<string | number>()
-
-export function dismissAllPersistent(): void {
-  persistentIds.forEach((id) => {
-    toast.dismiss(id)
-  })
-  persistentIds.clear()
-}
-
 export function notifySuccess({ title, description, action }: NotifyInput): void {
   toast.success(title, { description, action })
 }

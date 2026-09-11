@@ -44,7 +44,11 @@ export function createQueryClient(): QueryClient {
 
         if (meta?.silent === true) return
 
-        notifyError(error instanceof Error ? error : new Error('Something went wrong'))
+        if (error instanceof Error) {
+          notifyError(error)
+          return
+        }
+        notifyError({ title: 'Something went wrong' })
       },
     }),
     defaultOptions: {

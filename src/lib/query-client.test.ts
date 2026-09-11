@@ -82,6 +82,23 @@ describe('QueryClient MutationCache onError', () => {
     expect(notifyError).toHaveBeenCalledWith(new Error('Server exploded'))
   })
 
+  it('falls back to a generic title when the thrown value is not an Error', async () => {
+    const { createQueryClient, notifyError } = await freshQueryClientModule()
+    const client = createQueryClient()
+
+    await client
+      .getMutationCache()
+      .build(client, {
+        mutationFn: () =>
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+          Promise.reject('not an error object'),
+      })
+      .execute(undefined)
+      .catch(() => undefined)
+
+    expect(notifyError).toHaveBeenCalledWith({ title: 'Something went wrong' })
+  })
+
   it('does not call notifyError when meta.silent is true', async () => {
     const { createQueryClient, notifyError } = await freshQueryClientModule()
     const client = createQueryClient()
