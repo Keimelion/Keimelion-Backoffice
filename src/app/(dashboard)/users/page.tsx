@@ -1,8 +1,17 @@
+import { Suspense } from 'react'
+import { PageHeader } from '@/components/shared/page-header'
+import { UsersPageContent } from '@/features/users/components/users-page-content'
+
 export default function UsersPage(): React.JSX.Element {
   return (
-    <div>
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">Users</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Accounts registered on Keimelion.</p>
-    </div>
+    <>
+      <PageHeader
+        title="Users"
+        description="Accounts registered on Keimelion."
+      />
+      <Suspense>
+        <UsersPageContent />
+      </Suspense>
+    </>
   )
 }

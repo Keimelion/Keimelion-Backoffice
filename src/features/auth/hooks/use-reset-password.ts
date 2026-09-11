@@ -5,8 +5,8 @@ import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { resetPasswordApi } from '@/data-access/auth/auth.api'
 import type { ResetPasswordApiInput } from '@/data-access/auth/auth.api'
-import { clearSession } from '@/data-access/_auth-storage'
-import { ApiRequestError } from '@/data-access/_client'
+import { clearSession } from '@/data-access/_shared/auth-storage'
+import { ApiRequestError } from '@/data-access/_shared/client'
 import {
   AUTH_ERROR_CODE,
   FORGOT_PASSWORD_EXPIRED_LINK_URL,

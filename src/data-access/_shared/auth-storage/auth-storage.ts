@@ -1,7 +1,7 @@
 import { UserRoles } from '@keimelion/api/shared/enums/user-role'
 import type { UserRole } from '@keimelion/api/shared/enums/user-role'
 import type { ApiUser } from '@/data-access/auth/auth.api'
-import { apiUserSchema } from '@/data-access/_schemas/user'
+import { apiUserSchema } from '@/data-access/_shared/schemas/user'
 
 const ACCESS_TOKEN_KEY = 'keimelion_access_token'
 const STORED_USER_KEY = 'keimelion_user'

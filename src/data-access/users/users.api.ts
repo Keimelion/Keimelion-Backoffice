@@ -1,33 +1,21 @@
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import type { ApiUser } from '@/data-access/auth/auth.api'
-import { apiGet, apiPatch, apiDelete } from '@/data-access/_client'
+import { ApiRequestError, apiGet } from '@/data-access/_shared/client'
+import { buildListSearchParams } from '@/data-access/_shared/list-query'
+import type { AdminApiUser } from '@/data-access/_shared/schemas/admin-user'
+import { listUsersResponseSchema, type ListUsersQuery } from '@/data-access/users/users.schemas'
 
-export interface ListUsersParams {
-  page?: number
-  limit?: number
-}
+const USERS_FILTER_KEYS = ['email', 'username', 'role', 'sort'] as const
 
-export interface UpdateUserInput {
-  username?: string
-  role?: string
-  isMarketingOptedIn?: boolean
-}
-
-export function fetchUsers(params: ListUsersParams): Promise<PaginatedResponse<ApiUser>> {
-  const query = new URLSearchParams()
-  if (params.page !== undefined) query.set('page', String(params.page))
-  if (params.limit !== undefined) query.set('limit', String(params.limit))
-  return apiGet<PaginatedResponse<ApiUser>>(`/admin/users?${query.toString()}`)
-}
-
-export function fetchUser(userId: string): Promise<{ user: ApiUser }> {
-  return apiGet<{ user: ApiUser }>(`/admin/users/${userId}`)
-}
-
-export function updateUser(userId: string, input: UpdateUserInput): Promise<{ user: ApiUser }> {
-  return apiPatch<{ user: ApiUser }>(`/admin/users/${userId}`, input)
-}
-
-export function deleteUser(userId: string): Promise<void> {
-  return apiDelete(`/admin/users/${userId}`)
+export async function fetchUsers(params: Partial<ListUsersQuery>): Promise<PaginatedResponse<AdminApiUser>> {
+  const query = buildListSearchParams<ListUsersQuery>(params, USERS_FILTER_KEYS)
+  const raw = await apiGet<unknown>(`/admin/users?${query.toString()}`)
+  const parsed = listUsersResponseSchema.safeParse(raw)
+  if (!parsed.success) {
+    throw new ApiRequestError(
+      'INVALID_RESPONSE',
+      'The server returned an unexpected users payload.',
+      200,
+    )
+  }
+  return parsed.data
 }

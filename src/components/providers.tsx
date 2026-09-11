@@ -29,7 +29,7 @@ function PersistentToastCleaner(): null {
 
 export function Providers({ children }: ProvidersProps): React.JSX.Element {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
         <PersistentToastCleaner />
         <AuthBootstrap>{children}</AuthBootstrap>

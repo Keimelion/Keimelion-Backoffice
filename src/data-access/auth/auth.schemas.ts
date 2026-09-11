@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { apiUserSchema } from '@/data-access/_schemas/user'
+import { apiUserSchema } from '@/data-access/_shared/schemas/user'
 
 const MIN_PASSWORD_LENGTH = 8
 const MAX_PASSWORD_LENGTH = 72

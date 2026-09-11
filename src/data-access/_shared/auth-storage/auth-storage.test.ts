@@ -8,7 +8,7 @@ import {
   isAllowedBackofficeRole,
   saveSession,
   syncSessionCookie,
-} from '@/data-access/_auth-storage'
+} from '@/data-access/_shared/auth-storage'
 
 const STORED_USER_KEY = 'keimelion_user'
 const ACCESS_TOKEN_KEY = 'keimelion_access_token'

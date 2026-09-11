@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { SESSION_COOKIE_NAME, isAllowedBackofficeRole } from '@/data-access/_auth-storage'
+import { SESSION_COOKIE_NAME, isAllowedBackofficeRole } from '@/data-access/_shared/auth-storage'
 import {
   FORGOT_PASSWORD_PATH,
   LOGIN_PATH,

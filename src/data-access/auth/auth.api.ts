@@ -1,6 +1,6 @@
 import type { AuthProvider } from '@keimelion/api/shared/enums/auth-provider'
 import type { UserRole } from '@keimelion/api/shared/enums/user-role'
-import { apiPost } from '@/data-access/_client'
+import { apiPost } from '@/data-access/_shared/client'
 import type { LoginInput } from '@/data-access/auth/auth.schemas'
 
 export interface ApiUser {

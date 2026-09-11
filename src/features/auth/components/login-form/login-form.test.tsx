@@ -18,7 +18,7 @@ vi.mock('@/lib/query-client', async () => {
   return { queryClient: new QueryClient() }
 })
 
-vi.mock('@/data-access/_auth-storage', () => ({
+vi.mock('@/data-access/_shared/auth-storage', () => ({
   getAccessToken: vi.fn(() => null),
   getStoredUser: vi.fn(() => null),
   saveSession: vi.fn(),
