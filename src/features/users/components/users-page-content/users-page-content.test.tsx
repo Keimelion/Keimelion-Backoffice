@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
@@ -32,17 +33,16 @@ function makeWrapper(): React.ComponentType<{ children: React.ReactNode }> {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
   return function Wrapper({ children }: { children: React.ReactNode }): React.JSX.Element {
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    return (
+      <TooltipProvider delayDuration={0}>
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      </TooltipProvider>
+    )
   }
 }
 
 function renderContent(): void {
-  render(
-    <QueryClientProvider client={new QueryClient()}>
-      <UsersPageContent />
-    </QueryClientProvider>,
-    { wrapper: makeWrapper() },
-  )
+  render(<UsersPageContent />, { wrapper: makeWrapper() })
 }
 
 function makeUser(overrides: Partial<{
