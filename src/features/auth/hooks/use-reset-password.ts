@@ -13,9 +13,7 @@ import {
   LOGIN_RESET_SUCCESS_URL,
 } from '@/data-access/auth/auth.constants'
 import { queryClient } from '@/lib/query-client'
-import { notify } from '@/lib/notify'
-
-const GENERIC_ERROR_MESSAGE = 'Something went wrong. Please try again.'
+import { notifyError } from '@/lib/notify'
 
 export function useResetPassword(): UseMutationResult<null, Error, ResetPasswordApiInput> {
   const router = useRouter()
@@ -39,7 +37,7 @@ export function useResetPassword(): UseMutationResult<null, Error, ResetPassword
         router.replace(FORGOT_PASSWORD_EXPIRED_LINK_URL)
         return
       }
-      notify.error(error.message !== '' ? error.message : GENERIC_ERROR_MESSAGE)
+      notifyError(error)
     },
   })
 }
