@@ -18,7 +18,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { loginInputSchema, type LoginInput } from '@/data-access/auth/auth.schemas'
-import { NOTICE_PARAM } from '@/data-access/auth/auth.constants'
+import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/auth.constants'
 import { useLogin } from '@/features/auth/hooks/use-login'
 import { notifySuccess } from '@/lib/notify'
 
@@ -34,8 +34,8 @@ export function LoginForm(): React.JSX.Element {
   })
 
   useEffect(() => {
-    const notice = searchParams.get(NOTICE_PARAM)
-    if (!notice) return
+    const notice = resolveNoticeMessage(searchParams.get(NOTICE_PARAM))
+    if (notice === null) return
     notifySuccess({ title: notice })
   }, [searchParams])
 

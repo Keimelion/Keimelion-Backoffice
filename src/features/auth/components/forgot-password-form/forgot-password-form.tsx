@@ -20,7 +20,7 @@ import {
   forgotPasswordInputSchema,
   type ForgotPasswordInput,
 } from '@/data-access/auth/auth.schemas'
-import { NOTICE_PARAM } from '@/data-access/auth/auth.constants'
+import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/auth.constants'
 import { useForgotPassword } from '@/features/auth/hooks/use-forgot-password'
 import { notifyError } from '@/lib/notify'
 
@@ -36,8 +36,8 @@ export function ForgotPasswordForm(): React.JSX.Element {
   })
 
   useEffect(() => {
-    const notice = searchParams.get(NOTICE_PARAM)
-    if (!notice) return
+    const notice = resolveNoticeMessage(searchParams.get(NOTICE_PARAM))
+    if (notice === null) return
     notifyError({ title: notice })
   }, [searchParams])
 
