@@ -13,6 +13,7 @@ import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { listUsersQuerySchema } from '@/data-access/users/users.schemas'
 import type { AdminApiUser } from '@/data-access/_shared/schemas/admin-user'
+import { formatDate } from '@/lib/format-date'
 import { useUsers } from '@/features/users/hooks/use-users'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { ROLE_PARAM, RoleFilter } from '@/features/users/components/role-filter'
@@ -148,14 +149,6 @@ export function UsersPageContent(): React.JSX.Element {
 function resolveAvatarInitial(user: AdminApiUser): string {
   const source = user.username ?? user.email
   return source.charAt(0).toUpperCase()
-}
-
-function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString('en-GB', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
 }
 
 function resolveRowClassName(user: AdminApiUser): string | undefined {

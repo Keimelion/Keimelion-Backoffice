@@ -22,8 +22,9 @@ export function useUsers(filters: UsersListFilters): UseQueryResult<PaginatedRes
 }
 
 function normalizeFilters(filters: UsersListFilters): UsersListFilters {
-  const entries = (Object.entries(filters) as [keyof UsersListFilters, UsersListFilters[keyof UsersListFilters]][])
+  const entries = Object.entries(filters) as [keyof UsersListFilters, UsersListFilters[keyof UsersListFilters]][]
+  const normalized = entries
     .filter(([, value]) => value !== undefined && value !== '')
-    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-  return Object.fromEntries(entries)
+    .sort(([a], [b]) => a.localeCompare(b))
+  return Object.fromEntries(normalized)
 }
