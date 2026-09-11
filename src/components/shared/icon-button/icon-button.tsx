@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 type IconButtonTone = 'default' | 'destructive'
 
@@ -30,15 +31,19 @@ export function IconButton({
   children,
 }: IconButtonProps): React.JSX.Element {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className={cn(BASE_CLASSES, TONE_CLASSES[tone], className)}
-    >
-      {children}
-      <span className="sr-only">{label}</span>
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label={label}
+          onClick={onClick}
+          className={cn(BASE_CLASSES, TONE_CLASSES[tone], className)}
+        >
+          {children}
+          <span className="sr-only">{label}</span>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   )
 }
