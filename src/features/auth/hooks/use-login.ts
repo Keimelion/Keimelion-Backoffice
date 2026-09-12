@@ -26,13 +26,13 @@ export function useLogin(): UseMutationResult<null, Error, LoginInput> {
         throw new Error('Unexpected response from the server')
       }
 
-      const { accessToken, user } = parsed.data
+      const { accessToken, refreshToken, user } = parsed.data
 
       if (!isAllowedBackofficeRole(user.role)) {
         throw new Error(UNAUTHORIZED_ROLE_MESSAGE)
       }
 
-      saveSession(accessToken, user)
+      saveSession(accessToken, refreshToken, user)
       queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user)
       const greetingName = user.username ?? user.email
       notifySuccess({ title: `Welcome back, ${greetingName}` })

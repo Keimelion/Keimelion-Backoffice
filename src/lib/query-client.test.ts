@@ -119,7 +119,7 @@ describe('QueryClient MutationCache onError', () => {
     const { createQueryClient, ApiRequestError, saveSession } =
       await freshQueryClientModule()
     const client = createQueryClient()
-    saveSession('doomed-token', TEST_USER)
+    saveSession('doomed-token', 'refresh-doomed', TEST_USER)
     client.setQueryData(['some', 'cached', 'data'], { value: 42 })
 
     await client

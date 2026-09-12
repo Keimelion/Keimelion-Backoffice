@@ -5,6 +5,7 @@ import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { logoutApi } from '@/data-access/auth/auth.api'
 import { clearSession } from '@/data-access/_shared/auth-storage'
+import { stopAutoRefresh } from '@/data-access/_shared/auth-storage/refresh-scheduler'
 import { queryClient } from '@/lib/query-client'
 
 export function useLogout(): UseMutationResult<null, Error, null> {
@@ -17,6 +18,7 @@ export function useLogout(): UseMutationResult<null, Error, null> {
     },
     meta: { silent: true },
     onSettled: () => {
+      stopAutoRefresh()
       clearSession()
       queryClient.clear()
       router.replace('/login')

@@ -1,8 +1,16 @@
 import type { ApiError } from '@keimelion/api/shared/types/api'
-import { getAccessToken } from '@/data-access/_shared/auth-storage'
+import {
+  clearSession,
+  getAccessToken,
+  getRefreshToken,
+  rotateTokens,
+} from '@/data-access/_shared/auth-storage'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 const API_V1_URL = `${API_BASE_URL}/v1`
+
+const REFRESH_PATH = '/auth/refresh'
+const LOGIN_PATH = '/auth/login'
 
 export class ApiRequestError extends Error {
   constructor(
@@ -15,23 +23,60 @@ export class ApiRequestError extends Error {
   }
 }
 
-function buildAuthHeaders(): Record<string, string> {
-  const token = getAccessToken()
+let refreshPromise: Promise<string> | null = null
+
+function isRefreshExemptPath(path: string): boolean {
+  return path === REFRESH_PATH || path === LOGIN_PATH
+}
+
+function buildAuthHeaders(token: string | null): Record<string, string> {
   if (!token) return {}
   return { Authorization: `Bearer ${token}` }
 }
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const authHeaders = buildAuthHeaders()
-  const existingHeaders = (options?.headers as Record<string, string> | undefined) ?? {}
+async function executeTokenRefresh(): Promise<string> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) {
+    clearSession()
+    window.location.assign('/login')
+    throw new ApiRequestError('NO_REFRESH_TOKEN', 'No refresh token available', 401)
+  }
 
-  let response: Response
+  const response = await fetch(`${API_V1_URL}${REFRESH_PATH}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  })
+
+  if (!response.ok) {
+    clearSession()
+    window.location.assign('/login')
+    throw new ApiRequestError('REFRESH_FAILED', 'Session expired, please log in again', 401)
+  }
+
+  const body = (await response.json()) as { accessToken: string; refreshToken: string }
+  rotateTokens(body.accessToken, body.refreshToken)
+  return body.accessToken
+}
+
+export function refreshAccessToken(): Promise<string> {
+  if (refreshPromise) return refreshPromise
+
+  refreshPromise = executeTokenRefresh().finally(() => {
+    refreshPromise = null
+  })
+
+  return refreshPromise
+}
+
+async function fetchOnce(path: string, token: string | null, options?: RequestInit): Promise<Response> {
+  const existingHeaders = (options?.headers as Record<string, string> | undefined) ?? {}
   try {
-    response = await fetch(`${API_V1_URL}${path}`, {
+    return await fetch(`${API_V1_URL}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        ...authHeaders,
+        ...buildAuthHeaders(token),
         ...existingHeaders,
       },
     })
@@ -42,10 +87,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       0,
     )
   }
+}
 
-  if (response.status === 204) {
-    return null as T
-  }
+async function parseResponse<T>(response: Response): Promise<T> {
+  if (response.status === 204) return null as T
 
   let body: T | ApiError
   try {
@@ -64,6 +109,18 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   return body as T
+}
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const firstResponse = await fetchOnce(path, getAccessToken(), options)
+
+  if (firstResponse.status === 401 && !isRefreshExemptPath(path)) {
+    const newAccessToken = await refreshAccessToken()
+    const retryResponse = await fetchOnce(path, newAccessToken, options)
+    return parseResponse<T>(retryResponse)
+  }
+
+  return parseResponse<T>(firstResponse)
 }
 
 export function apiGet<T>(path: string): Promise<T> {
