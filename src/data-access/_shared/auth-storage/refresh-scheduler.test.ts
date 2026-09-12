@@ -22,6 +22,11 @@ function buildJwtWithExpiry(expiryMs: number): string {
   return `header.${encoded}.signature`
 }
 
+function buildJwtWithPayload(payload: Record<string, unknown>): string {
+  const encoded = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+  return `header.${encoded}.signature`
+}
+
 beforeEach(() => {
   vi.useFakeTimers()
   vi.clearAllMocks()
@@ -88,6 +93,25 @@ describe('startAutoRefresh', () => {
     startAutoRefresh()
 
     await vi.advanceTimersByTimeAsync(0)
+    expect(refreshAccessToken).toHaveBeenCalledTimes(1)
+  })
+
+  it('schedules refresh when payload base64 length requires 2 padding chars', async () => {
+    const expiryMs = Date.now() + 5 * 60 * 1000
+    const token = buildJwtWithPayload({ exp: Math.floor(expiryMs / 1000), sub: 'x' })
+    const rawPayload = token.split('.')[1] ?? ''
+    expect(rawPayload.length % 4).toBe(2)
+
+    vi.mocked(getAccessToken).mockReturnValueOnce(token).mockReturnValue(null)
+    vi.mocked(refreshAccessToken).mockResolvedValue('new-access-token')
+
+    const { startAutoRefresh } = await freshSchedulerModule()
+    startAutoRefresh()
+
+    await vi.advanceTimersByTimeAsync(3 * 60 * 1000)
+    expect(refreshAccessToken).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(60 * 1000)
     expect(refreshAccessToken).toHaveBeenCalledTimes(1)
   })
 })

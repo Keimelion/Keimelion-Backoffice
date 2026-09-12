@@ -5,6 +5,7 @@ import {
   getRefreshToken,
   rotateTokens,
 } from '@/data-access/_shared/auth-storage'
+import { refreshResponseSchema } from '@/data-access/auth/auth.schemas'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 const API_V1_URL = `${API_BASE_URL}/v1`
@@ -54,9 +55,16 @@ async function executeTokenRefresh(): Promise<string> {
     throw new ApiRequestError('REFRESH_FAILED', 'Session expired, please log in again', 401)
   }
 
-  const body = (await response.json()) as { accessToken: string; refreshToken: string }
-  rotateTokens(body.accessToken, body.refreshToken)
-  return body.accessToken
+  const rawBody: unknown = await response.json()
+  const parsed = refreshResponseSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    clearSession()
+    window.location.assign('/login')
+    throw new ApiRequestError('REFRESH_FAILED', 'Session expired, please log in again', 401)
+  }
+
+  rotateTokens(parsed.data.accessToken, parsed.data.refreshToken)
+  return parsed.data.accessToken
 }
 
 export function refreshAccessToken(): Promise<string> {

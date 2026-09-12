@@ -125,6 +125,24 @@ describe('reactive 401 interception', () => {
     expect(mockAssign).toHaveBeenCalledWith('/login')
   })
 
+  it('redirects to /login and clears session when refresh body is malformed', async () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, 'expired-access')
+    localStorage.setItem(REFRESH_TOKEN_KEY, 'valid-refresh')
+
+    mockFetch(
+      { status: 401, body: { code: 'UNAUTHORIZED', message: 'Unauthorized' } },
+      { status: 200, body: { totallyWrongShape: true } },
+    )
+
+    const { apiGet, ApiRequestError } = await freshClientModule()
+
+    await expect(apiGet('/users/1')).rejects.toBeInstanceOf(ApiRequestError)
+
+    expect(mockAssign).toHaveBeenCalledWith('/login')
+    expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull()
+    expect(localStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull()
+  })
+
   it('does NOT retry on 401 from /auth/login', async () => {
     mockFetch({ status: 401, body: { code: 'INVALID_CREDENTIALS', message: 'Bad credentials' } })
 

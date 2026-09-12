@@ -2,11 +2,18 @@ import { clearSession, getAccessToken } from '@/data-access/_shared/auth-storage
 import { refreshAccessToken } from '@/data-access/_shared/client'
 
 const REFRESH_LEAD_TIME_MS = 60 * 1000
+const BASE64_GROUP_SIZE = 4
 
 let scheduledTimeoutId: ReturnType<typeof setTimeout> | null = null
 
 interface JwtPayload {
   exp: number
+}
+
+function padBase64Url(payloadSegment: string): string {
+  const remainder = payloadSegment.length % BASE64_GROUP_SIZE
+  if (remainder === 0) return payloadSegment
+  return payloadSegment + '='.repeat(BASE64_GROUP_SIZE - remainder)
 }
 
 function decodeJwtExpiry(token: string): number | null {
@@ -17,7 +24,7 @@ function decodeJwtExpiry(token: string): number | null {
   if (!payload) return null
 
   try {
-    const padded = payload + '=='.slice((payload.length + 2) % 4 === 0 ? 2 : (payload.length + 2) % 4)
+    const padded = padBase64Url(payload)
     const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'))
     const parsed = JSON.parse(decoded) as JwtPayload
     return typeof parsed.exp === 'number' ? parsed.exp * 1000 : null

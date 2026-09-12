@@ -1,7 +1,7 @@
 import type { AuthProvider } from '@keimelion/api/shared/enums/auth-provider'
 import type { UserRole } from '@keimelion/api/shared/enums/user-role'
 import { apiPost } from '@/data-access/_shared/client'
-import type { LoginInput, RefreshInput, RefreshResponse } from '@/data-access/auth/auth.schemas'
+import type { LoginInput } from '@/data-access/auth/auth.schemas'
 
 export interface ApiUser {
   id: string
@@ -44,10 +44,6 @@ export function loginApi(input: LoginInput): Promise<LoginResponse> {
 
 export async function logoutApi(): Promise<void> {
   await apiPost<null>('/auth/logout', {})
-}
-
-export function refreshApi(input: RefreshInput): Promise<RefreshResponse> {
-  return apiPost<RefreshResponse>('/auth/refresh', input)
 }
 
 export function forgotPasswordApi(input: ForgotPasswordApiInput): Promise<MessageResponse> {
