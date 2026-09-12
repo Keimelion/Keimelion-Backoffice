@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useLogin } from '@/features/auth/hooks/use-login'
-import { getAccessToken, getStoredUser } from '@/data-access/_shared/auth-storage'
+import { getAccessToken, getRefreshToken, getStoredUser } from '@/data-access/_shared/auth-storage'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -66,6 +66,7 @@ describe('useLogin', () => {
     })
 
     expect(getAccessToken()).toBe('tok-abc')
+    expect(getRefreshToken()).toBe('refresh-xyz')
     expect(getStoredUser()).toEqual(ADMIN_USER)
   })
 

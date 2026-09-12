@@ -40,6 +40,11 @@ export const resetPasswordInputSchema = z
     path: ['confirmPassword'],
   })
 
+export const refreshResponseSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+})
+
 export type LoginInput = z.infer<typeof loginInputSchema>
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordInputSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordInputSchema>

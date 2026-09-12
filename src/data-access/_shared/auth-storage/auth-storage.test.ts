@@ -4,14 +4,17 @@ import {
   SESSION_COOKIE_NAME,
   clearSession,
   getAccessToken,
+  getRefreshToken,
   getStoredUser,
   isAllowedBackofficeRole,
+  rotateTokens,
   saveSession,
   syncSessionCookie,
 } from '@/data-access/_shared/auth-storage'
 
 const STORED_USER_KEY = 'keimelion_user'
 const ACCESS_TOKEN_KEY = 'keimelion_access_token'
+const REFRESH_TOKEN_KEY = 'keimelion_refresh_token'
 
 function readSessionCookie(): string | null {
   const match = document.cookie.split('; ').find((entry) => entry.startsWith(`${SESSION_COOKIE_NAME}=`))
@@ -73,24 +76,48 @@ describe('isAllowedBackofficeRole', () => {
 })
 
 describe('saveSession / clearSession', () => {
-  it('writes token, user, and role cookie atomically', () => {
-    saveSession('tok-abc', ADMIN_USER)
+  it('writes token, refresh token, user, and role cookie atomically', () => {
+    saveSession('tok-abc', 'refresh-abc', ADMIN_USER)
     expect(getAccessToken()).toBe('tok-abc')
+    expect(getRefreshToken()).toBe('refresh-abc')
     expect(getStoredUser()).toEqual(ADMIN_USER)
     expect(readSessionCookie()).toBe('admin')
   })
 
   it('writes the moderator role in the cookie', () => {
-    saveSession('tok-mod', MODERATOR_USER)
+    saveSession('tok-mod', 'refresh-mod', MODERATOR_USER)
     expect(readSessionCookie()).toBe('moderator')
   })
 
-  it('clears token, user, and cookie atomically', () => {
-    saveSession('tok', ADMIN_USER)
+  it('clears token, refresh token, user, and cookie atomically', () => {
+    saveSession('tok', 'refresh-tok', ADMIN_USER)
     clearSession()
     expect(getAccessToken()).toBeNull()
+    expect(getRefreshToken()).toBeNull()
     expect(getStoredUser()).toBeNull()
     expect(readSessionCookie()).toBeNull()
+  })
+})
+
+describe('rotateTokens', () => {
+  it('updates both tokens without touching the stored user or cookie', () => {
+    saveSession('old-access', 'old-refresh', ADMIN_USER)
+    rotateTokens('new-access', 'new-refresh')
+    expect(getAccessToken()).toBe('new-access')
+    expect(getRefreshToken()).toBe('new-refresh')
+    expect(getStoredUser()).toEqual(ADMIN_USER)
+    expect(readSessionCookie()).toBe('admin')
+  })
+})
+
+describe('getRefreshToken', () => {
+  it('returns null when no refresh token is stored', () => {
+    expect(getRefreshToken()).toBeNull()
+  })
+
+  it('returns the stored refresh token', () => {
+    localStorage.setItem(REFRESH_TOKEN_KEY, 'rf-token')
+    expect(getRefreshToken()).toBe('rf-token')
   })
 })
 

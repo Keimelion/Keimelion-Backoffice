@@ -4,6 +4,7 @@ import type { ApiUser } from '@/data-access/auth/auth.api'
 import { apiUserSchema } from '@/data-access/_shared/schemas/user'
 
 const ACCESS_TOKEN_KEY = 'keimelion_access_token'
+const REFRESH_TOKEN_KEY = 'keimelion_refresh_token'
 const STORED_USER_KEY = 'keimelion_user'
 export const SESSION_COOKIE_NAME = 'keimelion_session'
 const SESSION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
@@ -26,6 +27,10 @@ export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY)
 }
 
+export function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_TOKEN_KEY)
+}
+
 export function getStoredUser(): ApiUser | null {
   const raw = localStorage.getItem(STORED_USER_KEY)
   if (!raw) return null
@@ -43,14 +48,21 @@ export function getStoredUser(): ApiUser | null {
   }
 }
 
-export function saveSession(accessToken: string, user: ApiUser): void {
+export function saveSession(accessToken: string, refreshToken: string, user: ApiUser): void {
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
   localStorage.setItem(STORED_USER_KEY, JSON.stringify(user))
   writeSessionCookie(user.role)
 }
 
+export function rotateTokens(accessToken: string, refreshToken: string): void {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+}
+
 export function clearSession(): void {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(REFRESH_TOKEN_KEY)
   localStorage.removeItem(STORED_USER_KEY)
   deleteSessionCookie()
 }
