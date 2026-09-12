@@ -1,56 +1,43 @@
+/**
+ * Toast notification helpers. Copy conventions:
+ * - title: short sentence, capital first letter, no trailing period ("User updated")
+ * - description: full sentence with trailing period ("The user has been saved.")
+ * - notifyError default title: "Something went wrong"
+ *
+ * These helpers are client-only — sonner requires a mounted DOM.
+ * Do not import from Server Components.
+ */
 import { toast } from 'sonner'
-import type { ExternalToast } from 'sonner'
 
-interface NotifyOptions {
-  persistent?: boolean
-  id?: string
+const DEFAULT_ERROR_TITLE = 'Something went wrong'
+
+interface NotifyAction {
+  label: string
+  onClick: () => void
 }
 
-const PERSISTENT_CLASS = 'notify-persistent'
+export interface NotifyInput {
+  title: string
+  description?: string
+  action?: NotifyAction
+}
 
-const persistentIds = new Set<string | number>()
+export function notifySuccess({ title, description, action }: NotifyInput): void {
+  toast.success(title, { description, action })
+}
 
-function buildOptions(options?: NotifyOptions): ExternalToast | undefined {
-  if (!options) return undefined
-  const base: ExternalToast = {}
-  if (options.id !== undefined) base.id = options.id
-  if (options.persistent === true) {
-    base.duration = Number.POSITIVE_INFINITY
-    base.className = PERSISTENT_CLASS
+export function notifyError(input: Error | NotifyInput): void {
+  if (input instanceof Error) {
+    toast.error(DEFAULT_ERROR_TITLE, { description: input.message })
+    return
   }
-  return Object.keys(base).length > 0 ? base : undefined
+  toast.error(input.title, { description: input.description, action: input.action })
 }
 
-function callToast(
-  fn: (message: string, data?: ExternalToast) => string | number,
-  message: string,
-  options?: NotifyOptions,
-): void {
-  const built = buildOptions(options)
-  const id = built === undefined ? fn(message) : fn(message, built)
-  if (options?.persistent === true) {
-    persistentIds.add(id)
-  }
+export function notifyWarning({ title, description, action }: NotifyInput): void {
+  toast.warning(title, { description, action })
 }
 
-export function dismissAllPersistent(): void {
-  persistentIds.forEach((id) => {
-    toast.dismiss(id)
-  })
-  persistentIds.clear()
-}
-
-export const notify = {
-  error(message: string, options?: NotifyOptions): void {
-    callToast(toast.error, message, options)
-  },
-  success(message: string, options?: NotifyOptions): void {
-    callToast(toast.success, message, options)
-  },
-  info(message: string, options?: NotifyOptions): void {
-    callToast(toast.info, message, options)
-  },
-  warning(message: string, options?: NotifyOptions): void {
-    callToast(toast.warning, message, options)
-  },
+export function notifyInfo({ title, description, action }: NotifyInput): void {
+  toast.info(title, { description, action })
 }

@@ -9,7 +9,7 @@ import { loginResponseSchema } from '@/data-access/auth/auth.schemas'
 import type { LoginInput } from '@/data-access/auth/auth.schemas'
 import { queryClient } from '@/lib/query-client'
 import { CURRENT_USER_QUERY_KEY } from '@/features/auth/hooks/use-current-user'
-import { notify } from '@/lib/notify'
+import { notifySuccess } from '@/lib/notify'
 
 const UNAUTHORIZED_ROLE_MESSAGE =
   'This account is not authorized to access the Backoffice'
@@ -35,7 +35,7 @@ export function useLogin(): UseMutationResult<null, Error, LoginInput> {
       saveSession(accessToken, user)
       queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user)
       const greetingName = user.username ?? user.email
-      notify.success(`Welcome back, ${greetingName}.`)
+      notifySuccess({ title: `Welcome back, ${greetingName}` })
       router.push('/')
       return null
     },

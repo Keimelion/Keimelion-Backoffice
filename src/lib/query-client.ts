@@ -1,10 +1,9 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { ApiRequestError } from '@/data-access/_shared/client'
 import { clearSession } from '@/data-access/_shared/auth-storage'
+import { notifyError } from '@/lib/notify'
 
 const STALE_TIME_MS = 1000 * 60 * 5
-const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.'
 
 interface MutationMeta {
   silent?: boolean
@@ -45,8 +44,11 @@ export function createQueryClient(): QueryClient {
 
         if (meta?.silent === true) return
 
-        const message = error instanceof Error ? error.message : DEFAULT_ERROR_MESSAGE
-        toast.error(message)
+        if (error instanceof Error) {
+          notifyError(error)
+          return
+        }
+        notifyError({ title: 'Something went wrong' })
       },
     }),
     defaultOptions: {

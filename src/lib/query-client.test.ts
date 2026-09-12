@@ -3,22 +3,17 @@ import type { Mock } from 'vitest'
 import type * as QueryClientModule from './query-client'
 import type * as ClientModule from '@/data-access/_shared/client'
 import type * as AuthStorageModule from '@/data-access/_shared/auth-storage'
-import type * as SonnerModule from 'sonner'
+import type * as NotifyModule from '@/lib/notify'
 
-vi.mock('sonner', () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-    warning: vi.fn(),
-    info: vi.fn(),
-  },
+vi.mock('@/lib/notify', () => ({
+  notifyError: vi.fn(),
 }))
 
 interface FreshModules {
   createQueryClient: typeof QueryClientModule.createQueryClient
   ApiRequestError: typeof ClientModule.ApiRequestError
   saveSession: typeof AuthStorageModule.saveSession
-  toast: typeof SonnerModule.toast
+  notifyError: typeof NotifyModule.notifyError
 }
 
 async function freshQueryClientModule(): Promise<FreshModules> {
@@ -26,12 +21,12 @@ async function freshQueryClientModule(): Promise<FreshModules> {
   const queryClientModule = await import('./query-client')
   const clientModule = await import('@/data-access/_shared/client')
   const storageModule = await import('@/data-access/_shared/auth-storage')
-  const sonnerModule = await import('sonner')
+  const notifyModule = await import('@/lib/notify')
   return {
     createQueryClient: queryClientModule.createQueryClient,
     ApiRequestError: clientModule.ApiRequestError,
     saveSession: storageModule.saveSession,
-    toast: sonnerModule.toast,
+    notifyError: notifyModule.notifyError,
   }
 }
 
@@ -74,8 +69,8 @@ const TEST_USER = {
 }
 
 describe('QueryClient MutationCache onError', () => {
-  it('toasts a non-401 error message', async () => {
-    const { createQueryClient, toast } = await freshQueryClientModule()
+  it('calls notifyError with a non-401 error', async () => {
+    const { createQueryClient, notifyError } = await freshQueryClientModule()
     const client = createQueryClient()
 
     await client
@@ -84,11 +79,28 @@ describe('QueryClient MutationCache onError', () => {
       .execute(undefined)
       .catch(() => undefined)
 
-    expect(toast.error).toHaveBeenCalledWith('Server exploded')
+    expect(notifyError).toHaveBeenCalledWith(new Error('Server exploded'))
   })
 
-  it('does not toast when meta.silent is true', async () => {
-    const { createQueryClient, toast } = await freshQueryClientModule()
+  it('falls back to a generic title when the thrown value is not an Error', async () => {
+    const { createQueryClient, notifyError } = await freshQueryClientModule()
+    const client = createQueryClient()
+
+    await client
+      .getMutationCache()
+      .build(client, {
+        mutationFn: () =>
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+          Promise.reject('not an error object'),
+      })
+      .execute(undefined)
+      .catch(() => undefined)
+
+    expect(notifyError).toHaveBeenCalledWith({ title: 'Something went wrong' })
+  })
+
+  it('does not call notifyError when meta.silent is true', async () => {
+    const { createQueryClient, notifyError } = await freshQueryClientModule()
     const client = createQueryClient()
 
     await client
@@ -100,7 +112,7 @@ describe('QueryClient MutationCache onError', () => {
       .execute(undefined)
       .catch(() => undefined)
 
-    expect(toast.error).not.toHaveBeenCalled()
+    expect(notifyError).not.toHaveBeenCalled()
   })
 
   it('redirects to /login on 401 and clears storage + cache', async () => {
@@ -125,8 +137,8 @@ describe('QueryClient MutationCache onError', () => {
     expect(client.getQueryData(['some', 'cached', 'data'])).toBeUndefined()
   })
 
-  it('does NOT toast when a 401 triggers a redirect', async () => {
-    const { createQueryClient, ApiRequestError, toast } = await freshQueryClientModule()
+  it('does NOT call notifyError when a 401 triggers a redirect', async () => {
+    const { createQueryClient, ApiRequestError, notifyError } = await freshQueryClientModule()
     const client = createQueryClient()
 
     await client
@@ -138,11 +150,11 @@ describe('QueryClient MutationCache onError', () => {
       .execute(undefined)
       .catch(() => undefined)
 
-    expect(toast.error).not.toHaveBeenCalled()
+    expect(notifyError).not.toHaveBeenCalled()
   })
 
-  it('skips the redirect when meta.skipUnauthorizedRedirect is true and toasts instead', async () => {
-    const { createQueryClient, ApiRequestError, toast } = await freshQueryClientModule()
+  it('skips the redirect when meta.skipUnauthorizedRedirect is true and calls notifyError', async () => {
+    const { createQueryClient, ApiRequestError, notifyError } = await freshQueryClientModule()
     const client = createQueryClient()
 
     await client
@@ -156,6 +168,8 @@ describe('QueryClient MutationCache onError', () => {
       .catch(() => undefined)
 
     expect(mockAssign).not.toHaveBeenCalled()
-    expect(toast.error).toHaveBeenCalledWith('Invalid credentials')
+    expect(notifyError).toHaveBeenCalledWith(
+      new ApiRequestError('INVALID_CREDENTIALS', 'Invalid credentials', 401),
+    )
   })
 })
