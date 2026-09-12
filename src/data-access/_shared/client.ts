@@ -1,5 +1,6 @@
 import axios, { AxiosHeaders } from 'axios'
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import { z } from 'zod'
 import {
   clearSession,
   getAccessToken,
@@ -13,6 +14,11 @@ const API_V1_URL = `${API_BASE_URL}/v1`
 
 const REFRESH_PATH = '/auth/refresh'
 const LOGIN_PATH = '/auth/login'
+
+const apiErrorBodySchema = z.object({
+  code: z.string().min(1),
+  message: z.string().min(1),
+})
 
 export class ApiRequestError extends Error {
   constructor(
@@ -73,7 +79,7 @@ export function refreshAccessToken(): Promise<string> {
   return refreshPromise
 }
 
-function mapAxiosError(axiosError: AxiosError<{ code: string; message: string }>): ApiRequestError {
+function mapAxiosError(axiosError: AxiosError): ApiRequestError {
   const status = axiosError.response?.status ?? 0
 
   if (!axiosError.response) {
@@ -84,9 +90,9 @@ function mapAxiosError(axiosError: AxiosError<{ code: string; message: string }>
     )
   }
 
-  const body = axiosError.response.data
-  if (body.code && body.message) {
-    return new ApiRequestError(body.code, body.message, status)
+  const parsedBody = apiErrorBodySchema.safeParse(axiosError.response.data)
+  if (parsedBody.success) {
+    return new ApiRequestError(parsedBody.data.code, parsedBody.data.message, status)
   }
 
   return new ApiRequestError(
@@ -118,7 +124,7 @@ axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
-    const axiosError = error as AxiosError<{ code: string; message: string }>
+    const axiosError = error as AxiosError
     const originalConfig = axiosError.config
     const requestPath = originalConfig?.url ?? ''
     const status = axiosError.response?.status

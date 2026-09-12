@@ -175,6 +175,34 @@ describe('reactive 401 interception', () => {
     mock.restore()
   })
 
+  it('maps a 5xx with a non-JSON body to INVALID_RESPONSE without crashing', async () => {
+    const { apiGet, ApiRequestError, axiosInstance } = await freshClientModule()
+    const mock = new MockAdapter(axiosInstance)
+
+    mock.onGet('/users/1').replyOnce(500, '<html>Internal Server Error</html>')
+
+    const caught = await apiGet('/users/1').catch((error: unknown) => error)
+
+    expect(caught).toBeInstanceOf(ApiRequestError)
+    expect(caught).toMatchObject({ code: 'INVALID_RESPONSE', status: 500 })
+
+    mock.restore()
+  })
+
+  it('maps a network error (no response) to NETWORK_ERROR', async () => {
+    const { apiGet, ApiRequestError, axiosInstance } = await freshClientModule()
+    const mock = new MockAdapter(axiosInstance)
+
+    mock.onGet('/users/1').networkErrorOnce()
+
+    const caught = await apiGet('/users/1').catch((error: unknown) => error)
+
+    expect(caught).toBeInstanceOf(ApiRequestError)
+    expect(caught).toMatchObject({ code: 'NETWORK_ERROR' })
+
+    mock.restore()
+  })
+
   it('deduplicates concurrent refreshes — issues only one refresh call', async () => {
     localStorage.setItem(ACCESS_TOKEN_KEY, 'expired-access')
     localStorage.setItem(REFRESH_TOKEN_KEY, 'valid-refresh')
