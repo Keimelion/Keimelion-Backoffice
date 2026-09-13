@@ -1,5 +1,5 @@
 import { clearSession, getAccessToken } from '@/data-access/_shared/auth-storage'
-import { refreshAccessToken } from '@/data-access/_shared/client'
+import { refreshAccessToken } from '@/data-access/_shared/axios'
 
 const REFRESH_LEAD_TIME_MS = 60 * 1000
 const BASE64_GROUP_SIZE = 4

@@ -9,8 +9,8 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }))
 
-vi.mock('@/data-access/auth/auth.api', () => ({
-  loginApi: vi.fn(),
+vi.mock('@/data-access/auth/login', () => ({
+  login: vi.fn(),
 }))
 
 vi.mock('@/lib/query-client', async () => {
@@ -18,7 +18,8 @@ vi.mock('@/lib/query-client', async () => {
   return { queryClient: new QueryClient() }
 })
 
-import { loginApi } from '@/data-access/auth/auth.api'
+import { login } from '@/data-access/auth/login'
+import { ApiRequestError } from '@/data-access/_shared/api-error'
 
 const ADMIN_USER = {
   id: 'u1',
@@ -52,7 +53,7 @@ beforeEach(() => {
 
 describe('useLogin', () => {
   it('persists token and seeds currentUser on successful admin login', async () => {
-    vi.mocked(loginApi).mockResolvedValue({
+    vi.mocked(login).mockResolvedValue({
       accessToken: 'tok-abc',
       refreshToken: 'refresh-xyz',
       user: ADMIN_USER,
@@ -71,7 +72,7 @@ describe('useLogin', () => {
   })
 
   it('does NOT persist token when role is user', async () => {
-    vi.mocked(loginApi).mockResolvedValue({
+    vi.mocked(login).mockResolvedValue({
       accessToken: 'tok-user',
       refreshToken: 'refresh-user',
       user: STANDARD_USER,
@@ -89,8 +90,10 @@ describe('useLogin', () => {
     expect(result.current.error?.message).toContain('not authorized')
   })
 
-  it('throws when API response schema does not match', async () => {
-    vi.mocked(loginApi).mockResolvedValue({ unexpected: true } as never)
+  it('surfaces the ApiRequestError when login() rejects on malformed payload', async () => {
+    vi.mocked(login).mockRejectedValue(
+      new ApiRequestError('INVALID_RESPONSE', 'The server returned an unexpected login payload.', 200),
+    )
 
     const { result } = renderHook(() => useLogin(), { wrapper: makeWrapper() })
     result.current.mutate({ email: 'admin@keimelion.app', password: 'secret' })
@@ -100,6 +103,6 @@ describe('useLogin', () => {
     })
 
     expect(getAccessToken()).toBeNull()
-    expect(result.current.error?.message).toContain('Unexpected response')
+    expect(result.current.error).toBeInstanceOf(ApiRequestError)
   })
 })

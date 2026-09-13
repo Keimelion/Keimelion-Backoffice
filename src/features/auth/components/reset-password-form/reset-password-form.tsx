@@ -18,7 +18,7 @@ import { PasswordInput } from '@/components/ui/password-input'
 import {
   resetPasswordInputSchema,
   type ResetPasswordInput,
-} from '@/data-access/auth/auth.schemas'
+} from '@/data-access/auth/reset-password'
 import { useResetPassword } from '@/features/auth/hooks/use-reset-password'
 
 export function ResetPasswordForm(): React.JSX.Element {

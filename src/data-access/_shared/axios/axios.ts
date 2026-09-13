@@ -1,72 +1,44 @@
 import axios, { AxiosHeaders } from 'axios'
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { z } from 'zod'
-import {
-  clearSession,
-  getAccessToken,
-  getRefreshToken,
-  rotateTokens,
-} from '@/data-access/_shared/auth-storage'
-import { refreshResponseSchema } from '@/data-access/auth/auth.schemas'
+import { clearSession, getAccessToken, getRefreshToken } from '@/data-access/_shared/auth-storage'
+import { ApiRequestError } from '@/data-access/_shared/api-error'
+import { refreshTokens } from '@/data-access/auth/refresh'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 const API_V1_URL = `${API_BASE_URL}/v1`
 
 const REFRESH_PATH = '/auth/refresh'
-const LOGIN_PATH = '/auth/login'
+const LOGIN_ROUTE = '/auth/login'
+const LOGIN_REDIRECT = '/login'
 
 const apiErrorBodySchema = z.object({
   code: z.string().min(1),
   message: z.string().min(1),
 })
 
-export class ApiRequestError extends Error {
-  constructor(
-    public readonly code: string,
-    message: string,
-    public readonly status: number,
-  ) {
-    super(message)
-    this.name = 'ApiRequestError'
-  }
-}
-
 let refreshPromise: Promise<string> | null = null
 
 function isRefreshExemptPath(path: string): boolean {
-  return path === REFRESH_PATH || path === LOGIN_PATH
+  return path === REFRESH_PATH || path === LOGIN_ROUTE
+}
+
+function abortRefresh(code: string, message: string): never {
+  clearSession()
+  window.location.assign(LOGIN_REDIRECT)
+  throw new ApiRequestError(code, message, 401)
 }
 
 async function executeTokenRefresh(): Promise<string> {
   const refreshToken = getRefreshToken()
   if (!refreshToken) {
-    clearSession()
-    window.location.assign('/login')
-    throw new ApiRequestError('NO_REFRESH_TOKEN', 'No refresh token available', 401)
+    abortRefresh('NO_REFRESH_TOKEN', 'No refresh token available')
   }
-
-  const response = await fetch(`${API_V1_URL}${REFRESH_PATH}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-  })
-
-  if (!response.ok) {
-    clearSession()
-    window.location.assign('/login')
-    throw new ApiRequestError('REFRESH_FAILED', 'Session expired, please log in again', 401)
+  try {
+    return await refreshTokens(refreshToken)
+  } catch {
+    abortRefresh('REFRESH_FAILED', 'Session expired, please log in again')
   }
-
-  const rawBody: unknown = await response.json()
-  const parsed = refreshResponseSchema.safeParse(rawBody)
-  if (!parsed.success) {
-    clearSession()
-    window.location.assign('/login')
-    throw new ApiRequestError('REFRESH_FAILED', 'Session expired, please log in again', 401)
-  }
-
-  rotateTokens(parsed.data.accessToken, parsed.data.refreshToken)
-  return parsed.data.accessToken
 }
 
 export function refreshAccessToken(): Promise<string> {
@@ -140,30 +112,3 @@ axiosInstance.interceptors.response.use(
     throw mapAxiosError(axiosError)
   },
 )
-
-async function request<T>(path: string, method: string, body?: unknown): Promise<T> {
-  const response = await axiosInstance.request<T>({
-    url: path,
-    method,
-    data: body,
-  })
-
-  if (response.status === 204) return null as T
-  return response.data
-}
-
-export function apiGet<T>(path: string): Promise<T> {
-  return request<T>(path, 'GET')
-}
-
-export function apiPost<T>(path: string, body: unknown): Promise<T> {
-  return request<T>(path, 'POST', body)
-}
-
-export function apiPatch<T>(path: string, body: unknown): Promise<T> {
-  return request<T>(path, 'PATCH', body)
-}
-
-export async function apiDelete(path: string): Promise<void> {
-  await request<null>(path, 'DELETE')
-}

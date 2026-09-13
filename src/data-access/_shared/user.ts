@@ -33,3 +33,5 @@ export const apiUserSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
 })
+
+export type ApiUser = z.infer<typeof apiUserSchema>

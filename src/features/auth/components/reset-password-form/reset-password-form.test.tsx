@@ -11,9 +11,10 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams('token=test-token-abc'),
 }))
 
-vi.mock('@/data-access/auth/auth.api', () => ({
-  resetPasswordApi: vi.fn(),
-}))
+vi.mock(import('@/data-access/auth/reset-password'), async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, resetPassword: vi.fn() }
+})
 
 vi.mock('@/data-access/_shared/auth-storage', () => ({
   clearSession: vi.fn(),
@@ -33,8 +34,8 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import { resetPasswordApi } from '@/data-access/auth/auth.api'
-import { LOGIN_RESET_SUCCESS_URL } from '@/data-access/auth/auth.constants'
+import { resetPassword } from '@/data-access/auth/reset-password'
+import { LOGIN_RESET_SUCCESS_URL } from '@/data-access/auth/notices'
 import { clearSession } from '@/data-access/_shared/auth-storage'
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
 
@@ -54,8 +55,8 @@ beforeEach(() => {
 })
 
 describe('ResetPasswordForm', () => {
-  it('calls resetPasswordApi with token and new password on submit', async () => {
-    vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
+  it('calls resetPassword with token and new password on submit', async () => {
+    vi.mocked(resetPassword).mockResolvedValue(undefined)
 
     renderResetPasswordForm()
 
@@ -64,7 +65,7 @@ describe('ResetPasswordForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /update password/i }))
 
     await waitFor(() => {
-      expect(resetPasswordApi).toHaveBeenCalledWith({
+      expect(resetPassword).toHaveBeenCalledWith({
         token: 'test-token-abc',
         newPassword: 'newpassword123',
       })
@@ -81,7 +82,7 @@ describe('ResetPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('Passwords do not match.')).toBeInTheDocument()
     })
-    expect(resetPasswordApi).not.toHaveBeenCalled()
+    expect(resetPassword).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled()
   })
 
@@ -97,12 +98,12 @@ describe('ResetPasswordForm', () => {
         screen.getByText('Password must be at least 8 characters.'),
       ).toBeInTheDocument()
     })
-    expect(resetPasswordApi).not.toHaveBeenCalled()
+    expect(resetPassword).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled()
   })
 
   it('redirects to /login with the reset-success notice on success', async () => {
-    vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
+    vi.mocked(resetPassword).mockResolvedValue(undefined)
 
     renderResetPasswordForm()
 
@@ -116,7 +117,7 @@ describe('ResetPasswordForm', () => {
   })
 
   it('clears the local session on success so a stale token cannot outlive the reset', async () => {
-    vi.mocked(resetPasswordApi).mockResolvedValue({ message: 'ok' })
+    vi.mocked(resetPassword).mockResolvedValue(undefined)
 
     renderResetPasswordForm()
 

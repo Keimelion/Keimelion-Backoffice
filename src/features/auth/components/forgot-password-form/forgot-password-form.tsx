@@ -19,8 +19,8 @@ import { Input } from '@/components/ui/input'
 import {
   forgotPasswordInputSchema,
   type ForgotPasswordInput,
-} from '@/data-access/auth/auth.schemas'
-import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/auth.constants'
+} from '@/data-access/auth/forgot-password'
+import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/notices'
 import { useForgotPassword } from '@/features/auth/hooks/use-forgot-password'
 import { notifyError } from '@/lib/notify'
 

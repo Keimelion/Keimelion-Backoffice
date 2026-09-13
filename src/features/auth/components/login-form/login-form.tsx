@@ -17,8 +17,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
-import { loginInputSchema, type LoginInput } from '@/data-access/auth/auth.schemas'
-import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/auth.constants'
+import { loginInputSchema, type LoginInput } from '@/data-access/auth/login'
+import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/notices'
 import { useLogin } from '@/features/auth/hooks/use-login'
 import { notifySuccess } from '@/lib/notify'
 

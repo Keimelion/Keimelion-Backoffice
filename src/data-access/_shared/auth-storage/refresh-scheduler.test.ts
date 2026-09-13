@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockAssign = vi.fn()
 
-vi.mock('@/data-access/_shared/client', () => ({
+vi.mock('@/data-access/_shared/axios', () => ({
   refreshAccessToken: vi.fn(),
 }))
 
@@ -13,7 +13,7 @@ vi.mock('@/data-access/_shared/auth-storage', () => ({
   rotateTokens: vi.fn(),
 }))
 
-import { refreshAccessToken } from '@/data-access/_shared/client'
+import { refreshAccessToken } from '@/data-access/_shared/axios'
 import { clearSession, getAccessToken } from '@/data-access/_shared/auth-storage'
 
 function buildJwtWithExpiry(expiryMs: number): string {

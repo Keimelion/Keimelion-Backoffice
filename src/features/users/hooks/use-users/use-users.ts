@@ -3,9 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { fetchUsers } from '@/data-access/users/users.api'
-import type { AdminApiUser } from '@/data-access/_shared/schemas/admin-user'
-import type { ListUsersQuery } from '@/data-access/users/users.schemas'
+import { listUsers, type AdminApiUser, type ListUsersQuery } from '@/data-access/users/list-users'
 
 type UsersListFilters = Partial<ListUsersQuery>
 
@@ -17,7 +15,7 @@ export function buildUsersListKey(filters: UsersListFilters): ['users', 'list', 
 export function useUsers(filters: UsersListFilters): UseQueryResult<PaginatedResponse<AdminApiUser>> {
   return useQuery({
     queryKey: buildUsersListKey(filters),
-    queryFn: () => fetchUsers(filters),
+    queryFn: () => listUsers(filters),
   })
 }
 
