@@ -22,16 +22,16 @@ function readStoredLocale(): Locale | null {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY)
     if (stored !== null && isValidLocale(stored)) return stored
   } catch {
-    // localStorage unavailable (SSR or blocked)
+    return null
   }
   return null
 }
 
-function persistLocale(locale: Locale): void {
+export function persistLocale(locale: Locale): void {
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, locale)
   } catch {
-    // localStorage unavailable (SSR or blocked)
+    return
   }
 }
 
@@ -48,5 +48,3 @@ export function resolveInitialLocale(): Locale {
   persistLocale(resolved)
   return resolved
 }
-
-export { persistLocale }

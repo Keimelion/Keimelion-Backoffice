@@ -11,8 +11,6 @@ export function buildOccasionTypesQueryKey(locale: Locale): ['occasion-types', '
   return ['occasion-types', 'list', locale]
 }
 
-export const OCCASION_TYPES_QUERY_KEY = buildOccasionTypesQueryKey
-
 export function useOccasionTypes(): UseQueryResult<ApiOccasionType[]> {
   const locale = useLocaleStore((state) => state.locale)
   return useQuery({

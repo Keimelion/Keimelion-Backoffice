@@ -18,6 +18,7 @@ vi.stubGlobal('window', { location: { assign: mockAssign } })
 
 const { axiosInstance } = await import('@/data-access/_shared/axios')
 const { ApiRequestError } = await import('@/data-access/_shared/api-error')
+const { useLocaleStore } = await import('@/lib/i18n/locale-store')
 
 let mock: MockAdapter
 
@@ -38,6 +39,29 @@ describe('axiosInstance — happy path', () => {
 
     const response = await axiosInstance.get<{ id: string; name: string }>('/users/1')
     expect(response.data).toEqual({ id: '1', name: 'Alice' })
+  })
+})
+
+describe('Accept-Language interceptor', () => {
+  it('attaches the current store locale to every request', async () => {
+    useLocaleStore.setState({ locale: 'fr' })
+    mock.onGet('/occasion-types').reply(200, [])
+
+    await axiosInstance.get('/occasion-types')
+
+    expect(mock.history.get[0]?.headers?.['Accept-Language']).toBe('fr')
+  })
+
+  it('reflects a locale change on the next request without recreating the client', async () => {
+    useLocaleStore.setState({ locale: 'en' })
+    mock.onGet('/occasion-types').reply(200, [])
+
+    await axiosInstance.get('/occasion-types')
+    useLocaleStore.setState({ locale: 'fr' })
+    await axiosInstance.get('/occasion-types')
+
+    expect(mock.history.get[0]?.headers?.['Accept-Language']).toBe('en')
+    expect(mock.history.get[1]?.headers?.['Accept-Language']).toBe('fr')
   })
 })
 
