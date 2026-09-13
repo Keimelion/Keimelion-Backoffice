@@ -20,7 +20,7 @@ const DATA: FixtureRow[] = [
   { id: '2', name: 'Bob' },
 ]
 
-const PAGE_SIZE = 5
+const SKELETON_ROW_COUNT = 5
 const EMPTY_LABEL = 'No items found.'
 
 function renderTable(overrides: Partial<Parameters<typeof DataTable<FixtureRow>>[0]> = {}): void {
@@ -31,7 +31,7 @@ function renderTable(overrides: Partial<Parameters<typeof DataTable<FixtureRow>>
       isLoading={false}
       error={null}
       emptyLabel={EMPTY_LABEL}
-      pageSize={PAGE_SIZE}
+      skeletonRowCount={SKELETON_ROW_COUNT}
       onRetry={vi.fn()}
       {...overrides}
     />,
@@ -51,10 +51,10 @@ describe('DataTable', () => {
     expect(screen.getByText('Bob')).toBeInTheDocument()
   })
 
-  it('renders skeleton rows equal to pageSize when isLoading', () => {
+  it('renders skeleton rows equal to skeletonRowCount when isLoading', () => {
     renderTable({ data: [], isLoading: true })
     const skeletons = document.querySelectorAll('.animate-pulse')
-    expect(skeletons.length).toBe(PAGE_SIZE * COLUMNS.length)
+    expect(skeletons.length).toBe(SKELETON_ROW_COUNT * COLUMNS.length)
   })
 
   it('renders empty state label when data is empty and not loading', () => {

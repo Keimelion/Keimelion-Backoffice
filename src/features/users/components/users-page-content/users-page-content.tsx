@@ -123,7 +123,7 @@ export function UsersPageContent(): React.JSX.Element {
       isLoading={usersQuery.isLoading}
       error={usersQuery.error}
       emptyLabel={EMPTY_LABEL}
-      pageSize={filters.limit}
+      skeletonRowCount={filters.limit}
       onRetry={() => { void usersQuery.refetch() }}
       getRowClassName={resolveRowClassName}
       toolbar={

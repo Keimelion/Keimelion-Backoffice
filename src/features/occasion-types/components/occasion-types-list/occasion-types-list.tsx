@@ -6,7 +6,7 @@ import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-type
 import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-types'
 
 const EMPTY_LABEL = 'No occasion types found.'
-const SKELETON_PAGE_SIZE = 5
+const SKELETON_ROW_COUNT = 5
 
 const OCCASION_TYPES_COLUMNS: DataTableColumn<ApiOccasionType>[] = [
   {
@@ -47,7 +47,7 @@ export function OccasionTypesList(): React.JSX.Element {
       isLoading={occasionTypesQuery.isLoading}
       error={occasionTypesQuery.error}
       emptyLabel={EMPTY_LABEL}
-      pageSize={SKELETON_PAGE_SIZE}
+      skeletonRowCount={SKELETON_ROW_COUNT}
       onRetry={() => { void occasionTypesQuery.refetch() }}
     />
   )

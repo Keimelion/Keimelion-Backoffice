@@ -26,7 +26,7 @@ interface DataTableProps<TRow> {
   isLoading: boolean
   error: Error | null
   emptyLabel: string
-  pageSize: number
+  skeletonRowCount: number
   onRetry: () => void
   getRowClassName?: (row: TRow) => string | undefined
   toolbar?: ReactNode
@@ -41,7 +41,7 @@ export function DataTable<TRow>({
   isLoading,
   error,
   emptyLabel,
-  pageSize,
+  skeletonRowCount,
   onRetry,
   getRowClassName,
   toolbar,
@@ -83,7 +83,7 @@ export function DataTable<TRow>({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isLoading ? renderSkeletonRows(columns, pageSize) : renderDataRows(columns, data, emptyLabel, getRowClassName)}
+          {isLoading ? renderSkeletonRows(columns, skeletonRowCount) : renderDataRows(columns, data, emptyLabel, getRowClassName)}
         </TableBody>
       </Table>
       {footer !== undefined ? (
@@ -97,9 +97,9 @@ export function DataTable<TRow>({
 
 function renderSkeletonRows<TRow>(
   columns: DataTableColumn<TRow>[],
-  pageSize: number,
+  skeletonRowCount: number,
 ): ReactNode {
-  return Array.from({ length: pageSize }, (_, rowIndex) => (
+  return Array.from({ length: skeletonRowCount }, (_, rowIndex) => (
     <TableRow key={rowIndex} style={{ opacity: 1 - rowIndex * SKELETON_OPACITY_STEP }}>
       {columns.map((column) => (
         <TableCell key={column.key} className={column.className}>
