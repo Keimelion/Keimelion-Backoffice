@@ -1,8 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderWithQueryClient } from '@/test/query-test-utils'
 
 const mockReplace = vi.fn()
 
@@ -40,14 +39,7 @@ import { clearSession } from '@/data-access/_shared/auth-storage'
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
 
 function renderResetPasswordForm(): void {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  render(
-    <QueryClientProvider client={client}>
-      <ResetPasswordForm />
-    </QueryClientProvider>,
-  )
+  renderWithQueryClient(<ResetPasswordForm />)
 }
 
 beforeEach(() => {

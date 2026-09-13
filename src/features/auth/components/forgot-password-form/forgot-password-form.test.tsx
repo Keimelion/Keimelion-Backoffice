@@ -1,8 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderWithQueryClient } from '@/test/query-test-utils'
 
 const mockReplace = vi.fn()
 
@@ -30,14 +29,7 @@ import { LOGIN_FORGOT_REQUESTED_URL } from '@/data-access/auth/notices'
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form'
 
 function renderForgotPasswordForm(): void {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  render(
-    <QueryClientProvider client={client}>
-      <ForgotPasswordForm />
-    </QueryClientProvider>,
-  )
+  renderWithQueryClient(<ForgotPasswordForm />)
 }
 
 beforeEach(() => {

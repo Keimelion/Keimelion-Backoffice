@@ -1,7 +1,6 @@
-import { render, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { mockUseQueryResult, renderWithQueryClient } from '@/test/query-test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 vi.mock('next/navigation', () => ({
@@ -18,31 +17,24 @@ import { UsersPageContent } from './users-page-content'
 
 const PAGINATION = { page: 1, limit: 20, total: 1, totalPages: 1 }
 
-function makeQueryResult(items: ReturnType<typeof makeUser>[]): never {
-  return {
-    data: { items, pagination: { ...PAGINATION, total: items.length, totalPages: 1 } },
-    isLoading: false,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
-  } as never
+interface UsersData {
+  items: ReturnType<typeof makeUser>[]
+  pagination: typeof PAGINATION
 }
 
-function makeWrapper(): React.ComponentType<{ children: React.ReactNode }> {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  return function Wrapper({ children }: { children: React.ReactNode }): React.JSX.Element {
-    return (
-      <TooltipProvider delayDuration={0}>
-        <QueryClientProvider client={client}>{children}</QueryClientProvider>
-      </TooltipProvider>
-    )
+function makeUsersData(items: ReturnType<typeof makeUser>[]): UsersData {
+  return {
+    items,
+    pagination: { ...PAGINATION, total: items.length, totalPages: 1 },
   }
 }
 
 function renderContent(): void {
-  render(<UsersPageContent />, { wrapper: makeWrapper() })
+  renderWithQueryClient(
+    <TooltipProvider delayDuration={0}>
+      <UsersPageContent />
+    </TooltipProvider>,
+  )
 }
 
 function makeUser(overrides: Partial<{
@@ -84,26 +76,34 @@ function firstDataRow(): HTMLElement {
 
 describe('UsersPageContent', () => {
   it('renders RoleBadge with correct label for admin', () => {
-    vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser({ role: 'admin' })]))
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser({ role: 'admin' })]) }),
+    )
     renderContent()
     expect(within(firstDataRow()).getByText('Admin')).toBeInTheDocument()
   })
 
   it('renders RoleBadge with correct label for moderator', () => {
-    vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser({ role: 'moderator' })]))
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser({ role: 'moderator' })]) }),
+    )
     renderContent()
     expect(within(firstDataRow()).getByText('Moderator')).toBeInTheDocument()
   })
 
   it('renders UserStatusBadge as Active for a normal user', () => {
-    vi.mocked(useUsers).mockReturnValue(makeQueryResult([makeUser()]))
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser()]) }),
+    )
     renderContent()
     expect(within(firstDataRow()).getByText('Active')).toBeInTheDocument()
   })
 
   it('renders UserStatusBadge as Deleted for a soft-deleted user', () => {
     vi.mocked(useUsers).mockReturnValue(
-      makeQueryResult([makeUser({ deletedAt: '2024-06-01T00:00:00.000Z' })]),
+      mockUseQueryResult<UsersData>({
+        data: makeUsersData([makeUser({ deletedAt: '2024-06-01T00:00:00.000Z' })]),
+      }),
     )
     renderContent()
     expect(within(firstDataRow()).getByText('Deleted')).toBeInTheDocument()
@@ -111,14 +111,18 @@ describe('UsersPageContent', () => {
 
   it('renders UserStatusBadge as Banned for a banned user', () => {
     vi.mocked(useUsers).mockReturnValue(
-      makeQueryResult([makeUser({ bannedAt: '2024-06-01T00:00:00.000Z' })]),
+      mockUseQueryResult<UsersData>({
+        data: makeUsersData([makeUser({ bannedAt: '2024-06-01T00:00:00.000Z' })]),
+      }),
     )
     renderContent()
     expect(within(firstDataRow()).getByText('Banned')).toBeInTheDocument()
   })
 
   it('shows empty state message when no users match', () => {
-    vi.mocked(useUsers).mockReturnValue(makeQueryResult([]))
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({ data: makeUsersData([]) }),
+    )
     renderContent()
     expect(screen.getByText('No users match these filters.')).toBeInTheDocument()
   })
