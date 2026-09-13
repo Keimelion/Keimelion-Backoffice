@@ -1,7 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createQueryClientWrapper } from '@/test/query-test-utils'
 import { useOccasionTypes, OCCASION_TYPES_QUERY_KEY } from './use-occasion-types'
 
 vi.mock('@/data-access/occasion-types/occasion-types.api', () => ({
@@ -15,15 +14,6 @@ const MOCK_OCCASION_TYPES = [
   { id: '2', slug: 'wedding', label: 'Wedding', emoji: null },
 ]
 
-function makeWrapper(): React.ComponentType<{ children: React.ReactNode }> {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  return function Wrapper({ children }: { children: React.ReactNode }): React.JSX.Element {
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  }
-}
-
 beforeEach(() => {
   vi.clearAllMocks()
 })
@@ -32,7 +22,7 @@ describe('useOccasionTypes', () => {
   it('returns data on successful fetch', async () => {
     vi.mocked(fetchOccasionTypes).mockResolvedValue(MOCK_OCCASION_TYPES)
     const { result } = renderHook(() => useOccasionTypes(), {
-      wrapper: makeWrapper(),
+      wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
@@ -44,7 +34,7 @@ describe('useOccasionTypes', () => {
   it('handles null emoji gracefully', async () => {
     vi.mocked(fetchOccasionTypes).mockResolvedValue(MOCK_OCCASION_TYPES)
     const { result } = renderHook(() => useOccasionTypes(), {
-      wrapper: makeWrapper(),
+      wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
@@ -55,7 +45,7 @@ describe('useOccasionTypes', () => {
   it('exposes isError on fetch failure', async () => {
     vi.mocked(fetchOccasionTypes).mockRejectedValue(new Error('Network error'))
     const { result } = renderHook(() => useOccasionTypes(), {
-      wrapper: makeWrapper(),
+      wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {
       expect(result.current.isError).toBe(true)
@@ -66,7 +56,7 @@ describe('useOccasionTypes', () => {
   it('returns empty array when API returns empty list', async () => {
     vi.mocked(fetchOccasionTypes).mockResolvedValue([])
     const { result } = renderHook(() => useOccasionTypes(), {
-      wrapper: makeWrapper(),
+      wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
