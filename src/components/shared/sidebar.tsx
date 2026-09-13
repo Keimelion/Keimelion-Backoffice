@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ListTodo, LogOut, Package, Users } from 'lucide-react'
+import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Package, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLogout } from '@/features/auth/hooks/use-logout'
@@ -18,6 +18,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Lists', href: '/lists', icon: ListTodo },
   { label: 'Products', href: '/products', icon: Package },
   { label: 'Users', href: '/users', icon: Users },
+  { label: 'Occasion Types', href: '/occasion-types', icon: CalendarHeart },
 ]
 
 const BRAND_INITIAL = 'K'
