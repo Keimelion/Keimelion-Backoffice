@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { clearSession, getAccessToken, getRefreshToken } from '@/data-access/_shared/auth-storage'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { refreshTokens } from '@/data-access/auth/refresh'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 const API_V1_URL = `${API_BASE_URL}/v1`
@@ -90,6 +91,8 @@ axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (token) {
     config.headers.setAuthorization(`Bearer ${token}`)
   }
+  const locale = useLocaleStore.getState().locale
+  config.headers.set('Accept-Language', locale)
   return config
 })
 
