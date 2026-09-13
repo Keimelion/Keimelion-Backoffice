@@ -28,11 +28,10 @@ export function LocalePicker(): React.JSX.Element {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {LOCALES.map((localeOption) => (
+        {LOCALES.filter((localeOption) => localeOption !== locale).map((localeOption) => (
           <DropdownMenuItem
             key={localeOption}
             onClick={() => { setLocale(localeOption) }}
-            aria-current={localeOption === locale ? 'true' : undefined}
           >
             {LOCALE_FLAG[localeOption]} {LOCALE_NATIVE_NAMES[localeOption]}
           </DropdownMenuItem>

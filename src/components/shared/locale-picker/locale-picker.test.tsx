@@ -27,11 +27,12 @@ describe('LocalePicker', () => {
     expect(screen.getByText(/English/)).toBeInTheDocument()
   })
 
-  it('opens dropdown with all locale options', async () => {
+  it('shows only non-active locales in the dropdown', async () => {
     const user = userEvent.setup()
     render(<LocalePicker />)
     await user.click(screen.getByRole('button', { name: /select language/i }))
-    expect(screen.getByText(/Français/)).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Français/ })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: /English/ })).not.toBeInTheDocument()
   })
 
   it('updates the store when a locale is selected', async () => {
