@@ -33,12 +33,12 @@ const OCCASION_TYPES_COLUMNS: DataTableColumn<ApiOccasionType>[] = [
     key: 'actions',
     header: 'Actions',
     className: 'w-28 text-right',
-    cell: () => (
+    cell: (row) => (
       <div className="flex justify-end gap-1">
-        <IconButton label="Update occasion type">
+        <IconButton label={`Update ${row.label}`}>
           <Pencil />
         </IconButton>
-        <IconButton label="Delete occasion type" tone="destructive">
+        <IconButton label={`Delete ${row.label}`} tone="destructive">
           <Trash2 />
         </IconButton>
       </div>

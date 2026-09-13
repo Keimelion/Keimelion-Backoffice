@@ -51,7 +51,7 @@ describe('OccasionTypesList', () => {
     expect(screen.getByText('Wedding')).toBeInTheDocument()
   })
 
-  it('renders edit and delete action buttons for each row', () => {
+  it('renders row-specific edit and delete action buttons', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
       mockUseQueryResult<ApiOccasionType[]>({
         data: [
@@ -61,8 +61,10 @@ describe('OccasionTypesList', () => {
       }),
     )
     renderList()
-    expect(screen.getAllByRole('button', { name: 'Update occasion type' })).toHaveLength(2)
-    expect(screen.getAllByRole('button', { name: 'Delete occasion type' })).toHaveLength(2)
+    expect(screen.getByRole('button', { name: 'Update Birthday' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete Birthday' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Update Wedding' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete Wedding' })).toBeInTheDocument()
   })
 
   it('renders — for null emoji', () => {
