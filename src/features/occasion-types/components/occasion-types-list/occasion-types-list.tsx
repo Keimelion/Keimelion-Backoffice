@@ -1,7 +1,9 @@
 'use client'
 
+import { Pencil, Trash2 } from 'lucide-react'
 import { DataTable } from '@/components/shared/data-table'
 import type { DataTableColumn } from '@/components/shared/data-table'
+import { IconButton } from '@/components/shared/icon-button'
 import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-types.schemas'
 import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-types'
 
@@ -28,10 +30,18 @@ const OCCASION_TYPES_COLUMNS: DataTableColumn<ApiOccasionType>[] = [
     ),
   },
   {
-    key: 'id',
-    header: 'ID',
-    cell: (row) => (
-      <span className="font-mono text-xs text-muted-foreground">{row.id}</span>
+    key: 'actions',
+    header: 'Actions',
+    className: 'w-28 text-right',
+    cell: () => (
+      <div className="flex justify-end gap-1">
+        <IconButton label="Update occasion type">
+          <Pencil />
+        </IconButton>
+        <IconButton label="Delete occasion type" tone="destructive">
+          <Trash2 />
+        </IconButton>
+      </div>
     ),
   },
 ]
