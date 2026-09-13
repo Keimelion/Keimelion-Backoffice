@@ -39,14 +39,16 @@ function renderContent(): void {
 
 function makeUser(overrides: Partial<{
   id: string
+  email: string
+  username: string | null
   deletedAt: string | null
   bannedAt: string | null
   role: 'admin' | 'moderator' | 'user'
 }> = {}) {
   return {
     id: overrides.id ?? 'u1',
-    email: 'user@keimelion.app',
-    username: 'testuser',
+    email: overrides.email ?? 'user@keimelion.app',
+    username: overrides.username === undefined ? 'testuser' : overrides.username,
     authProvider: 'email' as const,
     role: overrides.role ?? ('user' as const),
     avatarUrl: null,
@@ -125,5 +127,27 @@ describe('UsersPageContent', () => {
     )
     renderContent()
     expect(screen.getByText('No users match these filters.')).toBeInTheDocument()
+  })
+
+  it('renders row-specific action tooltips using the username', () => {
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({
+        data: makeUsersData([makeUser({ username: 'alice' })]),
+      }),
+    )
+    renderContent()
+    expect(screen.getByRole('button', { name: 'Update alice' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete alice' })).toBeInTheDocument()
+  })
+
+  it('falls back to email when username is null', () => {
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({
+        data: makeUsersData([makeUser({ username: null, email: 'ghost@keimelion.app' })]),
+      }),
+    )
+    renderContent()
+    expect(screen.getByRole('button', { name: 'Update ghost@keimelion.app' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete ghost@keimelion.app' })).toBeInTheDocument()
   })
 })
