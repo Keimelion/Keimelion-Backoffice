@@ -1,7 +1,6 @@
 import { UserRoles } from '@keimelion/api/shared/enums/user-role'
 import type { UserRole } from '@keimelion/api/shared/enums/user-role'
-import type { ApiUser } from '@/data-access/auth/auth.api'
-import { apiUserSchema } from '@/data-access/_shared/schemas/user'
+import { apiUserSchema, type ApiUser } from '@/data-access/_shared/user'
 
 const ACCESS_TOKEN_KEY = 'keimelion_access_token'
 const REFRESH_TOKEN_KEY = 'keimelion_refresh_token'

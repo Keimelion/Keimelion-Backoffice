@@ -9,9 +9,10 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
-vi.mock('@/data-access/auth/auth.api', () => ({
-  loginApi: vi.fn(),
-}))
+vi.mock(import('@/data-access/auth/login'), async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, login: vi.fn() }
+})
 
 vi.mock('@/lib/query-client', async () => {
   const { QueryClient } = await import('@tanstack/react-query')
@@ -37,7 +38,7 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import { loginApi } from '@/data-access/auth/auth.api'
+import { login } from '@/data-access/auth/login'
 import { LoginForm } from '@/features/auth/components/login-form'
 
 const ADMIN_USER = {
@@ -73,8 +74,8 @@ beforeEach(() => {
 })
 
 describe('LoginForm', () => {
-  it('calls loginApi with the correct email and password on submit', async () => {
-    vi.mocked(loginApi).mockResolvedValue({
+  it('calls login with the correct email and password on submit', async () => {
+    vi.mocked(login).mockResolvedValue({
       accessToken: 'tok',
       refreshToken: 'refresh',
       user: ADMIN_USER,
@@ -87,7 +88,7 @@ describe('LoginForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() => {
-      expect(loginApi).toHaveBeenCalledWith({
+      expect(login).toHaveBeenCalledWith({
         email: 'admin@keimelion.app',
         password: 'secret123',
       })
@@ -105,12 +106,12 @@ describe('LoginForm', () => {
     await waitFor(() => {
       expect(screen.getByText('Password is required.')).toBeInTheDocument()
     })
-    expect(loginApi).not.toHaveBeenCalled()
+    expect(login).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled()
   })
 
   it('clears the password field on mutation error', async () => {
-    vi.mocked(loginApi).mockRejectedValue(new Error('Invalid credentials'))
+    vi.mocked(login).mockRejectedValue(new Error('Invalid credentials'))
 
     renderLoginForm()
 

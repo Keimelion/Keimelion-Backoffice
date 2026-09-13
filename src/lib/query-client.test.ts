@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 import type * as QueryClientModule from './query-client'
-import type * as ClientModule from '@/data-access/_shared/client'
+import type * as ApiErrorModule from '@/data-access/_shared/api-error'
 import type * as AuthStorageModule from '@/data-access/_shared/auth-storage'
 import type * as NotifyModule from '@/lib/notify'
 
@@ -11,7 +11,7 @@ vi.mock('@/lib/notify', () => ({
 
 interface FreshModules {
   createQueryClient: typeof QueryClientModule.createQueryClient
-  ApiRequestError: typeof ClientModule.ApiRequestError
+  ApiRequestError: typeof ApiErrorModule.ApiRequestError
   saveSession: typeof AuthStorageModule.saveSession
   notifyError: typeof NotifyModule.notifyError
 }
@@ -19,12 +19,12 @@ interface FreshModules {
 async function freshQueryClientModule(): Promise<FreshModules> {
   vi.resetModules()
   const queryClientModule = await import('./query-client')
-  const clientModule = await import('@/data-access/_shared/client')
+  const apiErrorModule = await import('@/data-access/_shared/api-error')
   const storageModule = await import('@/data-access/_shared/auth-storage')
   const notifyModule = await import('@/lib/notify')
   return {
     createQueryClient: queryClientModule.createQueryClient,
-    ApiRequestError: clientModule.ApiRequestError,
+    ApiRequestError: apiErrorModule.ApiRequestError,
     saveSession: storageModule.saveSession,
     notifyError: notifyModule.notifyError,
   }

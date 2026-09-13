@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { FORGOT_PASSWORD_INVALID_LINK_URL } from '@/data-access/auth/auth.constants'
+import { FORGOT_PASSWORD_INVALID_LINK_URL } from '@/data-access/auth/notices'
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
 
 export const metadata: Metadata = {

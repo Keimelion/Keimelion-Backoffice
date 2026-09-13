@@ -3,10 +3,8 @@
 import { useMutation } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { loginApi } from '@/data-access/auth/auth.api'
+import { login, type LoginInput } from '@/data-access/auth/login'
 import { isAllowedBackofficeRole, saveSession } from '@/data-access/_shared/auth-storage'
-import { loginResponseSchema } from '@/data-access/auth/auth.schemas'
-import type { LoginInput } from '@/data-access/auth/auth.schemas'
 import { queryClient } from '@/lib/query-client'
 import { CURRENT_USER_QUERY_KEY } from '@/features/auth/hooks/use-current-user'
 import { notifySuccess } from '@/lib/notify'
@@ -20,13 +18,7 @@ export function useLogin(): UseMutationResult<null, Error, LoginInput> {
   return useMutation<null, Error, LoginInput>({
     meta: { skipUnauthorizedRedirect: true },
     mutationFn: async (input: LoginInput) => {
-      const raw = await loginApi(input)
-      const parsed = loginResponseSchema.safeParse(raw)
-      if (!parsed.success) {
-        throw new Error('Unexpected response from the server')
-      }
-
-      const { accessToken, refreshToken, user } = parsed.data
+      const { accessToken, refreshToken, user } = await login(input)
 
       if (!isAllowedBackofficeRole(user.role)) {
         throw new Error(UNAUTHORIZED_ROLE_MESSAGE)

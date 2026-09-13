@@ -1,12 +1,6 @@
-export const AUTH_ERROR_CODE = {
-  INVALID_RESET_TOKEN: 'INVALID_RESET_TOKEN',
-} as const
+import { FORGOT_PASSWORD_PATH, LOGIN_PATH } from '@/data-access/auth/paths'
 
 export const NOTICE_PARAM = 'notice'
-
-export const LOGIN_PATH = '/login'
-export const FORGOT_PASSWORD_PATH = '/forgot-password'
-export const RESET_PASSWORD_PATH = '/reset-password'
 
 export const NOTICE_CODE = {
   RESET_LINK_INVALID: 'reset-link-invalid',

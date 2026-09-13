@@ -5,7 +5,7 @@ import {
   FORGOT_PASSWORD_PATH,
   LOGIN_PATH,
   RESET_PASSWORD_PATH,
-} from '@/data-access/auth/auth.constants'
+} from '@/data-access/auth/paths'
 
 const DASHBOARD_HOME = '/'
 const PUBLIC_PATHS = new Set<string>([LOGIN_PATH, FORGOT_PASSWORD_PATH, RESET_PASSWORD_PATH])

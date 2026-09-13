@@ -3,15 +3,17 @@
 import { useMutation } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { resetPasswordApi } from '@/data-access/auth/auth.api'
-import type { ResetPasswordApiInput } from '@/data-access/auth/auth.api'
-import { clearSession } from '@/data-access/_shared/auth-storage'
-import { ApiRequestError } from '@/data-access/_shared/client'
 import {
-  AUTH_ERROR_CODE,
+  resetPassword,
+  RESET_PASSWORD_INVALID_TOKEN_CODE,
+  type ResetPasswordApiInput,
+} from '@/data-access/auth/reset-password'
+import { clearSession } from '@/data-access/_shared/auth-storage'
+import { ApiRequestError } from '@/data-access/_shared/api-error'
+import {
   FORGOT_PASSWORD_EXPIRED_LINK_URL,
   LOGIN_RESET_SUCCESS_URL,
-} from '@/data-access/auth/auth.constants'
+} from '@/data-access/auth/notices'
 import { queryClient } from '@/lib/query-client'
 import { notifyError } from '@/lib/notify'
 
@@ -21,7 +23,7 @@ export function useResetPassword(): UseMutationResult<null, Error, ResetPassword
   return useMutation<null, Error, ResetPasswordApiInput>({
     meta: { silent: true },
     mutationFn: async (input: ResetPasswordApiInput) => {
-      await resetPasswordApi(input)
+      await resetPassword(input)
       return null
     },
     onSuccess: () => {
@@ -32,7 +34,7 @@ export function useResetPassword(): UseMutationResult<null, Error, ResetPassword
     onError: (error) => {
       const isInvalidToken =
         error instanceof ApiRequestError &&
-        error.code === AUTH_ERROR_CODE.INVALID_RESET_TOKEN
+        error.code === RESET_PASSWORD_INVALID_TOKEN_CODE
       if (isInvalidToken) {
         router.replace(FORGOT_PASSWORD_EXPIRED_LINK_URL)
         return

@@ -3,16 +3,15 @@
 import { useMutation } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { forgotPasswordApi } from '@/data-access/auth/auth.api'
-import type { ForgotPasswordApiInput } from '@/data-access/auth/auth.api'
-import { LOGIN_FORGOT_REQUESTED_URL } from '@/data-access/auth/auth.constants'
+import { forgotPassword, type ForgotPasswordInput } from '@/data-access/auth/forgot-password'
+import { LOGIN_FORGOT_REQUESTED_URL } from '@/data-access/auth/notices'
 
-export function useForgotPassword(): UseMutationResult<null, Error, ForgotPasswordApiInput> {
+export function useForgotPassword(): UseMutationResult<null, Error, ForgotPasswordInput> {
   const router = useRouter()
 
-  return useMutation<null, Error, ForgotPasswordApiInput>({
-    mutationFn: async (input: ForgotPasswordApiInput) => {
-      await forgotPasswordApi(input)
+  return useMutation<null, Error, ForgotPasswordInput>({
+    mutationFn: async (input: ForgotPasswordInput) => {
+      await forgotPassword(input)
       return null
     },
     onSuccess: () => {

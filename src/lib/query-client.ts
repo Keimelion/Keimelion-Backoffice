@@ -1,5 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
-import { ApiRequestError } from '@/data-access/_shared/client'
+import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { clearSession } from '@/data-access/_shared/auth-storage'
 import { notifyError } from '@/lib/notify'
 

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { ApiUser } from '@/data-access/auth/auth.api'
+import type { ApiUser } from '@/data-access/_shared/user'
 import {
   SESSION_COOKIE_NAME,
   clearSession,

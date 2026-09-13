@@ -11,9 +11,10 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
-vi.mock('@/data-access/auth/auth.api', () => ({
-  forgotPasswordApi: vi.fn(),
-}))
+vi.mock(import('@/data-access/auth/forgot-password'), async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, forgotPassword: vi.fn() }
+})
 
 vi.mock('sonner', () => ({
   toast: {
@@ -24,8 +25,8 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import { forgotPasswordApi } from '@/data-access/auth/auth.api'
-import { LOGIN_FORGOT_REQUESTED_URL } from '@/data-access/auth/auth.constants'
+import { forgotPassword } from '@/data-access/auth/forgot-password'
+import { LOGIN_FORGOT_REQUESTED_URL } from '@/data-access/auth/notices'
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form'
 
 function renderForgotPasswordForm(): void {
@@ -44,8 +45,8 @@ beforeEach(() => {
 })
 
 describe('ForgotPasswordForm', () => {
-  it('calls forgotPasswordApi with the normalized email on submit', async () => {
-    vi.mocked(forgotPasswordApi).mockResolvedValue({ message: 'ok' })
+  it('calls forgotPassword with the normalized email on submit', async () => {
+    vi.mocked(forgotPassword).mockResolvedValue(undefined)
 
     renderForgotPasswordForm()
 
@@ -53,12 +54,12 @@ describe('ForgotPasswordForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
-      expect(forgotPasswordApi).toHaveBeenCalledWith({ email: 'admin@keimelion.app' })
+      expect(forgotPassword).toHaveBeenCalledWith({ email: 'admin@keimelion.app' })
     })
   })
 
   it('redirects to /login with the request-confirmation notice on success', async () => {
-    vi.mocked(forgotPasswordApi).mockResolvedValue({ message: 'ok' })
+    vi.mocked(forgotPassword).mockResolvedValue(undefined)
 
     renderForgotPasswordForm()
 
@@ -79,7 +80,7 @@ describe('ForgotPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('Enter a valid email address.')).toBeInTheDocument()
     })
-    expect(forgotPasswordApi).not.toHaveBeenCalled()
+    expect(forgotPassword).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /send reset link/i })).toBeDisabled()
   })
 })

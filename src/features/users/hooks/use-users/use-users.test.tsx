@@ -4,11 +4,11 @@ import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useUsers, buildUsersListKey } from './use-users'
 
-vi.mock('@/data-access/users/users.api', () => ({
-  fetchUsers: vi.fn(),
+vi.mock('@/data-access/users/list-users', () => ({
+  listUsers: vi.fn(),
 }))
 
-import { fetchUsers } from '@/data-access/users/users.api'
+import { listUsers } from '@/data-access/users/list-users'
 
 const MOCK_USER = {
   id: 'u1',
@@ -54,7 +54,7 @@ beforeEach(() => {
 
 describe('useUsers', () => {
   it('returns data on successful fetch', async () => {
-    vi.mocked(fetchUsers).mockResolvedValue(MOCK_RESPONSE)
+    vi.mocked(listUsers).mockResolvedValue(MOCK_RESPONSE)
     const { result } = renderHook(() => useUsers({ page: 1, limit: 20 }), {
       wrapper: makeWrapper(),
     })
@@ -66,7 +66,7 @@ describe('useUsers', () => {
   })
 
   it('exposes isError on fetch failure', async () => {
-    vi.mocked(fetchUsers).mockRejectedValue(new Error('Network error'))
+    vi.mocked(listUsers).mockRejectedValue(new Error('Network error'))
     const { result } = renderHook(() => useUsers({ page: 1 }), {
       wrapper: makeWrapper(),
     })
