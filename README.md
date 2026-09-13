@@ -50,8 +50,11 @@ npx shadcn add <component-name>
 | Theme | [next-themes](https://github.com/pacocoursey/next-themes) — light / dark / system |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com) |
 | Font | [Inter](https://fonts.google.com/specimen/Inter) via `next/font` |
+| HTTP client | [axios](https://axios-http.com) — shared instance with auth + `Accept-Language` interceptors |
 | Data fetching | [TanStack Query v5](https://tanstack.com/query) |
+| Client state | [Zustand](https://zustand-demo.pmnd.rs) — locale store |
 | Validation | [Zod](https://zod.dev) |
+| Tests | [Vitest](https://vitest.dev) + [React Testing Library](https://testing-library.com/react) — jsdom |
 
 ---
 
@@ -74,6 +77,10 @@ Use semantic tokens for interactive elements — `bg-primary`, `text-primary-for
 
 Toggle in the topbar swaps light ↔ dark via the [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) (cross-fade) with a CSS fallback for Firefox. Default is `system`.
 
+### Internationalization
+
+Locale picker in the topbar (🇫🇷 Français / 🇬🇧 English). Selection is persisted to `localStorage['keimelion.locale']` and exposed via a Zustand store consumed both by React components and by the shared axios instance, which attaches `Accept-Language: <locale>` to every outbound request. TanStack Query keys include the locale so switching languages triggers automatic refetches. Initial locale resolves from storage first, then `navigator.language`, falling back to `en`. Supported locales are defined once in the API (`@keimelion/api/shared/enums/locale`) and re-exported from `src/lib/i18n/locale.ts`.
+
 ---
 
 ## Project structure
@@ -81,25 +88,36 @@ Toggle in the topbar swaps light ↔ dark via the [View Transitions API](https:/
 ```
 src/
 ├── app/                    # Next.js App Router — pages and layouts only
-│   ├── (auth)/             # Route group: unauthenticated pages (login…)
-│   └── (dashboard)/        # Route group: dashboard, lists, products, users
+│   ├── (auth)/             # Route group: unauthenticated pages (login, register, reset-password)
+│   └── (dashboard)/        # Route group: authenticated pages with sidebar
 ├── components/
 │   ├── ui/                 # shadcn/ui generated components (do not edit)
-│   └── shared/             # sidebar, theme-toggle, user-menu…
+│   └── shared/             # sidebar, user-menu, theme-toggle, locale-picker, page-header, data-table…
 ├── data-access/            # All API calls — mirrors db/ in the API
-│   ├── _client.ts          # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete) shared by every resource
-│   ├── _auth-storage.ts    # Token + user + session-cookie storage
-│   ├── _schemas/           # Cross-resource Zod schemas (user.ts, …)
-│   ├── auth/               # auth.api.ts + auth.schemas.ts (loginInputSchema, loginResponseSchema, …)
+│   ├── _shared/            # Shared infra (the `_` prefix marks non-resource helpers)
+│   │   ├── axios/          # Shared axios instance — auth bearer + Accept-Language interceptors, 401 refresh retry
+│   │   ├── auth-storage/   # Access token, refresh token, current user, session cookie
+│   │   ├── api-error.ts    # ApiRequestError class thrown by the axios response interceptor
+│   │   ├── parse-response/ # Zod-validated response parser
+│   │   ├── query-params/   # buildListSearchParams — pagination + filter serialization
+│   │   └── user.ts         # Shared ApiUser type (mirrors API BaseUser with string dates)
+│   ├── auth/               # loginApi, logoutApi, registerApi, refresh
+│   ├── occasion-types/     # fetchOccasionTypes
 │   └── users/              # fetchUsers, fetchUser, updateUser, deleteUser
-├── features/               # Feature modules (hooks + feature-specific components)
+├── features/               # Feature modules — TanStack Query hooks + feature-specific components
 │   ├── auth/
+│   ├── occasion-types/
 │   └── users/
 ├── lib/
-│   ├── query-client.ts     # TanStack Query client configuration + global mutation error toast
+│   ├── i18n/               # Locale primitives, resolver, Zustand store (see Internationalization above)
+│   ├── query-client.ts     # TanStack Query client + global mutation error toast
+│   ├── notify.ts           # Shared toast helpers (success / error / info)
+│   ├── format-date.ts      # Locale-aware date formatting
 │   └── utils.ts            # cn() — class-merge helper for shadcn components
 ├── middleware.ts           # Edge middleware entry (Next.js requires this path); composes helpers from middlewares/
-└── middlewares/            # Individual middlewares (require-session.ts, …) — each returns NextResponse | null
+├── middlewares/            # Individual middleware helpers (require-session.ts, …) — each returns NextResponse | null
+├── styles/                 # Design tokens (SCSS) → CSS custom properties consumed by Tailwind
+└── test/                   # Vitest setup + shared testing utilities (query-test-utils, …)
 ```
 
 ### data-access/ vs features/
@@ -127,25 +145,47 @@ Only import files with no Drizzle ORM dependencies (enums, `shared/types/api`). 
 ## Commands
 
 ```bash
-npm run dev       # Development server (hot reload)
-npm run build     # Production build
-npm run start     # Start production server
-npm run lint      # ESLint
-npm run format    # Prettier
+npm run dev         # Development server (hot reload, port 3001)
+npm run build       # Production build
+npm run start       # Start production server
+npm run lint        # ESLint
+npm run format      # Prettier
+npm test            # Vitest — single pass
+npm run test:watch  # Vitest — watch mode
 ```
 
 ---
 
 ## Commit convention
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/) — same convention as the API.
+Every commit — and every PR title — follows this pattern:
 
 ```
-<type>(<scope>): <message>
+<type>: <identifier> <short description> (<TICKET-ID>)
+```
 
-feat(users): add user detail page
-fix(auth): handle expired token redirect
-chore: update dependencies
+- `<type>` — [Conventional Commits](https://www.conventionalcommits.org/) type: `feat` / `fix` / `refactor` / `chore` / `docs` / `perf` / `test` / `style` / `build` / `ci`. **No scope in parens.**
+- `<identifier>` — the primary thing the commit touches. Pick the most specific form:
+  - Route path for page work: `/login`, `/users`, `/occasion-types`
+  - Component or feature name when no dedicated route: `LoginForm`, `Sidebar`, `LocalePicker`
+  - Folder or module path for infra work, prefixed with `_` when it lives under a `_shared` folder: `_i18n`, `_client`, `_auth-storage`, `styles/tokens`
+- `<short description>` — plain sentence, no period, no filler words
+- `<TICKET-ID>` — always at the end in parens: `(KEI-N)`
+
+Examples (from the git log):
+
+```
+feat: /login wire login form + client-side auth guard (KEI-41)
+feat: /occasion-types wire non-paginated list page (KEI-57)
+refactor: _client switch fetch wrapper to axios (KEI-56)
+feat: _auth-storage silent refresh token rotation (KEI-42)
+feat: _i18n send Accept-Language + user language picker (KEI-59)
+```
+
+Follow-up commits inside the same PR keep the parent identifier:
+
+```
+fix: _i18n hide active locale from picker dropdown (KEI-59)
 ```
 
 | Type | Usage |
@@ -156,4 +196,7 @@ chore: update dependencies
 | `chore` | Maintenance, dependencies, config |
 | `docs` | Documentation only |
 | `perf` | Performance improvement |
+| `test` | Adding or updating tests only |
+| `style` | Formatting / whitespace only |
+| `build` | Build system, dependencies |
 | `ci` | CI/CD |
