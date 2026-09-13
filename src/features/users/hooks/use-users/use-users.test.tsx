@@ -1,7 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createQueryClientWrapper } from '@/test/query-test-utils'
 import { useUsers, buildUsersListKey } from './use-users'
 
 vi.mock('@/data-access/users/list-users', () => ({
@@ -39,15 +38,6 @@ const MOCK_RESPONSE = {
   },
 }
 
-function makeWrapper(): React.ComponentType<{ children: React.ReactNode }> {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  return function Wrapper({ children }: { children: React.ReactNode }): React.JSX.Element {
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  }
-}
-
 beforeEach(() => {
   vi.clearAllMocks()
 })
@@ -56,7 +46,7 @@ describe('useUsers', () => {
   it('returns data on successful fetch', async () => {
     vi.mocked(listUsers).mockResolvedValue(MOCK_RESPONSE)
     const { result } = renderHook(() => useUsers({ page: 1, limit: 20 }), {
-      wrapper: makeWrapper(),
+      wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
@@ -68,7 +58,7 @@ describe('useUsers', () => {
   it('exposes isError on fetch failure', async () => {
     vi.mocked(listUsers).mockRejectedValue(new Error('Network error'))
     const { result } = renderHook(() => useUsers({ page: 1 }), {
-      wrapper: makeWrapper(),
+      wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {
       expect(result.current.isError).toBe(true)

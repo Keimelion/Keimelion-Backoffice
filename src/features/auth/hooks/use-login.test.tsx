@@ -1,7 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createQueryClientWrapper } from '@/test/query-test-utils'
 import { useLogin } from '@/features/auth/hooks/use-login'
 import { getAccessToken, getRefreshToken, getStoredUser } from '@/data-access/_shared/auth-storage'
 
@@ -39,13 +38,6 @@ const ADMIN_USER = {
 
 const STANDARD_USER = { ...ADMIN_USER, role: 'user' as const }
 
-function makeWrapper(): React.ComponentType<{ children: React.ReactNode }> {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
-  return function Wrapper({ children }: { children: React.ReactNode }): React.JSX.Element {
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  }
-}
-
 beforeEach(() => {
   localStorage.clear()
   vi.clearAllMocks()
@@ -59,7 +51,7 @@ describe('useLogin', () => {
       user: ADMIN_USER,
     })
 
-    const { result } = renderHook(() => useLogin(), { wrapper: makeWrapper() })
+    const { result } = renderHook(() => useLogin(), { wrapper: createQueryClientWrapper() })
     result.current.mutate({ email: 'admin@keimelion.app', password: 'secret' })
 
     await waitFor(() => {
@@ -78,7 +70,7 @@ describe('useLogin', () => {
       user: STANDARD_USER,
     })
 
-    const { result } = renderHook(() => useLogin(), { wrapper: makeWrapper() })
+    const { result } = renderHook(() => useLogin(), { wrapper: createQueryClientWrapper() })
     result.current.mutate({ email: 'user@keimelion.app', password: 'secret' })
 
     await waitFor(() => {
@@ -95,7 +87,7 @@ describe('useLogin', () => {
       new ApiRequestError('INVALID_RESPONSE', 'The server returned an unexpected login payload.', 200),
     )
 
-    const { result } = renderHook(() => useLogin(), { wrapper: makeWrapper() })
+    const { result } = renderHook(() => useLogin(), { wrapper: createQueryClientWrapper() })
     result.current.mutate({ email: 'admin@keimelion.app', password: 'secret' })
 
     await waitFor(() => {

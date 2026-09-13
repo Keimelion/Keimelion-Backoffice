@@ -89,16 +89,19 @@ const USERS_COLUMNS: DataTableColumn<AdminApiUser>[] = [
     key: 'actions',
     header: 'Actions',
     className: 'w-28 text-right',
-    cell: () => (
-      <div className="flex justify-end gap-1">
-        <IconButton label="Update user">
-          <Pencil />
-        </IconButton>
-        <IconButton label="Delete user" tone="destructive">
-          <Trash2 />
-        </IconButton>
-      </div>
-    ),
+    cell: (user) => {
+      const identifier = user.username ?? user.email
+      return (
+        <div className="flex justify-end gap-1">
+          <IconButton label={`Update ${identifier}`}>
+            <Pencil />
+          </IconButton>
+          <IconButton label={`Delete ${identifier}`} tone="destructive">
+            <Trash2 />
+          </IconButton>
+        </div>
+      )
+    },
   },
 ]
 
@@ -123,7 +126,7 @@ export function UsersPageContent(): React.JSX.Element {
       isLoading={usersQuery.isLoading}
       error={usersQuery.error}
       emptyLabel={EMPTY_LABEL}
-      pageSize={filters.limit}
+      skeletonRowCount={filters.limit}
       onRetry={() => { void usersQuery.refetch() }}
       getRowClassName={resolveRowClassName}
       toolbar={
