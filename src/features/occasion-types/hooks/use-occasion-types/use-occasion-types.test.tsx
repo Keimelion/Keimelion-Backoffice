@@ -1,10 +1,15 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { createQueryClientWrapper } from '@/test/query-test-utils'
-import { useOccasionTypes, OCCASION_TYPES_QUERY_KEY } from './use-occasion-types'
+import { useOccasionTypes, buildOccasionTypesQueryKey } from './use-occasion-types'
 
 vi.mock('@/data-access/occasion-types/occasion-types.api', () => ({
   fetchOccasionTypes: vi.fn(),
+}))
+
+vi.mock('@/lib/i18n/locale-store', () => ({
+  useLocaleStore: (selector: (state: { locale: string }) => string) =>
+    selector({ locale: 'en' }),
 }))
 
 import { fetchOccasionTypes } from '@/data-access/occasion-types/occasion-types.api'
@@ -65,9 +70,17 @@ describe('useOccasionTypes', () => {
   })
 })
 
-describe('OCCASION_TYPES_QUERY_KEY', () => {
-  it('has the expected shape', () => {
-    expect(OCCASION_TYPES_QUERY_KEY[0]).toBe('occasion-types')
-    expect(OCCASION_TYPES_QUERY_KEY[1]).toBe('list')
+describe('buildOccasionTypesQueryKey', () => {
+  it('includes locale in the key', () => {
+    const key = buildOccasionTypesQueryKey('en')
+    expect(key[0]).toBe('occasion-types')
+    expect(key[1]).toBe('list')
+    expect(key[2]).toBe('en')
+  })
+
+  it('produces distinct keys per locale', () => {
+    const enKey = buildOccasionTypesQueryKey('en')
+    const frKey = buildOccasionTypesQueryKey('fr')
+    expect(enKey[2]).not.toBe(frKey[2])
   })
 })
