@@ -1,6 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { clearSession } from '@/data-access/_shared/auth-storage'
+import { translate } from '@/lib/i18n/translate'
 import { notifyError } from '@/lib/notify'
 
 const STALE_TIME_MS = 1000 * 60 * 5
@@ -48,7 +49,7 @@ export function createQueryClient(): QueryClient {
           notifyError(error)
           return
         }
-        notifyError({ title: 'Something went wrong' })
+        notifyError({ title: translate('query.error.default') })
       },
     }),
     defaultOptions: {

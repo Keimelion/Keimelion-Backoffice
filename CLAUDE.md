@@ -55,6 +55,7 @@ Every user-facing string in the Backoffice is rendered through `react-intl`. The
 - **Adding a new string**: add the key to BOTH `en.json` and `fr.json` in the same PR. A PR that ships a new English string without the French counterpart (or vice versa) is blocked.
 - **Interpolation**: use ICU syntax (`{name}`, `{count, plural, one {# user} other {# users}}`), never string concatenation.
 - **Rendering**: prefer `useIntl()` + `intl.formatMessage({ id })` in TSX (matches the strict `React.JSX.Element` typing); `<FormattedMessage />` is also fine.
+- **Outside React**: for imperative contexts that have no `IntlProvider` (mutation callbacks, `queryClient` handlers, toast helpers), use `translate(id, values)` from `src/lib/i18n/translate.ts` — it reads the current locale from the Zustand store and runs a one-shot `createIntl()`.
 - **Tests**: wrap components in `IntlProvider` via `renderWithIntl` / `renderWithQueryClient` from `src/test/query-test-utils.tsx` — both already include the English catalog.
 - **Locale switching**: the `LocalePicker` in the dashboard header drives `useLocaleStore` (KEI-59). The `I18nProvider` re-reads the store, so switching locale re-renders the whole tree instantly. The persisted locale also flows to the API via the `Accept-Language` axios interceptor.
 - **Enforcement**: no ESLint rule is wired today. Reviewers must reject any PR that introduces a raw string in JSX or a hardcoded label passed to a prop — the string belongs in the catalog.

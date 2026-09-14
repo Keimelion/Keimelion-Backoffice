@@ -9,6 +9,7 @@
   "common.pagination.previous": "Previous",
   "common.pagination.next": "Next",
   "common.locale_picker.select_language": "Select language",
+  "common.theme_toggle.toggle": "Toggle theme",
   "auth.login.title": "Sign in",
   "auth.login.description": "Access the Keimelion Backoffice",
   "auth.login.email_label": "Email",
@@ -17,6 +18,8 @@
   "auth.login.forgot_password": "Forgot password?",
   "auth.login.submit": "Sign in",
   "auth.login.submit_pending": "Signing in…",
+  "auth.login.welcome_back": "Welcome back, {name}",
+  "auth.login.unauthorized_role": "This account is not authorized to access the Backoffice",
   "auth.forgot_password.title": "Forgot password?",
   "auth.forgot_password.description": "Enter your email and we’ll send you a reset link.",
   "auth.forgot_password.email_label": "Email",
@@ -75,8 +78,5 @@
   "error.title": "Something went wrong",
   "error.description": "An unexpected error occurred while rendering this page. You can try again or come back later.",
   "error.try_again": "Try again",
-  "global_error.title": "Something went wrong",
-  "global_error.description": "A critical error prevented the application from loading. Please refresh the page.",
-  "global_error.try_again": "Try again",
   "query.error.default": "Something went wrong"
 }

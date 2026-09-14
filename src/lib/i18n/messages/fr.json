@@ -9,6 +9,7 @@
   "common.pagination.previous": "Précédent",
   "common.pagination.next": "Suivant",
   "common.locale_picker.select_language": "Choisir la langue",
+  "common.theme_toggle.toggle": "Changer de thème",
   "auth.login.title": "Connexion",
   "auth.login.description": "Accéder au Backoffice Keimelion",
   "auth.login.email_label": "E-mail",
@@ -17,6 +18,8 @@
   "auth.login.forgot_password": "Mot de passe oublié ?",
   "auth.login.submit": "Se connecter",
   "auth.login.submit_pending": "Connexion en cours…",
+  "auth.login.welcome_back": "Bon retour, {name}",
+  "auth.login.unauthorized_role": "Ce compte n'est pas autorisé à accéder au Backoffice",
   "auth.forgot_password.title": "Mot de passe oublié ?",
   "auth.forgot_password.description": "Saisissez votre e-mail et nous vous enverrons un lien de réinitialisation.",
   "auth.forgot_password.email_label": "E-mail",
@@ -75,8 +78,5 @@
   "error.title": "Une erreur est survenue",
   "error.description": "Une erreur inattendue s'est produite lors du chargement de cette page. Vous pouvez réessayer ou revenir plus tard.",
   "error.try_again": "Réessayer",
-  "global_error.title": "Une erreur est survenue",
-  "global_error.description": "Une erreur critique a empêché le chargement de l'application. Veuillez actualiser la page.",
-  "global_error.try_again": "Réessayer",
   "query.error.default": "Une erreur est survenue"
 }
