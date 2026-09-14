@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { buttonVariants } from '@/components/ui/button'
 import {
   AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -34,15 +37,15 @@ export function ConfirmDialog({
 }: ConfirmDialogProps): React.JSX.Element {
   const [isPending, setIsPending] = useState<boolean>(false)
 
-  async function handleConfirm(): Promise<void> {
+  async function handleConfirm(event: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+    event.preventDefault()
     setIsPending(true)
-    await onConfirm()
-    setIsPending(false)
-    onOpenChange(false)
-  }
-
-  function handleCancel(): void {
-    onOpenChange(false)
+    try {
+      await onConfirm()
+      onOpenChange(false)
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (
@@ -53,16 +56,14 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="outline" onClick={handleCancel} disabled={isPending}>
-            {cancelLabel}
-          </Button>
-          <Button
-            variant={destructive ? 'destructive' : 'default'}
-            onClick={() => { void handleConfirm() }}
+          <AlertDialogCancel disabled={isPending}>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogAction
+            className={cn(destructive && buttonVariants({ variant: 'destructive' }))}
+            onClick={(event) => { void handleConfirm(event) }}
             disabled={isPending}
           >
             {confirmLabel}
-          </Button>
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
