@@ -1,3 +1,4 @@
+import { useIntl } from 'react-intl'
 import { Badge } from '@/components/ui/badge'
 
 interface UserStatusBadgeProps {
@@ -13,10 +14,10 @@ const STATUS_CLASSES: Record<UserStatus, string> = {
   banned: 'border-transparent bg-red-500 text-white hover:bg-red-500/80',
 }
 
-const STATUS_LABELS: Record<UserStatus, string> = {
-  active: 'Active',
-  deleted: 'Deleted',
-  banned: 'Banned',
+const STATUS_MESSAGE_IDS: Record<UserStatus, string> = {
+  active: 'users.status.active',
+  deleted: 'users.status.deleted',
+  banned: 'users.status.banned',
 }
 
 function resolveUserStatus(deletedAt: string | null, bannedAt: string | null): UserStatus {
@@ -26,6 +27,11 @@ function resolveUserStatus(deletedAt: string | null, bannedAt: string | null): U
 }
 
 export function UserStatusBadge({ deletedAt, bannedAt }: UserStatusBadgeProps): React.JSX.Element {
+  const intl = useIntl()
   const status = resolveUserStatus(deletedAt, bannedAt)
-  return <Badge className={STATUS_CLASSES[status]}>{STATUS_LABELS[status]}</Badge>
+  return (
+    <Badge className={STATUS_CLASSES[status]}>
+      {intl.formatMessage({ id: STATUS_MESSAGE_IDS[status] })}
+    </Badge>
+  )
 }

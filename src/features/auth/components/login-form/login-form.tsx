@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useIntl } from 'react-intl'
 import { AuthCard } from '@/components/shared/auth-card'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,13 +19,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { loginInputSchema, type LoginInput } from '@/data-access/auth/login'
-import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/notices'
+import { NOTICE_PARAM, resolveNoticeMessageId } from '@/data-access/auth/notices'
 import { useLogin } from '@/features/auth/hooks/use-login'
 import { notifySuccess } from '@/lib/notify'
 
 export function LoginForm(): React.JSX.Element {
   const login = useLogin()
   const searchParams = useSearchParams()
+  const intl = useIntl()
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginInputSchema),
@@ -34,10 +36,10 @@ export function LoginForm(): React.JSX.Element {
   })
 
   useEffect(() => {
-    const notice = resolveNoticeMessage(searchParams.get(NOTICE_PARAM))
-    if (notice === null) return
-    notifySuccess({ title: notice })
-  }, [searchParams])
+    const messageId = resolveNoticeMessageId(searchParams.get(NOTICE_PARAM))
+    if (messageId === null) return
+    notifySuccess({ title: intl.formatMessage({ id: messageId }) })
+  }, [searchParams, intl])
 
   useEffect(() => {
     if (login.isError) {
@@ -54,7 +56,10 @@ export function LoginForm(): React.JSX.Element {
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard title="Sign in" description="Access the Keimelion Backoffice">
+    <AuthCard
+      title={intl.formatMessage({ id: 'auth.login.title' })}
+      description={intl.formatMessage({ id: 'auth.login.description' })}
+    >
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -68,11 +73,11 @@ export function LoginForm(): React.JSX.Element {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{intl.formatMessage({ id: 'auth.login.email_label' })}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="you@keimelion.app"
+                    placeholder={intl.formatMessage({ id: 'auth.login.email_placeholder' })}
                     autoComplete="email"
                     disabled={isPending}
                     {...field}
@@ -87,7 +92,7 @@ export function LoginForm(): React.JSX.Element {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{intl.formatMessage({ id: 'auth.login.password_label' })}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
@@ -104,10 +109,12 @@ export function LoginForm(): React.JSX.Element {
             href="/forgot-password"
             className="-mt-2 self-end text-sm text-muted-foreground underline-offset-4 hover:underline"
           >
-            Forgot password?
+            {intl.formatMessage({ id: 'auth.login.forgot_password' })}
           </Link>
           <Button type="submit" className="mt-2" disabled={isSubmitDisabled}>
-            {isPending ? 'Signing in…' : 'Sign in'}
+            {isPending
+              ? intl.formatMessage({ id: 'auth.login.submit_pending' })
+              : intl.formatMessage({ id: 'auth.login.submit' })}
           </Button>
         </form>
       </Form>

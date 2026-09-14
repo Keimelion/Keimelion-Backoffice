@@ -1,6 +1,7 @@
 'use client'
 
 import { Pencil, Trash2 } from 'lucide-react'
+import { useIntl } from 'react-intl'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   ClearFiltersButton,
@@ -18,94 +19,8 @@ import { RoleBadge } from '@/features/users/components/role-badge'
 import { ROLE_PARAM, RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
 
-const EMPTY_LABEL = 'No users match these filters.'
-
-const USERS_FILTERS: FilterDefinition[] = [
-  {
-    type: 'text',
-    paramName: 'email',
-    label: 'Email',
-    placeholder: 'Search by email…',
-  },
-  {
-    type: 'text',
-    paramName: 'username',
-    label: 'Username',
-    placeholder: 'Search by username…',
-  },
-]
-
-const USERS_CLEARABLE_PARAMS = [...USERS_FILTERS.map((filter) => filter.paramName), ROLE_PARAM]
-
-const USERS_COLUMNS: DataTableColumn<AdminApiUser>[] = [
-  {
-    key: 'avatar',
-    header: '',
-    className: 'w-10',
-    cell: (user) => (
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={user.avatarUrl ?? undefined} alt={user.username ?? user.email} />
-        <AvatarFallback className="text-xs">
-          {resolveAvatarInitial(user)}
-        </AvatarFallback>
-      </Avatar>
-    ),
-  },
-  {
-    key: 'email',
-    header: 'Email',
-    cell: (user) => <span className="font-medium">{user.email}</span>,
-  },
-  {
-    key: 'username',
-    header: 'Username',
-    cell: (user) => (
-      <span className="text-muted-foreground">{user.username ?? '—'}</span>
-    ),
-  },
-  {
-    key: 'role',
-    header: 'Role',
-    cell: (user) => <RoleBadge role={user.role} />,
-  },
-  {
-    key: 'createdAt',
-    header: 'Created',
-    cell: (user) => formatDate(user.createdAt),
-  },
-  {
-    key: 'lastActiveAt',
-    header: 'Last active',
-    cell: (user) => (user.lastActiveAt !== null ? formatDate(user.lastActiveAt) : '—'),
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    cell: (user) => (
-      <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
-    ),
-  },
-  {
-    key: 'actions',
-    header: 'Actions',
-    className: 'w-28 text-right',
-    cell: (user) => {
-      const identifier = user.username ?? user.email
-      return (
-        <div className="flex justify-end gap-1">
-          <IconButton label={`Update ${identifier}`}>
-            <Pencil />
-          </IconButton>
-          <IconButton label={`Delete ${identifier}`} tone="destructive">
-            <Trash2 />
-          </IconButton>
-        </div>
-      )
-    },
-  },
-]
-
 export function UsersPageContent(): React.JSX.Element {
+  const intl = useIntl()
   const filters = useListSearchParams(listUsersQuerySchema)
   const usersQuery = useUsers({
     page: filters.page,
@@ -119,22 +34,109 @@ export function UsersPageContent(): React.JSX.Element {
   const data = usersQuery.data?.items ?? []
   const total = usersQuery.data?.pagination.total ?? 0
 
+  const emptyLabel = intl.formatMessage({ id: 'users.table.empty' })
+
+  const usersFilters: FilterDefinition[] = [
+    {
+      type: 'text',
+      paramName: 'email',
+      label: intl.formatMessage({ id: 'users.filters.email_label' }),
+      placeholder: intl.formatMessage({ id: 'users.filters.email_placeholder' }),
+    },
+    {
+      type: 'text',
+      paramName: 'username',
+      label: intl.formatMessage({ id: 'users.filters.username_label' }),
+      placeholder: intl.formatMessage({ id: 'users.filters.username_placeholder' }),
+    },
+  ]
+
+  const usersColumns: DataTableColumn<AdminApiUser>[] = [
+    {
+      key: 'avatar',
+      header: '',
+      className: 'w-10',
+      cell: (user) => (
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={user.avatarUrl ?? undefined} alt={user.username ?? user.email} />
+          <AvatarFallback className="text-xs">
+            {resolveAvatarInitial(user)}
+          </AvatarFallback>
+        </Avatar>
+      ),
+    },
+    {
+      key: 'email',
+      header: intl.formatMessage({ id: 'users.table.column.email' }),
+      cell: (user) => <span className="font-medium">{user.email}</span>,
+    },
+    {
+      key: 'username',
+      header: intl.formatMessage({ id: 'users.table.column.username' }),
+      cell: (user) => (
+        <span className="text-muted-foreground">{user.username ?? '—'}</span>
+      ),
+    },
+    {
+      key: 'role',
+      header: intl.formatMessage({ id: 'users.table.column.role' }),
+      cell: (user) => <RoleBadge role={user.role} />,
+    },
+    {
+      key: 'createdAt',
+      header: intl.formatMessage({ id: 'users.table.column.created' }),
+      cell: (user) => formatDate(user.createdAt),
+    },
+    {
+      key: 'lastActiveAt',
+      header: intl.formatMessage({ id: 'users.table.column.last_active' }),
+      cell: (user) => (user.lastActiveAt !== null ? formatDate(user.lastActiveAt) : '—'),
+    },
+    {
+      key: 'status',
+      header: intl.formatMessage({ id: 'users.table.column.status' }),
+      cell: (user) => (
+        <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
+      ),
+    },
+    {
+      key: 'actions',
+      header: intl.formatMessage({ id: 'users.table.column.actions' }),
+      className: 'w-28 text-right',
+      cell: (user) => {
+        const identifier = user.username ?? user.email
+        return (
+          <div className="flex justify-end gap-1">
+            <IconButton label={intl.formatMessage({ id: 'common.actions.update' }, { name: identifier })}>
+              <Pencil />
+            </IconButton>
+            <IconButton label={intl.formatMessage({ id: 'common.actions.delete' }, { name: identifier })} tone="destructive">
+              <Trash2 />
+            </IconButton>
+          </div>
+        )
+      },
+    },
+  ]
+
+  const usersClearableParams = [...usersFilters.map((filter) => filter.paramName), ROLE_PARAM]
+
   return (
     <DataTable
-      columns={USERS_COLUMNS}
+      columns={usersColumns}
       data={data}
       isLoading={usersQuery.isLoading}
       error={usersQuery.error}
-      emptyLabel={EMPTY_LABEL}
+      emptyLabel={emptyLabel}
       skeletonRowCount={filters.limit}
       onRetry={() => { void usersQuery.refetch() }}
       getRowClassName={resolveRowClassName}
       toolbar={
         <div className="flex flex-wrap items-center gap-3">
-          <DataTableFilters filters={USERS_FILTERS} />
+          <DataTableFilters filters={usersFilters} />
           <div className="h-6 w-px bg-border" />
           <RoleFilter />
-          <ClearFiltersButton paramNames={USERS_CLEARABLE_PARAMS} />
+          <ClearFiltersButton paramNames={usersClearableParams} />
         </div>
       }
       footer={

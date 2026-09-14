@@ -45,6 +45,20 @@ Summary of rules that matter most in this codebase:
 - **`async/await` only** — no `.then()` / `.catch()`
 - **`??` over `||`** for nullish coalescing
 
+## User-facing strings — always i18n
+
+Every user-facing string in the Backoffice is rendered through `react-intl`. There is no hardcoded UI copy — page titles, labels, buttons, headers, placeholders, toast bodies, table columns, empty states, error messages, `aria-label`, and metadata all go through catalog keys.
+
+- **Library**: `react-intl` (FormatJS, ICU). Provider at `src/lib/i18n/i18n-provider/`, mounted inside `Providers` in `src/components/providers.tsx`.
+- **Catalogs**: `src/lib/i18n/messages/en.json` and `src/lib/i18n/messages/fr.json`. Flat JSON, one file per locale.
+- **Key convention**: `<feature>.<component>.<purpose>` — e.g. `occasion_types.list.title`, `common.actions.retry`, `auth.login.email_placeholder`.
+- **Adding a new string**: add the key to BOTH `en.json` and `fr.json` in the same PR. A PR that ships a new English string without the French counterpart (or vice versa) is blocked.
+- **Interpolation**: use ICU syntax (`{name}`, `{count, plural, one {# user} other {# users}}`), never string concatenation.
+- **Rendering**: prefer `useIntl()` + `intl.formatMessage({ id })` in TSX (matches the strict `React.JSX.Element` typing); `<FormattedMessage />` is also fine.
+- **Tests**: wrap components in `IntlProvider` via `renderWithIntl` / `renderWithQueryClient` from `src/test/query-test-utils.tsx` — both already include the English catalog.
+- **Locale switching**: the `LocalePicker` in the dashboard header drives `useLocaleStore` (KEI-59). The `I18nProvider` re-reads the store, so switching locale re-renders the whole tree instantly. The persisted locale also flows to the API via the `Accept-Language` axios interceptor.
+- **Enforcement**: no ESLint rule is wired today. Reviewers must reject any PR that introduces a raw string in JSX or a hardcoded label passed to a prop — the string belongs in the catalog.
+
 ### React/Next.js additions
 
 - **Server Components by default** — add `'use client'` only when needed (event handlers, hooks, browser APIs)
@@ -84,6 +98,12 @@ src/
       hooks/            # useUsers, useUser, useUpdateUser, useDeleteUser
   lib/
     query-client.ts     # TanStack Query client configuration + global mutation error toast
+    i18n/               # Client-side i18n infrastructure
+      locale.ts         # LOCALES, Locale, DEFAULT_LOCALE, LOCALE_NATIVE_NAMES
+      locale-store.ts   # Zustand store (locale + setLocale + resolveInitialLocale)
+      resolve-locale.ts # Boot-time resolution: localStorage → navigator.language → 'en'
+      i18n-provider/    # <I18nProvider /> wrapping the app with react-intl's IntlProvider
+      messages/         # Catalogs: en.json, fr.json (flat, ICU message format)
   middleware.ts         # Edge middleware entry — Next.js requires this exact path. Keep thin: composes helpers from middlewares/
   middlewares/          # Individual middleware helpers, each returns NextResponse | null (null = pass through)
     require-session.ts  # Gates dashboard routes on the session cookie

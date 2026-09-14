@@ -4,21 +4,22 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Package, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useIntl } from 'react-intl'
 import { cn } from '@/lib/utils'
 import { useLogout } from '@/features/auth/hooks/use-logout'
 
 interface NavItem {
-  label: string
+  labelId: string
   href: string
   icon: LucideIcon
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { label: 'Lists', href: '/lists', icon: ListTodo },
-  { label: 'Products', href: '/products', icon: Package },
-  { label: 'Users', href: '/users', icon: Users },
-  { label: 'Occasion Types', href: '/occasion-types', icon: CalendarHeart },
+  { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
+  { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo },
+  { labelId: 'sidebar.nav.products', href: '/products', icon: Package },
+  { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
+  { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
 ]
 
 const BRAND_INITIAL = 'K'
@@ -27,6 +28,7 @@ const BRAND_NAME = 'Keimelion'
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname()
   const logout = useLogout()
+  const intl = useIntl()
 
   const handleLogout = (): void => {
     logout.mutate(null)
@@ -42,12 +44,13 @@ export function Sidebar(): React.JSX.Element {
       </Link>
 
       <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Menu
+        {intl.formatMessage({ id: 'common.nav.menu' })}
       </div>
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
+          const label = intl.formatMessage({ id: item.labelId })
           return (
             <Link
               key={item.href}
@@ -66,7 +69,7 @@ export function Sidebar(): React.JSX.Element {
                 )}
               />
               <Icon className="h-5 w-5 transition-transform duration-200 ease-out group-hover:scale-110" />
-              {item.label}
+              {label}
             </Link>
           )
         })}
@@ -79,7 +82,7 @@ export function Sidebar(): React.JSX.Element {
         className="group mt-auto flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-500 ease-in-out hover:bg-destructive hover:text-destructive-foreground disabled:pointer-events-none disabled:opacity-50"
       >
         <LogOut className="h-5 w-5 transition-transform duration-500 ease-in-out group-hover:-translate-x-0.5" />
-        Sign out
+        {intl.formatMessage({ id: 'common.actions.sign_out' })}
       </button>
     </aside>
   )

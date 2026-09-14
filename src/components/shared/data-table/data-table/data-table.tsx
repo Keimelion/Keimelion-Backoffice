@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useIntl } from 'react-intl'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -47,6 +48,8 @@ export function DataTable<TRow>({
   toolbar,
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
+  const intl = useIntl()
+
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/5 px-6 py-4">
@@ -59,7 +62,7 @@ export function DataTable<TRow>({
           className="mt-3"
           onClick={onRetry}
         >
-          Retry
+          {intl.formatMessage({ id: 'common.actions.retry' })}
         </Button>
       </div>
     )

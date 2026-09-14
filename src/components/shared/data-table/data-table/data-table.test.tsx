@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import React from 'react'
+import { renderWithIntl } from '@/test/query-test-utils'
 import { DataTable } from './data-table'
 import type { DataTableColumn } from './data-table'
 
@@ -24,7 +25,7 @@ const SKELETON_ROW_COUNT = 5
 const EMPTY_LABEL = 'No items found.'
 
 function renderTable(overrides: Partial<Parameters<typeof DataTable<FixtureRow>>[0]> = {}): void {
-  render(
+  renderWithIntl(
     <DataTable
       columns={COLUMNS}
       data={DATA}

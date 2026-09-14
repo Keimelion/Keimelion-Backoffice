@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useIntl } from 'react-intl'
 import { Button } from '@/components/ui/button'
 
 interface ErrorPageProps {
@@ -9,6 +10,8 @@ interface ErrorPageProps {
 }
 
 export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.Element {
+  const intl = useIntl()
+
   useEffect(() => {
     console.error('Route segment error:', error)
   }, [error])
@@ -17,14 +20,13 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-8 text-center">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Something went wrong
+          {intl.formatMessage({ id: 'error.title' })}
         </h1>
         <p className="max-w-md text-sm text-muted-foreground">
-          An unexpected error occurred while rendering this page. You can try again or come
-          back later.
+          {intl.formatMessage({ id: 'error.description' })}
         </p>
       </div>
-      <Button onClick={reset}>Try again</Button>
+      <Button onClick={reset}>{intl.formatMessage({ id: 'error.try_again' })}</Button>
     </div>
   )
 }

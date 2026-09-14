@@ -1,3 +1,4 @@
+import { useIntl } from 'react-intl'
 import { Badge } from '@/components/ui/badge'
 import type { UserRole } from '@keimelion/api/shared/enums/user-role'
 
@@ -11,12 +12,17 @@ const ROLE_CLASSES: Record<UserRole, string> = {
   user: 'border-transparent bg-sky-500 text-white hover:bg-sky-500/80',
 }
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin: 'Admin',
-  moderator: 'Moderator',
-  user: 'User',
+const ROLE_MESSAGE_IDS: Record<UserRole, string> = {
+  admin: 'users.role.admin',
+  moderator: 'users.role.moderator',
+  user: 'users.role.user',
 }
 
 export function RoleBadge({ role }: RoleBadgeProps): React.JSX.Element {
-  return <Badge className={ROLE_CLASSES[role]}>{ROLE_LABELS[role]}</Badge>
+  const intl = useIntl()
+  return (
+    <Badge className={ROLE_CLASSES[role]}>
+      {intl.formatMessage({ id: ROLE_MESSAGE_IDS[role] })}
+    </Badge>
+  )
 }
