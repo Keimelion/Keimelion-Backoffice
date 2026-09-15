@@ -1,5 +1,5 @@
-import { ProductsPageHeader } from '@/features/products/components/products-page-header'
+import { TranslatedPageHeader } from '@/components/shared/translated-page-header'
 
 export default function ProductsPage(): React.JSX.Element {
-  return <ProductsPageHeader />
+  return <TranslatedPageHeader titleId="products.title" descriptionId="products.description" />
 }

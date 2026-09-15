@@ -2,8 +2,8 @@
 
 import { IntlProvider } from 'react-intl'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
-import enMessages from '@/lib/i18n/messages/en.json'
-import frMessages from '@/lib/i18n/messages/fr.json'
+import { enMessages } from '@/lib/i18n/messages/en'
+import { frMessages } from '@/lib/i18n/messages/fr'
 import type { Locale } from '@/lib/i18n/locale'
 
 type Messages = Record<string, string>

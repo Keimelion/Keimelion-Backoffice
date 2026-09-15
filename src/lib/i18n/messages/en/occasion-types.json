@@ -1,0 +1,9 @@
+{
+  "occasion_types.list.title": "Occasion Types",
+  "occasion_types.list.description": "Reference list of occasion types available for wishlists.",
+  "occasion_types.table.column.emoji": "Emoji",
+  "occasion_types.table.column.label": "Label",
+  "occasion_types.table.column.slug": "Slug",
+  "occasion_types.table.column.actions": "Actions",
+  "occasion_types.table.empty": "No occasion types found."
+}

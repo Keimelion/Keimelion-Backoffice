@@ -7,7 +7,7 @@ import {
 import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { IntlProvider } from 'react-intl'
 import { vi } from 'vitest'
-import enMessages from '@/lib/i18n/messages/en.json'
+import { enMessages } from '@/lib/i18n/messages/en'
 
 export function createTestQueryClient(): QueryClient {
   return new QueryClient({

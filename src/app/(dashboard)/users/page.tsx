@@ -1,11 +1,11 @@
 import { Suspense } from 'react'
-import { UsersPageHeader } from '@/features/users/components/users-page-header'
+import { TranslatedPageHeader } from '@/components/shared/translated-page-header'
 import { UsersPageContent } from '@/features/users/components/users-page-content'
 
 export default function UsersPage(): React.JSX.Element {
   return (
     <>
-      <UsersPageHeader />
+      <TranslatedPageHeader titleId="users.list.title" descriptionId="users.list.description" />
       <Suspense>
         <UsersPageContent />
       </Suspense>

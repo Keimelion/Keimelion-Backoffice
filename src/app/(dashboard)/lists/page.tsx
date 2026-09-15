@@ -1,5 +1,5 @@
-import { ListsPageHeader } from '@/features/lists/components/lists-page-header'
+import { TranslatedPageHeader } from '@/components/shared/translated-page-header'
 
 export default function ListsPage(): React.JSX.Element {
-  return <ListsPageHeader />
+  return <TranslatedPageHeader titleId="lists.title" descriptionId="lists.description" />
 }

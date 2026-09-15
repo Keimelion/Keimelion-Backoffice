@@ -50,7 +50,7 @@ Summary of rules that matter most in this codebase:
 Every user-facing string in the Backoffice is rendered through `react-intl`. There is no hardcoded UI copy — page titles, labels, buttons, headers, placeholders, toast bodies, table columns, empty states, error messages, `aria-label`, and metadata all go through catalog keys.
 
 - **Library**: `react-intl` (FormatJS, ICU). Provider at `src/lib/i18n/i18n-provider/`, mounted inside `Providers` in `src/components/providers.tsx`.
-- **Catalogs**: `src/lib/i18n/messages/en.json` and `src/lib/i18n/messages/fr.json`. Flat JSON, one file per locale.
+- **Catalogs**: split per-namespace under `src/lib/i18n/messages/{en,fr}/*.json` (`common.json`, `auth.json`, `dashboard.json`, `users.json`, `occasion-types.json`, `lists.json`, `products.json`, `sidebar.json`, `error.json`, `query.json`). Each locale is re-exported as a single flat catalog via `messages/en.ts` and `messages/fr.ts`, which spread the namespace files. Add a new string in the file that matches its namespace prefix — in BOTH locales.
 - **Key convention**: `<feature>.<component>.<purpose>` — e.g. `occasion_types.list.title`, `common.actions.retry`, `auth.login.email_placeholder`.
 - **Adding a new string**: add the key to BOTH `en.json` and `fr.json` in the same PR. A PR that ships a new English string without the French counterpart (or vice versa) is blocked.
 - **Interpolation**: use ICU syntax (`{name}`, `{count, plural, one {# user} other {# users}}`), never string concatenation.
@@ -104,7 +104,7 @@ src/
       locale-store.ts   # Zustand store (locale + setLocale + resolveInitialLocale)
       resolve-locale.ts # Boot-time resolution: localStorage → navigator.language → 'en'
       i18n-provider/    # <I18nProvider /> wrapping the app with react-intl's IntlProvider
-      messages/         # Catalogs: en.json, fr.json (flat, ICU message format)
+      messages/         # Catalogs: en/*.json + fr/*.json namespace files, merged via en.ts and fr.ts
   middleware.ts         # Edge middleware entry — Next.js requires this exact path. Keep thin: composes helpers from middlewares/
   middlewares/          # Individual middleware helpers, each returns NextResponse | null (null = pass through)
     require-session.ts  # Gates dashboard routes on the session cookie

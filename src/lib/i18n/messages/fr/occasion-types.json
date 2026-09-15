@@ -1,0 +1,9 @@
+{
+  "occasion_types.list.title": "Types d'occasion",
+  "occasion_types.list.description": "Liste de référence des types d'occasion disponibles pour les listes de souhaits.",
+  "occasion_types.table.column.emoji": "Emoji",
+  "occasion_types.table.column.label": "Libellé",
+  "occasion_types.table.column.slug": "Slug",
+  "occasion_types.table.column.actions": "Actions",
+  "occasion_types.table.empty": "Aucun type d'occasion trouvé."
+}

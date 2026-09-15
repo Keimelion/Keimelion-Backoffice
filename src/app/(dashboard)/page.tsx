@@ -1,5 +1,5 @@
-import { DashboardPageHeader } from '@/features/dashboard/components/dashboard-page-header'
+import { TranslatedPageHeader } from '@/components/shared/translated-page-header'
 
 export default function DashboardPage(): React.JSX.Element {
-  return <DashboardPageHeader />
+  return <TranslatedPageHeader titleId="dashboard.title" descriptionId="dashboard.description" />
 }
