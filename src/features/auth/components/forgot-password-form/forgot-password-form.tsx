@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AuthCard } from '@/components/shared/auth-card'
+import { TranslatedAuthCard } from '@/components/shared/translated-auth-card'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -52,10 +52,7 @@ export function ForgotPasswordForm(): React.JSX.Element {
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard
-      title={t('auth.forgot_password.title')}
-      description={t('auth.forgot_password.description')}
-    >
+    <TranslatedAuthCard namespace="auth.forgot_password">
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -96,6 +93,6 @@ export function ForgotPasswordForm(): React.JSX.Element {
           </Link>
         </form>
       </Form>
-    </AuthCard>
+    </TranslatedAuthCard>
   )
 }

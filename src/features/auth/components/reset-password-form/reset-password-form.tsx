@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AuthCard } from '@/components/shared/auth-card'
+import { TranslatedAuthCard } from '@/components/shared/translated-auth-card'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -53,10 +53,7 @@ export function ResetPasswordForm(): React.JSX.Element {
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard
-      title={t('auth.reset_password.title')}
-      description={t('auth.reset_password.description')}
-    >
+    <TranslatedAuthCard namespace="auth.reset_password">
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -108,6 +105,6 @@ export function ResetPasswordForm(): React.JSX.Element {
           </Button>
         </form>
       </Form>
-    </AuthCard>
+    </TranslatedAuthCard>
   )
 }

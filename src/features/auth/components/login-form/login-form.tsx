@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AuthCard } from '@/components/shared/auth-card'
+import { TranslatedAuthCard } from '@/components/shared/translated-auth-card'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -56,7 +56,7 @@ export function LoginForm(): React.JSX.Element {
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard title={t('auth.login.title')} description={t('auth.login.description')}>
+    <TranslatedAuthCard namespace="auth.login">
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -113,6 +113,6 @@ export function LoginForm(): React.JSX.Element {
           </Button>
         </form>
       </Form>
-    </AuthCard>
+    </TranslatedAuthCard>
   )
 }
