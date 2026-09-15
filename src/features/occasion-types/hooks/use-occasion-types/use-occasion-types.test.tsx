@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { createQueryClientWrapper } from '@/test/query-test-utils'
+import { createQueryClientWrapper } from '@/test/test-utils'
 import { useOccasionTypes, buildOccasionTypesQueryKey } from './use-occasion-types'
 
 vi.mock('@/data-access/occasion-types/occasion-types.api', () => ({

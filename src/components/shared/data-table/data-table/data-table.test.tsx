@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import React from 'react'
-import { renderWithIntl } from '@/test/query-test-utils'
+import { renderWithIntl } from '@/test/test-utils'
 import { DataTable } from './data-table'
 import type { DataTableColumn } from './data-table'
 

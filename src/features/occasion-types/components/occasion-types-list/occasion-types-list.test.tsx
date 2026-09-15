@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { mockUseQueryResult, renderWithQueryClient } from '@/test/query-test-utils'
+import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-types.schemas'
 

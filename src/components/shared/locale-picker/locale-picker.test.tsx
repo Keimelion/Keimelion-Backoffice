@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MockAdapter from 'axios-mock-adapter'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderWithIntl } from '@/test/query-test-utils'
+import { renderWithIntl } from '@/test/test-utils'
 
 vi.stubEnv('NEXT_PUBLIC_API_URL', 'http://localhost:3000')
 
