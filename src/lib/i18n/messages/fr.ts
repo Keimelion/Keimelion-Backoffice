@@ -1,3 +1,4 @@
+import type { MessageId } from './en'
 import auth from './fr/auth.json'
 import common from './fr/common.json'
 import dashboard from './fr/dashboard.json'
@@ -9,7 +10,7 @@ import query from './fr/query.json'
 import sidebar from './fr/sidebar.json'
 import users from './fr/users.json'
 
-export const frMessages: Record<string, string> = {
+export const frMessages = {
   ...common,
   ...auth,
   ...dashboard,
@@ -20,4 +21,4 @@ export const frMessages: Record<string, string> = {
   ...sidebar,
   ...errorMessages,
   ...query,
-}
+} satisfies Record<MessageId, string>

@@ -5,7 +5,7 @@ import { UsersPageContent } from '@/features/users/components/users-page-content
 export default function UsersPage(): React.JSX.Element {
   return (
     <>
-      <TranslatedPageHeader titleId="users.list.title" descriptionId="users.list.description" />
+      <TranslatedPageHeader namespace="users.list" />
       <Suspense>
         <UsersPageContent />
       </Suspense>

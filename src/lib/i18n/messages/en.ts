@@ -9,7 +9,7 @@ import query from './en/query.json'
 import sidebar from './en/sidebar.json'
 import users from './en/users.json'
 
-export const enMessages: Record<string, string> = {
+export const enMessages = {
   ...common,
   ...auth,
   ...dashboard,
@@ -20,4 +20,6 @@ export const enMessages: Record<string, string> = {
   ...sidebar,
   ...errorMessages,
   ...query,
-}
+} satisfies Record<string, string>
+
+export type MessageId = keyof typeof enMessages
