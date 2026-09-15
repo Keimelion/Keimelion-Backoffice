@@ -1,7 +1,6 @@
 'use client'
 
 import { Pencil, Trash2 } from 'lucide-react'
-import { useIntl } from 'react-intl'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   ClearFiltersButton,
@@ -14,13 +13,14 @@ import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { listUsersQuerySchema, type AdminApiUser } from '@/data-access/users/list-users'
 import { formatDate } from '@/lib/format-date'
+import { useTranslate } from '@/lib/i18n/use-translate'
 import { useUsers } from '@/features/users/hooks/use-users'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { ROLE_PARAM, RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
 
 export function UsersPageContent(): React.JSX.Element {
-  const intl = useIntl()
+  const t = useTranslate()
   const filters = useListSearchParams(listUsersQuerySchema)
   const usersQuery = useUsers({
     page: filters.page,
@@ -34,20 +34,20 @@ export function UsersPageContent(): React.JSX.Element {
   const data = usersQuery.data?.items ?? []
   const total = usersQuery.data?.pagination.total ?? 0
 
-  const emptyLabel = intl.formatMessage({ id: 'users.table.empty' })
+  const emptyLabel = t('users.table.empty')
 
   const usersFilters: FilterDefinition[] = [
     {
       type: 'text',
       paramName: 'email',
-      label: intl.formatMessage({ id: 'users.filters.email_label' }),
-      placeholder: intl.formatMessage({ id: 'users.filters.email_placeholder' }),
+      label: t('users.filters.email_label'),
+      placeholder: t('users.filters.email_placeholder'),
     },
     {
       type: 'text',
       paramName: 'username',
-      label: intl.formatMessage({ id: 'users.filters.username_label' }),
-      placeholder: intl.formatMessage({ id: 'users.filters.username_placeholder' }),
+      label: t('users.filters.username_label'),
+      placeholder: t('users.filters.username_placeholder'),
     },
   ]
 
@@ -67,50 +67,50 @@ export function UsersPageContent(): React.JSX.Element {
     },
     {
       key: 'email',
-      header: intl.formatMessage({ id: 'users.table.column.email' }),
+      header: t('users.table.column.email'),
       cell: (user) => <span className="font-medium">{user.email}</span>,
     },
     {
       key: 'username',
-      header: intl.formatMessage({ id: 'users.table.column.username' }),
+      header: t('users.table.column.username'),
       cell: (user) => (
         <span className="text-muted-foreground">{user.username ?? '—'}</span>
       ),
     },
     {
       key: 'role',
-      header: intl.formatMessage({ id: 'users.table.column.role' }),
+      header: t('users.table.column.role'),
       cell: (user) => <RoleBadge role={user.role} />,
     },
     {
       key: 'createdAt',
-      header: intl.formatMessage({ id: 'users.table.column.created' }),
+      header: t('users.table.column.created'),
       cell: (user) => formatDate(user.createdAt),
     },
     {
       key: 'lastActiveAt',
-      header: intl.formatMessage({ id: 'users.table.column.last_active' }),
+      header: t('users.table.column.last_active'),
       cell: (user) => (user.lastActiveAt !== null ? formatDate(user.lastActiveAt) : '—'),
     },
     {
       key: 'status',
-      header: intl.formatMessage({ id: 'users.table.column.status' }),
+      header: t('users.table.column.status'),
       cell: (user) => (
         <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
       ),
     },
     {
       key: 'actions',
-      header: intl.formatMessage({ id: 'users.table.column.actions' }),
+      header: t('users.table.column.actions'),
       className: 'w-28 text-right',
       cell: (user) => {
         const identifier = user.username ?? user.email
         return (
           <div className="flex justify-end gap-1">
-            <IconButton label={intl.formatMessage({ id: 'common.actions.update' }, { name: identifier })}>
+            <IconButton label={t('common.actions.update', { name: identifier })}>
               <Pencil />
             </IconButton>
-            <IconButton label={intl.formatMessage({ id: 'common.actions.delete' }, { name: identifier })} tone="destructive">
+            <IconButton label={t('common.actions.delete', { name: identifier })} tone="destructive">
               <Trash2 />
             </IconButton>
           </div>

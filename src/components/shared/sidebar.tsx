@@ -4,12 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Package, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useIntl } from 'react-intl'
 import { cn } from '@/lib/utils'
 import { useLogout } from '@/features/auth/hooks/use-logout'
+import type { MessageId } from '@/lib/i18n/messages/en'
+import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface NavItem {
-  labelId: string
+  labelId: MessageId
   href: string
   icon: LucideIcon
 }
@@ -28,7 +29,7 @@ const BRAND_NAME = 'Keimelion'
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname()
   const logout = useLogout()
-  const intl = useIntl()
+  const t = useTranslate()
 
   const handleLogout = (): void => {
     logout.mutate(null)
@@ -44,13 +45,13 @@ export function Sidebar(): React.JSX.Element {
       </Link>
 
       <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {intl.formatMessage({ id: 'common.nav.menu' })}
+        {t('common.nav.menu')}
       </div>
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
-          const label = intl.formatMessage({ id: item.labelId })
+          const label = t(item.labelId)
           return (
             <Link
               key={item.href}
@@ -82,7 +83,7 @@ export function Sidebar(): React.JSX.Element {
         className="group mt-auto flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-500 ease-in-out hover:bg-destructive hover:text-destructive-foreground disabled:pointer-events-none disabled:opacity-50"
       >
         <LogOut className="h-5 w-5 transition-transform duration-500 ease-in-out group-hover:-translate-x-0.5" />
-        {intl.formatMessage({ id: 'common.actions.sign_out' })}
+        {t('common.actions.sign_out')}
       </button>
     </aside>
   )

@@ -1,5 +1,6 @@
-import { useIntl } from 'react-intl'
 import { Badge } from '@/components/ui/badge'
+import { useTranslate } from '@/lib/i18n/use-translate'
+import type { MessageId } from '@/lib/i18n/messages/en'
 
 interface UserStatusBadgeProps {
   deletedAt: string | null
@@ -14,7 +15,7 @@ const STATUS_CLASSES: Record<UserStatus, string> = {
   banned: 'border-transparent bg-red-500 text-white hover:bg-red-500/80',
 }
 
-const STATUS_MESSAGE_IDS: Record<UserStatus, string> = {
+const STATUS_MESSAGE_IDS: Record<UserStatus, MessageId> = {
   active: 'users.status.active',
   deleted: 'users.status.deleted',
   banned: 'users.status.banned',
@@ -27,11 +28,7 @@ function resolveUserStatus(deletedAt: string | null, bannedAt: string | null): U
 }
 
 export function UserStatusBadge({ deletedAt, bannedAt }: UserStatusBadgeProps): React.JSX.Element {
-  const intl = useIntl()
+  const t = useTranslate()
   const status = resolveUserStatus(deletedAt, bannedAt)
-  return (
-    <Badge className={STATUS_CLASSES[status]}>
-      {intl.formatMessage({ id: STATUS_MESSAGE_IDS[status] })}
-    </Badge>
-  )
+  return <Badge className={STATUS_CLASSES[status]}>{t(STATUS_MESSAGE_IDS[status])}</Badge>
 }

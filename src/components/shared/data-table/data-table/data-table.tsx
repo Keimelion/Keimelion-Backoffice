@@ -1,7 +1,6 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useIntl } from 'react-intl'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -12,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
 
 export interface DataTableColumn<TRow> {
@@ -48,7 +48,7 @@ export function DataTable<TRow>({
   toolbar,
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
-  const intl = useIntl()
+  const t = useTranslate()
 
   if (error) {
     return (
@@ -62,7 +62,7 @@ export function DataTable<TRow>({
           className="mt-3"
           onClick={onRetry}
         >
-          {intl.formatMessage({ id: 'common.actions.retry' })}
+          {t('common.actions.retry')}
         </Button>
       </div>
     )

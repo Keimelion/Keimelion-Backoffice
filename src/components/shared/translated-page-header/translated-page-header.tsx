@@ -1,8 +1,8 @@
 'use client'
 
-import { useIntl } from 'react-intl'
 import { PageHeader } from '@/components/shared/page-header'
 import type { MessageId } from '@/lib/i18n/messages/en'
+import { useTranslate } from '@/lib/i18n/use-translate'
 
 type NamespaceOf<Suffix extends string, Id extends string> =
   Id extends `${infer Namespace}.${Suffix}` ? Namespace : never
@@ -21,11 +21,11 @@ export function TranslatedPageHeader({
   namespace,
   actions,
 }: TranslatedPageHeaderProps): React.JSX.Element {
-  const intl = useIntl()
+  const t = useTranslate()
   return (
     <PageHeader
-      title={intl.formatMessage({ id: `${namespace}.title` })}
-      description={intl.formatMessage({ id: `${namespace}.description` })}
+      title={t(`${namespace}.title`)}
+      description={t(`${namespace}.description`)}
       actions={actions}
     />
   )

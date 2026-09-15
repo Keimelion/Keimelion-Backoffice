@@ -1,4 +1,5 @@
 import { FORGOT_PASSWORD_PATH, LOGIN_PATH } from '@/data-access/auth/paths'
+import type { MessageId } from '@/lib/i18n/messages/en'
 
 export const NOTICE_PARAM = 'notice'
 
@@ -11,14 +12,14 @@ export const NOTICE_CODE = {
 
 export type NoticeCode = (typeof NOTICE_CODE)[keyof typeof NOTICE_CODE]
 
-export const NOTICE_MESSAGE_IDS: Record<NoticeCode, string> = {
+export const NOTICE_MESSAGE_IDS: Record<NoticeCode, MessageId> = {
   [NOTICE_CODE.RESET_LINK_INVALID]: 'auth.notices.reset_link_invalid',
   [NOTICE_CODE.RESET_LINK_EXPIRED]: 'auth.notices.reset_link_expired',
   [NOTICE_CODE.PASSWORD_UPDATED]: 'auth.notices.password_updated',
   [NOTICE_CODE.FORGOT_PASSWORD_REQUESTED]: 'auth.notices.forgot_password_requested',
 }
 
-export function resolveNoticeMessageId(value: string | null): string | null {
+export function resolveNoticeMessageId(value: string | null): MessageId | null {
   if (value === null) return null
   const allowed = Object.values(NOTICE_CODE) as string[]
   if (!allowed.includes(value)) return null

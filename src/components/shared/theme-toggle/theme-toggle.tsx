@@ -3,12 +3,12 @@
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { flushSync } from 'react-dom'
-import { useIntl } from 'react-intl'
 import { Button } from '@/components/ui/button'
+import { useTranslate } from '@/lib/i18n/use-translate'
 
 export function ThemeToggle(): React.JSX.Element {
   const { resolvedTheme, setTheme } = useTheme()
-  const intl = useIntl()
+  const t = useTranslate()
 
   const handleToggle = (): void => {
     const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
@@ -28,7 +28,7 @@ export function ThemeToggle(): React.JSX.Element {
     })
   }
 
-  const label = intl.formatMessage({ id: 'common.theme_toggle.toggle' })
+  const label = t('common.theme_toggle.toggle')
 
   return (
     <Button variant="outline" size="icon" onClick={handleToggle} aria-label={label}>

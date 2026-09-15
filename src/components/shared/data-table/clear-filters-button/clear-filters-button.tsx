@@ -1,9 +1,9 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useIntl } from 'react-intl'
 import { Button } from '@/components/ui/button'
 import { useUrlParams } from '@/components/shared/use-url-params'
+import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface ClearFiltersButtonProps {
   paramNames: string[]
@@ -11,7 +11,7 @@ interface ClearFiltersButtonProps {
 
 export function ClearFiltersButton({ paramNames }: ClearFiltersButtonProps): React.JSX.Element | null {
   const { searchParams, clearParams } = useUrlParams()
-  const intl = useIntl()
+  const t = useTranslate()
   const hasActive = paramNames.some((name) => searchParams.has(name))
 
   if (!hasActive) return null
@@ -24,7 +24,7 @@ export function ClearFiltersButton({ paramNames }: ClearFiltersButtonProps): Rea
       onClick={() => { clearParams(paramNames) }}
     >
       <X className="h-3.5 w-3.5" />
-      {intl.formatMessage({ id: 'common.actions.clear_filters' })}
+      {t('common.actions.clear_filters')}
     </Button>
   )
 }
