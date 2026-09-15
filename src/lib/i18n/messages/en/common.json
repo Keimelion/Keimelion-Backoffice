@@ -1,0 +1,13 @@
+{
+  "common.actions.retry": "Retry",
+  "common.actions.clear_filters": "Clear",
+  "common.actions.sign_out": "Sign out",
+  "common.actions.update": "Update {name}",
+  "common.actions.delete": "Delete {name}",
+  "common.nav.menu": "Menu",
+  "common.pagination.page_of": "Page {page} / {totalPages}",
+  "common.pagination.previous": "Previous",
+  "common.pagination.next": "Next",
+  "common.locale_picker.select_language": "Select language",
+  "common.theme_toggle.toggle": "Toggle theme"
+}

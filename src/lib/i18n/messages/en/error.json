@@ -1,0 +1,5 @@
+{
+  "error.title": "Something went wrong",
+  "error.description": "An unexpected error occurred while rendering this page. You can try again or come back later.",
+  "error.try_again": "Try again"
+}

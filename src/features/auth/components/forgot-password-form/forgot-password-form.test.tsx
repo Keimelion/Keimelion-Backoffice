@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderWithQueryClient } from '@/test/query-test-utils'
+import { renderWithQueryClient } from '@/test/test-utils'
 
 const mockReplace = vi.fn()
 

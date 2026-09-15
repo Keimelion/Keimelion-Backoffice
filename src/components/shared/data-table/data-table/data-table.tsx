@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
 
 export interface DataTableColumn<TRow> {
@@ -47,6 +48,8 @@ export function DataTable<TRow>({
   toolbar,
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
+  const t = useTranslate()
+
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/5 px-6 py-4">
@@ -59,7 +62,7 @@ export function DataTable<TRow>({
           className="mt-3"
           onClick={onRetry}
         >
-          Retry
+          {t('common.actions.retry')}
         </Button>
       </div>
     )
