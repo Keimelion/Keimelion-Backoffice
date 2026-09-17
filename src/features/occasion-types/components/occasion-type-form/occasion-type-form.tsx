@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import type { UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import {
   createOccasionTypeInputSchema,
   updateOccasionTypeInputSchema,
@@ -39,7 +38,7 @@ export interface EditFormValues {
 export interface OccasionTypeFormCreateProps {
   mode: 'create'
   onSubmit: (values: CreateOccasionTypeInput, setError: UseFormSetError<CreateOccasionTypeInput>) => void
-  onCancel: () => void
+  onDirtyChange: (isDirty: boolean) => void
   isPending: boolean
 }
 
@@ -47,17 +46,16 @@ export interface OccasionTypeFormEditProps {
   mode: 'edit'
   initialValues: EditFormValues
   onSubmit: (values: UpdateOccasionTypeInput, setError: UseFormSetError<UpdateOccasionTypeInput>) => void
-  onCancel: () => void
+  onDirtyChange: (isDirty: boolean) => void
   isPending: boolean
 }
 
 export function OccasionTypeCreateForm({
   onSubmit,
-  onCancel,
+  onDirtyChange,
   isPending,
 }: OccasionTypeFormCreateProps): React.JSX.Element {
   const t = useTranslate()
-  const [isDiscardOpen, setIsDiscardOpen] = useState<boolean>(false)
 
   const form = useForm<CreateOccasionTypeInput>({
     resolver: zodResolver(createOccasionTypeInputSchema),
@@ -73,40 +71,115 @@ export function OccasionTypeCreateForm({
     },
   })
 
-  const { isDirty: isCreateFormDirty } = form.formState
+  const values = form.watch()
+  const isFormValid = createOccasionTypeInputSchema.safeParse(values).success
+  const { isDirty } = form.formState
+  const canSubmit = isFormValid && isDirty && !isPending
 
-  function handleCancelRequest(): void {
-    if (isCreateFormDirty) {
-      setIsDiscardOpen(true)
-      return
-    }
-    onCancel()
-  }
+  useEffect(() => {
+    onDirtyChange(isDirty)
+  }, [isDirty, onDirtyChange])
 
   const submitLabel = isPending
     ? t('occasion_types.form.submit_pending')
     : t('occasion_types.form.submit_create')
 
   return (
-    <>
-      <Form {...form}>
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            void form.handleSubmit((values) => {
-              onSubmit(values, form.setError)
-            })(event)
-          }}
-          noValidate
-        >
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          void form.handleSubmit((submittedValues) => {
+            onSubmit(submittedValues, form.setError)
+          })(event)
+        }}
+        noValidate
+      >
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('occasion_types.form.slug_label')}</FormLabel>
+              <FormControl>
+                <Input placeholder="my-occasion" disabled={isPending} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="emoji"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('occasion_types.form.emoji_label')}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="🎂"
+                  disabled={isPending}
+                  value={field.value ?? ''}
+                  onChange={(event) => {
+                    const trimmed = event.target.value.trim()
+                    field.onChange(trimmed.length > 0 ? trimmed : null)
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="sortOrder"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('occasion_types.form.sort_order_label')}</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={0}
+                  max={32767}
+                  disabled={isPending}
+                  value={field.value}
+                  onChange={(event) => {
+                    field.onChange(event.target.valueAsNumber)
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-3">
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isPending}
+                />
+              </FormControl>
+              <FormLabel className="mb-0">{t('occasion_types.form.is_active_label')}</FormLabel>
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
-            name="slug"
+            name="labelEn"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('occasion_types.form.slug_label')}</FormLabel>
+                <FormLabel>{t('occasion_types.form.label_en_label')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="my-occasion" disabled={isPending} {...field} />
+                  <Input disabled={isPending} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,18 +188,17 @@ export function OccasionTypeCreateForm({
 
           <FormField
             control={form.control}
-            name="emoji"
+            name="labelFr"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('occasion_types.form.emoji_label')}</FormLabel>
+                <FormLabel>{t('occasion_types.form.label_fr_label')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="🎂"
                     disabled={isPending}
                     value={field.value ?? ''}
                     onChange={(event) => {
-                      const trimmed = event.target.value.trim()
-                      field.onChange(trimmed.length > 0 ? trimmed : null)
+                      const nextValue = event.target.value
+                      field.onChange(nextValue.length > 0 ? nextValue : null)
                     }}
                   />
                 </FormControl>
@@ -134,123 +206,31 @@ export function OccasionTypeCreateForm({
               </FormItem>
             )}
           />
+        </div>
 
-          <FormField
-            control={form.control}
-            name="sortOrder"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('occasion_types.form.sort_order_label')}</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={32767}
-                    disabled={isPending}
-                    value={field.value}
-                    onChange={(event) => {
-                      field.onChange(event.target.valueAsNumber)
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {form.formState.errors.root ? (
+          <p className="text-sm font-medium text-destructive">
+            {form.formState.errors.root.message}
+          </p>
+        ) : null}
 
-          <FormField
-            control={form.control}
-            name="isActive"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center gap-3">
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormLabel className="mb-0">{t('occasion_types.form.is_active_label')}</FormLabel>
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="labelEn"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('occasion_types.form.label_en_label')}</FormLabel>
-                  <FormControl>
-                    <Input disabled={isPending} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="labelFr"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('occasion_types.form.label_fr_label')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      value={field.value ?? ''}
-                      onChange={(event) => {
-                        const value = event.target.value
-                        field.onChange(value.length > 0 ? value : null)
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {form.formState.errors.root ? (
-            <p className="text-sm font-medium text-destructive">
-              {form.formState.errors.root.message}
-            </p>
-          ) : null}
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" disabled={isPending} onClick={handleCancelRequest}>
-              {t('occasion_types.form.cancel')}
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {submitLabel}
-            </Button>
-          </div>
-        </form>
-      </Form>
-
-      <ConfirmDialog
-        open={isDiscardOpen}
-        onOpenChange={setIsDiscardOpen}
-        title={t('occasion_types.form.discard_changes_title')}
-        description={t('occasion_types.form.discard_changes_description')}
-        onConfirm={() => {
-          setIsDiscardOpen(false)
-          onCancel()
-        }}
-      />
-    </>
+        <div className="flex justify-end pt-2">
+          <Button type="submit" disabled={!canSubmit}>
+            {submitLabel}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }
 
 export function OccasionTypeEditForm({
   initialValues,
   onSubmit,
-  onCancel,
+  onDirtyChange,
   isPending,
 }: OccasionTypeFormEditProps): React.JSX.Element {
   const t = useTranslate()
-  const [isDiscardOpen, setIsDiscardOpen] = useState<boolean>(false)
 
   const form = useForm<UpdateOccasionTypeInput>({
     resolver: zodResolver(updateOccasionTypeInputSchema),
@@ -265,54 +245,128 @@ export function OccasionTypeEditForm({
     },
   })
 
-  const { isDirty: isEditFormDirty } = form.formState
+  const values = form.watch()
+  const isFormValid = updateOccasionTypeInputSchema.safeParse(values).success
+  const { isDirty } = form.formState
+  const canSubmit = isFormValid && isDirty && !isPending
 
-  function handleCancelRequest(): void {
-    if (isEditFormDirty) {
-      setIsDiscardOpen(true)
-      return
-    }
-    onCancel()
-  }
+  useEffect(() => {
+    onDirtyChange(isDirty)
+  }, [isDirty, onDirtyChange])
 
   const submitLabel = isPending
     ? t('occasion_types.form.submit_pending')
     : t('occasion_types.form.submit_edit')
 
   return (
-    <>
-      <Form {...form}>
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            void form.handleSubmit((values) => {
-              onSubmit(values, form.setError)
-            })(event)
-          }}
-          noValidate
-        >
-          <div className="flex flex-col gap-1.5">
-            <Label>{t('occasion_types.form.slug_label')}</Label>
-            <Input value={initialValues.slug} disabled readOnly />
-            <p className="text-sm text-muted-foreground">
-              {t('occasion_types.form.slug_description_disabled')}
-            </p>
-          </div>
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          void form.handleSubmit((submittedValues) => {
+            onSubmit(submittedValues, form.setError)
+          })(event)
+        }}
+        noValidate
+      >
+        <div className="flex flex-col gap-1.5">
+          <Label>{t('occasion_types.form.slug_label')}</Label>
+          <Input value={initialValues.slug} disabled readOnly />
+          <p className="text-sm text-muted-foreground">
+            {t('occasion_types.form.slug_description_disabled')}
+          </p>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="emoji"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('occasion_types.form.emoji_label')}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="🎂"
+                  disabled={isPending}
+                  value={field.value ?? ''}
+                  onChange={(event) => {
+                    const trimmed = event.target.value.trim()
+                    field.onChange(trimmed.length > 0 ? trimmed : null)
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="sortOrder"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('occasion_types.form.sort_order_label')}</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={0}
+                  max={32767}
+                  disabled={isPending}
+                  value={field.value}
+                  onChange={(event) => {
+                    field.onChange(event.target.valueAsNumber)
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-3">
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isPending}
+                />
+              </FormControl>
+              <FormLabel className="mb-0">{t('occasion_types.form.is_active_label')}</FormLabel>
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="labelEn"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('occasion_types.form.label_en_label')}</FormLabel>
+                <FormControl>
+                  <Input disabled={isPending} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
-            name="emoji"
+            name="labelFr"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('occasion_types.form.emoji_label')}</FormLabel>
+                <FormLabel>{t('occasion_types.form.label_fr_label')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="🎂"
                     disabled={isPending}
                     value={field.value ?? ''}
                     onChange={(event) => {
-                      const trimmed = event.target.value.trim()
-                      field.onChange(trimmed.length > 0 ? trimmed : null)
+                      const nextValue = event.target.value
+                      field.onChange(nextValue.length > 0 ? nextValue : null)
                     }}
                   />
                 </FormControl>
@@ -320,111 +374,20 @@ export function OccasionTypeEditForm({
               </FormItem>
             )}
           />
+        </div>
 
-          <FormField
-            control={form.control}
-            name="sortOrder"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('occasion_types.form.sort_order_label')}</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={32767}
-                    disabled={isPending}
-                    value={field.value}
-                    onChange={(event) => {
-                      field.onChange(event.target.valueAsNumber)
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {form.formState.errors.root ? (
+          <p className="text-sm font-medium text-destructive">
+            {form.formState.errors.root.message}
+          </p>
+        ) : null}
 
-          <FormField
-            control={form.control}
-            name="isActive"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center gap-3">
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormLabel className="mb-0">{t('occasion_types.form.is_active_label')}</FormLabel>
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="labelEn"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('occasion_types.form.label_en_label')}</FormLabel>
-                  <FormControl>
-                    <Input disabled={isPending} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="labelFr"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('occasion_types.form.label_fr_label')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      value={field.value ?? ''}
-                      onChange={(event) => {
-                        const value = event.target.value
-                        field.onChange(value.length > 0 ? value : null)
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {form.formState.errors.root ? (
-            <p className="text-sm font-medium text-destructive">
-              {form.formState.errors.root.message}
-            </p>
-          ) : null}
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" disabled={isPending} onClick={handleCancelRequest}>
-              {t('occasion_types.form.cancel')}
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {submitLabel}
-            </Button>
-          </div>
-        </form>
-      </Form>
-
-      <ConfirmDialog
-        open={isDiscardOpen}
-        onOpenChange={setIsDiscardOpen}
-        title={t('occasion_types.form.discard_changes_title')}
-        description={t('occasion_types.form.discard_changes_description')}
-        onConfirm={() => {
-          setIsDiscardOpen(false)
-          onCancel()
-        }}
-      />
-    </>
+        <div className="flex justify-end pt-2">
+          <Button type="submit" disabled={!canSubmit}>
+            {submitLabel}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }

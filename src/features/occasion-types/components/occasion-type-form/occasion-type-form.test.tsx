@@ -26,12 +26,12 @@ const INITIAL_EDIT_VALUES: EditFormValues = {
   labelFr: 'Anniversaire',
 }
 
-function renderCreateForm(onSubmit = vi.fn(), onCancel = vi.fn()): void {
+function renderCreateForm(onSubmit = vi.fn(), onDirtyChange = vi.fn()): void {
   renderWithQueryClient(
     <OccasionTypeCreateForm
       mode="create"
       onSubmit={onSubmit}
-      onCancel={onCancel}
+      onDirtyChange={onDirtyChange}
       isPending={false}
     />,
   )
@@ -40,14 +40,14 @@ function renderCreateForm(onSubmit = vi.fn(), onCancel = vi.fn()): void {
 function renderEditForm(
   initialValues = INITIAL_EDIT_VALUES,
   onSubmit = vi.fn(),
-  onCancel = vi.fn(),
+  onDirtyChange = vi.fn(),
 ): void {
   renderWithQueryClient(
     <OccasionTypeEditForm
       mode="edit"
       initialValues={initialValues}
       onSubmit={onSubmit}
-      onCancel={onCancel}
+      onDirtyChange={onDirtyChange}
       isPending={false}
     />,
   )
@@ -67,6 +67,25 @@ describe('OccasionTypeCreateForm', () => {
     expect(screen.getByText('Label (French)')).toBeInTheDocument()
   })
 
+  it('does not render a cancel button (closure happens via Dialog primitive)', () => {
+    renderCreateForm()
+    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+  })
+
+  it('keeps the submit button disabled while the form is empty', () => {
+    renderCreateForm()
+    expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
+  })
+
+  it('enables the submit button once required fields pass validation', async () => {
+    renderCreateForm()
+    await userEvent.type(screen.getByPlaceholderText('my-occasion'), 'birthday')
+    await userEvent.type(screen.getByRole('textbox', { name: 'Label (English)' }), 'Birthday')
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create/i })).toBeEnabled()
+    })
+  })
+
   it('shows slug validation error for invalid slug', async () => {
     renderCreateForm()
     const slugInput = screen.getByPlaceholderText('my-occasion')
@@ -79,12 +98,11 @@ describe('OccasionTypeCreateForm', () => {
     })
   })
 
-  it('shows required error for empty english label', async () => {
+  it('shows required error for empty english label after touching then leaving it empty', async () => {
     renderCreateForm()
-    const slugInput = screen.getByPlaceholderText('my-occasion')
-    await userEvent.type(slugInput, 'my-slug')
-    const form = screen.getByRole('button', { name: /create/i }).closest('form')
-    if (form) fireEvent.submit(form)
+    const enInput = screen.getByRole('textbox', { name: 'Label (English)' })
+    await userEvent.click(enInput)
+    await userEvent.tab()
     await waitFor(() => {
       expect(screen.getByText('The English label is required.')).toBeInTheDocument()
     })
@@ -133,24 +151,14 @@ describe('OccasionTypeCreateForm', () => {
     })
   })
 
-  it('does not call onCancel directly when form is dirty (guard fires)', async () => {
-    const user = userEvent.setup()
-    const onCancel = vi.fn()
-    renderCreateForm(vi.fn(), onCancel)
-    const slugInput = screen.getByPlaceholderText('my-occasion')
-    await user.type(slugInput, 'birthday')
+  it('reports dirty state through onDirtyChange as the user types', async () => {
+    const onDirtyChange = vi.fn()
+    renderCreateForm(vi.fn(), onDirtyChange)
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false)
+    await userEvent.type(screen.getByPlaceholderText('my-occasion'), 'birthday')
     await waitFor(() => {
-      expect((slugInput as HTMLInputElement).value).toBe('birthday')
+      expect(onDirtyChange).toHaveBeenLastCalledWith(true)
     })
-    await user.click(screen.getByRole('button', { name: /cancel/i }))
-    expect(onCancel).not.toHaveBeenCalled()
-  })
-
-  it('calls onCancel directly when form is not dirty', async () => {
-    const onCancel = vi.fn()
-    renderCreateForm(vi.fn(), onCancel)
-    await userEvent.click(screen.getByRole('button', { name: /cancel/i }))
-    expect(onCancel).toHaveBeenCalledOnce()
   })
 })
 
@@ -168,6 +176,21 @@ describe('OccasionTypeEditForm', () => {
     expect(screen.getByText(/slug cannot be changed/i)).toBeInTheDocument()
   })
 
+  it('keeps the submit button disabled while nothing has changed', () => {
+    renderEditForm()
+    expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled()
+  })
+
+  it('enables the submit button once a field changes to a valid value', async () => {
+    renderEditForm()
+    const emojiInput = screen.getByDisplayValue('🎂')
+    await userEvent.clear(emojiInput)
+    await userEvent.type(emojiInput, '🎉')
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /save changes/i })).toBeEnabled()
+    })
+  })
+
   it('shows root error for 422 on submit via setError', async () => {
     const onSubmit = vi.fn((
       _values: UpdateOccasionTypeInput,
@@ -176,7 +199,11 @@ describe('OccasionTypeEditForm', () => {
       setError('root', { message: 'Validation failed.' })
     })
     renderEditForm(INITIAL_EDIT_VALUES, onSubmit)
-    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    const emojiInput = screen.getByDisplayValue('🎂')
+    await userEvent.clear(emojiInput)
+    await userEvent.type(emojiInput, '🎉')
+    const form = screen.getByRole('button', { name: /save changes/i }).closest('form')
+    if (form) fireEvent.submit(form)
     await waitFor(() => {
       expect(screen.getByText('Validation failed.')).toBeInTheDocument()
     })
@@ -186,8 +213,7 @@ describe('OccasionTypeEditForm', () => {
     renderEditForm()
     const enInput = screen.getByDisplayValue('Birthday')
     await userEvent.clear(enInput)
-    const form = screen.getByRole('button', { name: /save changes/i }).closest('form')
-    if (form) fireEvent.submit(form)
+    await userEvent.tab()
     await waitFor(() => {
       expect(screen.getByText('The English label is required.')).toBeInTheDocument()
     })

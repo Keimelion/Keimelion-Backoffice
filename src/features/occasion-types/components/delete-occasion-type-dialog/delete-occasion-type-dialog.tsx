@@ -47,7 +47,8 @@ export function DeleteOccasionTypeDialog({
       onOpenChange={onOpenChange}
       title={t('occasion_types.admin.delete_dialog_title')}
       description={t('occasion_types.admin.delete_dialog_description', { label })}
-      confirmLabel={t('occasion_types.admin.delete_dialog_confirm')}
+      confirmLabel={t('occasion_types.admin.delete_dialog_confirm', { label })}
+      cancelLabel={t('occasion_types.admin.delete_dialog_cancel', { label })}
       onConfirm={handleConfirm}
       destructive
     />

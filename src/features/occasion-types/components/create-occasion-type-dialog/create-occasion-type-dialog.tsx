@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import {
@@ -8,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DiscardChangesDialog } from '@/components/shared/discard-changes-dialog'
 import { OccasionTypeCreateForm } from '@/features/occasion-types/components/occasion-type-form'
 import { createOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
 import type { AdminOccasionType, CreateOccasionTypeInput } from '@/data-access/occasion-types/admin-occasion-types.schemas'
@@ -29,6 +31,8 @@ export function CreateOccasionTypeDialog({
 }: CreateOccasionTypeDialogProps): React.JSX.Element {
   const t = useTranslate()
   const queryClient = useQueryClient()
+  const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
+  const [isDiscardOpen, setIsDiscardOpen] = useState<boolean>(false)
 
   const mutation = useMutation<AdminOccasionType, Error, CreateOccasionTypeInput>({
     mutationFn: createOccasionType,
@@ -55,23 +59,47 @@ export function CreateOccasionTypeDialog({
     })
   }
 
-  function handleCancel(): void {
+  function handleDialogOpenChange(nextOpen: boolean): void {
+    if (nextOpen) {
+      onOpenChange(true)
+      return
+    }
+    if (isFormDirty) {
+      setIsDiscardOpen(true)
+      return
+    }
+    onOpenChange(false)
+  }
+
+  function handleDiscard(): void {
     onOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{t('occasion_types.admin.create_dialog_title')}</DialogTitle>
-        </DialogHeader>
-        <OccasionTypeCreateForm
-          mode="create"
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isPending={mutation.isPending}
-        />
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>{t('occasion_types.admin.create_dialog_title')}</DialogTitle>
+          </DialogHeader>
+          <OccasionTypeCreateForm
+            mode="create"
+            onSubmit={handleSubmit}
+            onDirtyChange={setIsFormDirty}
+            isPending={mutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <DiscardChangesDialog
+        open={isDiscardOpen}
+        onOpenChange={setIsDiscardOpen}
+        title={t('occasion_types.form.discard_changes_title')}
+        description={t('occasion_types.form.discard_changes_description')}
+        discardLabel={t('occasion_types.form.discard_changes_discard')}
+        keepLabel={t('occasion_types.form.discard_changes_keep')}
+        onDiscard={handleDiscard}
+      />
+    </>
   )
 }
