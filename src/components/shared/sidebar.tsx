@@ -6,6 +6,7 @@ import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Package, Users } from
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLogout } from '@/features/auth/hooks/use-logout'
+import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
@@ -30,10 +31,18 @@ export function Sidebar(): React.JSX.Element {
   const pathname = usePathname()
   const logout = useLogout()
   const t = useTranslate()
+  const user = getStoredUser()
 
   const handleLogout = (): void => {
     logout.mutate(null)
   }
+
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.href === '/occasion-types' && (user === null || !isAdmin(user.role))) {
+      return false
+    }
+    return true
+  })
 
   return (
     <aside className="flex w-64 flex-col border-r border-border bg-background px-4 py-6">
@@ -48,7 +57,7 @@ export function Sidebar(): React.JSX.Element {
         {t('common.nav.menu')}
       </div>
       <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
           const label = t(item.labelId)

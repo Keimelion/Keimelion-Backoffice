@@ -42,6 +42,18 @@ export const adminOccasionTypeListResponseSchema = z.object({
 
 export type AdminOccasionTypeListResponse = z.infer<typeof adminOccasionTypeListResponseSchema>
 
+export const adminOccasionTypeCreateResponseSchema = z.object({
+  occasionType: adminOccasionTypeSchema,
+})
+
+export type AdminOccasionTypeCreateResponse = z.infer<typeof adminOccasionTypeCreateResponseSchema>
+
+export const adminOccasionTypeUpdateResponseSchema = z.object({
+  occasionType: adminOccasionTypeSchema,
+})
+
+export type AdminOccasionTypeUpdateResponse = z.infer<typeof adminOccasionTypeUpdateResponseSchema>
+
 const SLUG_INVALID_MESSAGE = 'Slug must be lowercase letters and digits separated by hyphens (e.g. my-occasion).'
 const EN_LABEL_REQUIRED_MESSAGE = 'The English label is required.'
 

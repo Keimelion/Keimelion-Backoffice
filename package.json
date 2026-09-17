@@ -59,6 +59,7 @@
     "eslint": "^9",
     "eslint-config-next": "^15.3.0",
     "jsdom": "^29.1.1",
+    "playwright": "^1.63.0",
     "prettier": "^3",
     "sass": "^1.104.0",
     "semantic-release": "^25.0.9",

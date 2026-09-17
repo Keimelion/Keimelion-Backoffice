@@ -4,7 +4,8 @@ import { parseApiResponse } from '@/data-access/_shared/parse-response'
 import { buildQueryParams } from '@/data-access/_shared/query-params'
 import {
   adminOccasionTypeListResponseSchema,
-  adminOccasionTypeSchema,
+  adminOccasionTypeCreateResponseSchema,
+  adminOccasionTypeUpdateResponseSchema,
   type AdminOccasionType,
   type CreateOccasionTypeInput,
   type UpdateOccasionTypeInput,
@@ -55,7 +56,8 @@ function buildCreatePayload(input: CreateOccasionTypeInput): CreateOccasionTypeP
 
 export async function createOccasionType(input: CreateOccasionTypeInput): Promise<AdminOccasionType> {
   const response = await axiosInstance.post<unknown>('/admin/occasion-types', buildCreatePayload(input))
-  return parseApiResponse(adminOccasionTypeSchema, response, 'admin occasion type')
+  const parsed = parseApiResponse(adminOccasionTypeCreateResponseSchema, response, 'admin occasion type')
+  return parsed.occasionType
 }
 
 interface OccasionTypeUpdateTranslationPayload {
@@ -88,7 +90,8 @@ export async function updateOccasionType(
   input: UpdateOccasionTypeInput,
 ): Promise<AdminOccasionType> {
   const response = await axiosInstance.patch<unknown>(`/admin/occasion-types/${id}`, buildUpdatePayload(input))
-  return parseApiResponse(adminOccasionTypeSchema, response, 'admin occasion type')
+  const parsed = parseApiResponse(adminOccasionTypeUpdateResponseSchema, response, 'admin occasion type')
+  return parsed.occasionType
 }
 
 export async function deleteOccasionType(id: string): Promise<void> {
