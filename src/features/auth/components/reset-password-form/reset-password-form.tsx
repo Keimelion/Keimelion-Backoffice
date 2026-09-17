@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AuthCard } from '@/components/shared/auth-card'
+import { TranslatedAuthCard } from '@/components/shared/translated-auth-card'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -20,11 +20,13 @@ import {
   type ResetPasswordInput,
 } from '@/data-access/auth/reset-password'
 import { useResetPassword } from '@/features/auth/hooks/use-reset-password'
+import { useTranslate } from '@/lib/i18n/use-translate'
 
 export function ResetPasswordForm(): React.JSX.Element {
   const searchParams = useSearchParams()
   const token = searchParams.get('token') ?? ''
   const resetPassword = useResetPassword()
+  const t = useTranslate()
 
   const form = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordInputSchema),
@@ -51,7 +53,7 @@ export function ResetPasswordForm(): React.JSX.Element {
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard title="Reset your password" description="Enter your new password below.">
+    <TranslatedAuthCard namespace="auth.reset_password">
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -65,7 +67,7 @@ export function ResetPasswordForm(): React.JSX.Element {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New password</FormLabel>
+                <FormLabel>{t('auth.reset_password.new_password_label')}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
@@ -83,7 +85,7 @@ export function ResetPasswordForm(): React.JSX.Element {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{t('auth.reset_password.confirm_password_label')}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
@@ -97,10 +99,12 @@ export function ResetPasswordForm(): React.JSX.Element {
             )}
           />
           <Button type="submit" className="mt-2" disabled={isSubmitDisabled}>
-            {isPending ? 'Updating…' : 'Update password'}
+            {isPending
+              ? t('auth.reset_password.submit_pending')
+              : t('auth.reset_password.submit')}
           </Button>
         </form>
       </Form>
-    </AuthCard>
+    </TranslatedAuthCard>
   )
 }

@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
+import { renderWithIntl } from '@/test/test-utils'
 
 const replaceMock = vi.fn()
 
@@ -18,39 +19,39 @@ beforeEach(() => {
 
 describe('DataTablePagination', () => {
   it('displays correct page info', () => {
-    render(<DataTablePagination page={2} pageSize={20} total={60} />)
+    renderWithIntl(<DataTablePagination page={2} pageSize={20} total={60} />)
     expect(screen.getByText('Page 2 / 3')).toBeInTheDocument()
   })
 
   it('navigates to next page on Next click', async () => {
-    render(<DataTablePagination page={1} pageSize={20} total={60} />)
+    renderWithIntl(<DataTablePagination page={1} pageSize={20} total={60} />)
     await userEvent.click(screen.getByRole('button', { name: /next/i }))
     expect(replaceMock).toHaveBeenCalledWith('?page=2', { scroll: false })
   })
 
   it('navigates to previous page on Previous click', async () => {
-    render(<DataTablePagination page={2} pageSize={20} total={60} />)
+    renderWithIntl(<DataTablePagination page={2} pageSize={20} total={60} />)
     await userEvent.click(screen.getByRole('button', { name: /previous/i }))
     expect(replaceMock).toHaveBeenCalledWith('?page=1', { scroll: false })
   })
 
   it('disables Previous button on first page', () => {
-    render(<DataTablePagination page={1} pageSize={20} total={60} />)
+    renderWithIntl(<DataTablePagination page={1} pageSize={20} total={60} />)
     expect(screen.getByRole('button', { name: /previous/i })).toBeDisabled()
   })
 
   it('disables Next button on last page', () => {
-    render(<DataTablePagination page={3} pageSize={20} total={60} />)
+    renderWithIntl(<DataTablePagination page={3} pageSize={20} total={60} />)
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
   })
 
   it('shows Page 1 / 1 when total is less than pageSize', () => {
-    render(<DataTablePagination page={1} pageSize={20} total={5} />)
+    renderWithIntl(<DataTablePagination page={1} pageSize={20} total={5} />)
     expect(screen.getByText('Page 1 / 1')).toBeInTheDocument()
   })
 
   it('computes pages correctly with exact multiple', () => {
-    render(<DataTablePagination page={1} pageSize={10} total={30} />)
+    renderWithIntl(<DataTablePagination page={1} pageSize={10} total={30} />)
     expect(screen.getByText('Page 1 / 3')).toBeInTheDocument()
   })
 })

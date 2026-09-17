@@ -1,0 +1,13 @@
+{
+  "common.actions.retry": "Réessayer",
+  "common.actions.clear_filters": "Effacer",
+  "common.actions.sign_out": "Se déconnecter",
+  "common.actions.update": "Modifier {name}",
+  "common.actions.delete": "Supprimer {name}",
+  "common.nav.menu": "Menu",
+  "common.pagination.page_of": "Page {page} / {totalPages}",
+  "common.pagination.previous": "Précédent",
+  "common.pagination.next": "Suivant",
+  "common.locale_picker.select_language": "Choisir la langue",
+  "common.theme_toggle.toggle": "Changer de thème"
+}

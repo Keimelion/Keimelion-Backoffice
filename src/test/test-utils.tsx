@@ -5,7 +5,9 @@ import {
   type UseQueryResult,
 } from '@tanstack/react-query'
 import type { ComponentType, ReactElement, ReactNode } from 'react'
+import { IntlProvider } from 'react-intl'
 import { vi } from 'vitest'
+import { enMessages } from '@/lib/i18n/messages/en'
 
 export function createTestQueryClient(): QueryClient {
   return new QueryClient({
@@ -16,16 +18,35 @@ export function createTestQueryClient(): QueryClient {
   })
 }
 
-interface QueryClientWrapperProps {
+interface WrapperProps {
   children: ReactNode
 }
 
-export function createQueryClientWrapper(): ComponentType<QueryClientWrapperProps> {
+export function createIntlWrapper(): ComponentType<WrapperProps> {
+  return function IntlWrapper({ children }: WrapperProps): React.JSX.Element {
+    return (
+      <IntlProvider locale="en" messages={enMessages} defaultLocale="en">
+        {children}
+      </IntlProvider>
+    )
+  }
+}
+
+export function renderWithIntl(
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>,
+): RenderResult {
+  return render(ui, { wrapper: createIntlWrapper(), ...options })
+}
+
+export function createQueryClientWrapper(): ComponentType<WrapperProps> {
   const client = createTestQueryClient()
-  return function QueryClientWrapper({
-    children,
-  }: QueryClientWrapperProps): React.JSX.Element {
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  return function QueryClientWrapper({ children }: WrapperProps): React.JSX.Element {
+    return (
+      <IntlProvider locale="en" messages={enMessages} defaultLocale="en">
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      </IntlProvider>
+    )
   }
 }
 

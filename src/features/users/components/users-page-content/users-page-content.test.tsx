@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { mockUseQueryResult, renderWithQueryClient } from '@/test/query-test-utils'
+import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 vi.mock('next/navigation', () => ({

@@ -1,15 +1,7 @@
-/**
- * Toast notification helpers. Copy conventions:
- * - title: short sentence, capital first letter, no trailing period ("User updated")
- * - description: full sentence with trailing period ("The user has been saved.")
- * - notifyError default title: "Something went wrong"
- *
- * These helpers are client-only — sonner requires a mounted DOM.
- * Do not import from Server Components.
- */
 import { toast } from 'sonner'
+import { translate } from '@/lib/i18n/translate'
 
-const DEFAULT_ERROR_TITLE = 'Something went wrong'
+const DEFAULT_ERROR_MESSAGE_ID = 'query.error.default'
 
 interface NotifyAction {
   label: string
@@ -28,7 +20,7 @@ export function notifySuccess({ title, description, action }: NotifyInput): void
 
 export function notifyError(input: Error | NotifyInput): void {
   if (input instanceof Error) {
-    toast.error(DEFAULT_ERROR_TITLE, { description: input.message })
+    toast.error(translate(DEFAULT_ERROR_MESSAGE_ID), { description: input.message })
     return
   }
   toast.error(input.title, { description: input.description, action: input.action })

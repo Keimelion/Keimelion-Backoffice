@@ -1,0 +1,22 @@
+{
+  "users.list.title": "Utilisateurs",
+  "users.list.description": "Comptes inscrits sur Keimelion.",
+  "users.table.column.email": "E-mail",
+  "users.table.column.username": "Nom d'utilisateur",
+  "users.table.column.role": "Rôle",
+  "users.table.column.created": "Créé le",
+  "users.table.column.last_active": "Dernière activité",
+  "users.table.column.status": "Statut",
+  "users.table.column.actions": "Actions",
+  "users.table.empty": "Aucun utilisateur ne correspond à ces filtres.",
+  "users.filters.email_label": "E-mail",
+  "users.filters.email_placeholder": "Rechercher par e-mail…",
+  "users.filters.username_label": "Nom d'utilisateur",
+  "users.filters.username_placeholder": "Rechercher par nom d'utilisateur…",
+  "users.role.admin": "Admin",
+  "users.role.moderator": "Modérateur",
+  "users.role.user": "Utilisateur",
+  "users.status.active": "Actif",
+  "users.status.deleted": "Supprimé",
+  "users.status.banned": "Banni"
+}

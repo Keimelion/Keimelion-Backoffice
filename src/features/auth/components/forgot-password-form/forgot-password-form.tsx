@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AuthCard } from '@/components/shared/auth-card'
+import { TranslatedAuthCard } from '@/components/shared/translated-auth-card'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -20,13 +20,15 @@ import {
   forgotPasswordInputSchema,
   type ForgotPasswordInput,
 } from '@/data-access/auth/forgot-password'
-import { NOTICE_PARAM, resolveNoticeMessage } from '@/data-access/auth/notices'
+import { NOTICE_PARAM, resolveNoticeMessageId } from '@/data-access/auth/notices'
 import { useForgotPassword } from '@/features/auth/hooks/use-forgot-password'
+import { useTranslate } from '@/lib/i18n/use-translate'
 import { notifyError } from '@/lib/notify'
 
 export function ForgotPasswordForm(): React.JSX.Element {
   const forgotPassword = useForgotPassword()
   const searchParams = useSearchParams()
+  const t = useTranslate()
 
   const form = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordInputSchema),
@@ -36,10 +38,10 @@ export function ForgotPasswordForm(): React.JSX.Element {
   })
 
   useEffect(() => {
-    const notice = resolveNoticeMessage(searchParams.get(NOTICE_PARAM))
-    if (notice === null) return
-    notifyError({ title: notice })
-  }, [searchParams])
+    const messageId = resolveNoticeMessageId(searchParams.get(NOTICE_PARAM))
+    if (messageId === null) return
+    notifyError({ title: t(messageId) })
+  }, [searchParams, t])
 
   const handleSubmit = (values: ForgotPasswordInput): void => {
     forgotPassword.mutate(values)
@@ -50,10 +52,7 @@ export function ForgotPasswordForm(): React.JSX.Element {
   const isSubmitDisabled = isPending || hasErrors
 
   return (
-    <AuthCard
-      title="Forgot password?"
-      description="Enter your email and we'll send you a reset link."
-    >
+    <TranslatedAuthCard namespace="auth.forgot_password">
       <Form {...form}>
         <form
           className="flex flex-col gap-4"
@@ -67,11 +66,11 @@ export function ForgotPasswordForm(): React.JSX.Element {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t('auth.forgot_password.email_label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="you@keimelion.app"
+                    placeholder={t('auth.forgot_password.email_placeholder')}
                     autoComplete="email"
                     disabled={isPending}
                     {...field}
@@ -82,16 +81,18 @@ export function ForgotPasswordForm(): React.JSX.Element {
             )}
           />
           <Button type="submit" className="mt-2" disabled={isSubmitDisabled}>
-            {isPending ? 'Sending…' : 'Send reset link'}
+            {isPending
+              ? t('auth.forgot_password.submit_pending')
+              : t('auth.forgot_password.submit')}
           </Button>
           <Link
             href="/login"
             className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
           >
-            Back to sign in
+            {t('auth.forgot_password.back_to_sign_in')}
           </Link>
         </form>
       </Form>
-    </AuthCard>
+    </TranslatedAuthCard>
   )
 }

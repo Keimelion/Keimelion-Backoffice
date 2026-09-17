@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createQueryClientWrapper } from '@/test/query-test-utils'
+import { createQueryClientWrapper } from '@/test/test-utils'
 import { useLogin } from '@/features/auth/hooks/use-login'
 import { getAccessToken, getRefreshToken, getStoredUser } from '@/data-access/_shared/auth-storage'
 
