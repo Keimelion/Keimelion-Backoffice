@@ -6,6 +6,7 @@ import { PAGE_PARAM } from '@/lib/url-params'
 
 const SORT_DIRECTIONS = ['asc', 'desc'] as const
 type SortDirection = typeof SORT_DIRECTIONS[number]
+const [ASC, DESC] = SORT_DIRECTIONS
 
 interface SortState {
   field: string
@@ -40,8 +41,8 @@ function resolveNextDirection(
   activeField: string | null,
   activeDirection: SortDirection | null,
 ): SortDirection | null {
-  if (activeField !== field) return 'asc'
-  if (activeDirection === 'asc') return 'desc'
+  if (activeField !== field) return ASC
+  if (activeDirection === ASC) return DESC
   return null
 }
 
