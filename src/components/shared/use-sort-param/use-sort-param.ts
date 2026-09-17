@@ -6,16 +6,15 @@ import { PAGE_PARAM } from '@/lib/url-params'
 
 const SORT_DIRECTIONS = ['asc', 'desc'] as const
 type SortDirection = typeof SORT_DIRECTIONS[number]
-const [ASC, DESC] = SORT_DIRECTIONS
+export const [ASC, DESC] = SORT_DIRECTIONS
 
-interface SortState {
+export interface SortState {
   field: string
   direction: SortDirection
 }
 
 interface UseSortParamReturn {
-  activeField: string | null
-  activeDirection: SortDirection | null
+  active: SortState | null
   cycleSort: (field: string) => void
 }
 
@@ -26,7 +25,8 @@ function isSortDirection(value: string | undefined): value is SortDirection {
   return value !== undefined && (SORT_DIRECTIONS as readonly string[]).includes(value)
 }
 
-function parseSortParam(raw: string): SortState | null {
+function parseSortParam(raw: string | null): SortState | null {
+  if (raw === null) return null
   const match = SORT_PATTERN.exec(raw)
   if (match === null) return null
   const field = match[1]
@@ -36,13 +36,9 @@ function parseSortParam(raw: string): SortState | null {
   return { field, direction }
 }
 
-function resolveNextDirection(
-  field: string,
-  activeField: string | null,
-  activeDirection: SortDirection | null,
-): SortDirection | null {
-  if (activeField !== field) return ASC
-  if (activeDirection === ASC) return DESC
+function resolveNextDirection(field: string, active: SortState | null): SortDirection | null {
+  if (active?.field !== field) return ASC
+  if (active.direction === ASC) return DESC
   return null
 }
 
@@ -50,14 +46,10 @@ export function useSortParam(): UseSortParamReturn {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const rawSort = searchParams.get(SORT_PARAM)
-  const parsed = rawSort !== null ? parseSortParam(rawSort) : null
-
-  const activeField = parsed?.field ?? null
-  const activeDirection = parsed?.direction ?? null
+  const active = parseSortParam(searchParams.get(SORT_PARAM))
 
   const cycleSort = useCallback((field: string): void => {
-    const nextDirection = resolveNextDirection(field, activeField, activeDirection)
+    const nextDirection = resolveNextDirection(field, active)
     const next = new URLSearchParams(searchParams.toString())
     next.delete(PAGE_PARAM)
     if (nextDirection === null) {
@@ -66,7 +58,7 @@ export function useSortParam(): UseSortParamReturn {
       next.set(SORT_PARAM, `${field}:${nextDirection}`)
     }
     router.replace(`?${next.toString()}`, { scroll: false })
-  }, [router, searchParams, activeField, activeDirection])
+  }, [router, searchParams, active])
 
-  return { activeField, activeDirection, cycleSort }
+  return { active, cycleSort }
 }

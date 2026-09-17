@@ -22,38 +22,33 @@ function lastCalledUrl(): string {
 
 describe('useSortParam', () => {
   describe('parsing', () => {
-    it('returns null fields when no sort param is present', () => {
+    it('returns null when no sort param is present', () => {
       const { result } = renderHook(() => useSortParam())
-      expect(result.current.activeField).toBeNull()
-      expect(result.current.activeDirection).toBeNull()
+      expect(result.current.active).toBeNull()
     })
 
     it('parses sort=field:asc correctly', () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('sort=email:asc'))
       const { result } = renderHook(() => useSortParam())
-      expect(result.current.activeField).toBe('email')
-      expect(result.current.activeDirection).toBe('asc')
+      expect(result.current.active).toEqual({ field: 'email', direction: 'asc' })
     })
 
     it('parses sort=field:desc correctly', () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('sort=createdAt:desc'))
       const { result } = renderHook(() => useSortParam())
-      expect(result.current.activeField).toBe('createdAt')
-      expect(result.current.activeDirection).toBe('desc')
+      expect(result.current.active).toEqual({ field: 'createdAt', direction: 'desc' })
     })
 
-    it('ignores garbage sort values and returns null fields', () => {
+    it('ignores garbage sort values and returns null', () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('sort=notvalid'))
       const { result } = renderHook(() => useSortParam())
-      expect(result.current.activeField).toBeNull()
-      expect(result.current.activeDirection).toBeNull()
+      expect(result.current.active).toBeNull()
     })
 
     it('ignores invalid direction in sort value', () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('sort=field:sideways'))
       const { result } = renderHook(() => useSortParam())
-      expect(result.current.activeField).toBeNull()
-      expect(result.current.activeDirection).toBeNull()
+      expect(result.current.active).toBeNull()
     })
   })
 
