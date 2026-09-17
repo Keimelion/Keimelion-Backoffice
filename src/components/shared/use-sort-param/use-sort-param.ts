@@ -18,13 +18,14 @@ interface UseSortParamReturn {
 }
 
 const SORT_PARAM = 'sort'
+const SORT_PATTERN = /^(.+):(asc|desc)$/
 
 function parseSortParam(raw: string): SortState | null {
-  const separatorIndex = raw.lastIndexOf(':')
-  if (separatorIndex === -1) return null
-  const field = raw.slice(0, separatorIndex)
-  const direction = raw.slice(separatorIndex + 1)
-  if (field.length === 0) return null
+  const match = SORT_PATTERN.exec(raw)
+  if (match === null) return null
+  const field = match[1]
+  const direction = match[2]
+  if (field === undefined) return null
   if (direction !== 'asc' && direction !== 'desc') return null
   return { field, direction }
 }
