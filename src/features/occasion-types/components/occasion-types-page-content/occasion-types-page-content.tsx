@@ -1,8 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
-import { isAdmin } from '@/data-access/_shared/auth-storage'
-import { getStoredUser } from '@/data-access/_shared/auth-storage'
+import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
 import { OccasionTypesAdminContent } from '@/features/occasion-types/components/occasion-types-admin-content'
 import { OccasionTypesList } from '@/features/occasion-types/components/occasion-types-list'
 

@@ -39,6 +39,7 @@ export function EditOccasionTypeDialog({
 
   const mutation = useMutation<AdminOccasionType, Error, UpdateVariables>({
     mutationFn: ({ id, input }) => updateOccasionType(id, input),
+    meta: { silent: true },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['occasion-types'] })
       notifySuccess({ title: translate('occasion_types.mutation.updated_toast') })
