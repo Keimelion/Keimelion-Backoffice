@@ -10,5 +10,9 @@
   "common.pagination.next": "Next",
   "common.locale_picker.select_language": "Select language",
   "common.theme_toggle.toggle": "Toggle theme",
-  "common.table.sort_by": "Sort by {column}"
+  "common.table.sort_by": "Sort by {column}",
+  "common.discard_changes.title": "Discard changes?",
+  "common.discard_changes.description": "You have unsaved changes. Do you want to discard them and close?",
+  "common.discard_changes.discard": "Discard my changes",
+  "common.discard_changes.keep": "Back to the form"
 }

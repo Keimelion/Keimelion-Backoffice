@@ -10,5 +10,9 @@
   "common.pagination.next": "Suivant",
   "common.locale_picker.select_language": "Choisir la langue",
   "common.theme_toggle.toggle": "Changer de thème",
-  "common.table.sort_by": "Trier par {column}"
+  "common.table.sort_by": "Trier par {column}",
+  "common.discard_changes.title": "Abandonner les modifications ?",
+  "common.discard_changes.description": "Vous avez des modifications non enregistrées. Voulez-vous les abandonner et fermer ?",
+  "common.discard_changes.discard": "Abandonner mes modifications",
+  "common.discard_changes.keep": "Retourner au formulaire"
 }
