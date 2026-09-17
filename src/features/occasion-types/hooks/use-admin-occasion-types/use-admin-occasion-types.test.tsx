@@ -4,6 +4,7 @@ import { createQueryClientWrapper } from '@/test/test-utils'
 import { useAdminOccasionTypes, buildAdminOccasionTypesKey } from './use-admin-occasion-types'
 
 vi.mock('@/data-access/occasion-types/admin-occasion-types.api', () => ({
+  OCCASION_TYPES_QUERY_KEY: ['occasion-types'] as const,
   listAdminOccasionTypes: vi.fn(),
 }))
 

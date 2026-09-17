@@ -13,6 +13,7 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('@/data-access/occasion-types/admin-occasion-types.api', () => ({
+  OCCASION_TYPES_QUERY_KEY: ['occasion-types'] as const,
   deleteOccasionType: vi.fn(),
 }))
 

@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { listAdminOccasionTypes } from '@/data-access/occasion-types/admin-occasion-types.api'
+import { OCCASION_TYPES_QUERY_KEY, listAdminOccasionTypes } from '@/data-access/occasion-types/admin-occasion-types.api'
 import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 
 interface UseAdminOccasionTypesParams {
@@ -13,8 +13,8 @@ interface UseAdminOccasionTypesParams {
 
 export function buildAdminOccasionTypesKey(
   params: UseAdminOccasionTypesParams,
-): ['occasion-types', 'admin', 'list', UseAdminOccasionTypesParams] {
-  return ['occasion-types', 'admin', 'list', params]
+): readonly ['occasion-types', 'admin', 'list', UseAdminOccasionTypesParams] {
+  return [...OCCASION_TYPES_QUERY_KEY, 'admin', 'list', params] as const
 }
 
 export function useAdminOccasionTypes(

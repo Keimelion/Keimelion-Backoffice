@@ -3,16 +3,10 @@
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { DiscardChangesDialog } from '@/components/shared/discard-changes-dialog'
+import { FormDialog } from '@/components/shared/form-dialog'
 import { OccasionTypeForm } from '@/features/occasion-types/components/occasion-type-form'
 import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
-import { updateOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
+import { OCCASION_TYPES_QUERY_KEY, updateOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
 import type { AdminOccasionType, UpdateOccasionTypeInput } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
@@ -49,13 +43,12 @@ export function EditOccasionTypeDialog({
   const t = useTranslate()
   const queryClient = useQueryClient()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
-  const [isDiscardOpen, setIsDiscardOpen] = useState<boolean>(false)
 
   const mutation = useMutation<AdminOccasionType, Error, UpdateVariables>({
     mutationFn: ({ id, input }) => updateOccasionType(id, input),
     meta: { silent: true },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['occasion-types'] })
+      await queryClient.invalidateQueries({ queryKey: OCCASION_TYPES_QUERY_KEY })
       notifySuccess({ title: translate('occasion_types.mutation.updated_toast') })
       onOpenChange(false)
     },
@@ -75,48 +68,20 @@ export function EditOccasionTypeDialog({
     )
   }
 
-  function handleDialogOpenChange(nextOpen: boolean): void {
-    if (nextOpen) {
-      onOpenChange(true)
-      return
-    }
-    if (isFormDirty) {
-      setIsDiscardOpen(true)
-      return
-    }
-    onOpenChange(false)
-  }
-
-  function handleDiscard(): void {
-    onOpenChange(false)
-  }
-
   return (
-    <>
-      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>{t('occasion_types.admin.edit_dialog_title')}</DialogTitle>
-          </DialogHeader>
-          <OccasionTypeForm
-            mode="edit"
-            initialValues={initialValues}
-            onSubmit={handleSubmit}
-            onDirtyChange={setIsFormDirty}
-            isPending={mutation.isPending}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <DiscardChangesDialog
-        open={isDiscardOpen}
-        onOpenChange={setIsDiscardOpen}
-        title={t('occasion_types.form.discard_changes_title')}
-        description={t('occasion_types.form.discard_changes_description')}
-        discardLabel={t('occasion_types.form.discard_changes_discard')}
-        keepLabel={t('occasion_types.form.discard_changes_keep')}
-        onDiscard={handleDiscard}
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('occasion_types.admin.edit_dialog_title')}
+      isFormDirty={isFormDirty}
+    >
+      <OccasionTypeForm
+        mode="edit"
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        onDirtyChange={setIsFormDirty}
+        isPending={mutation.isPending}
       />
-    </>
+    </FormDialog>
   )
 }

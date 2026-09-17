@@ -2,7 +2,7 @@
 
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
-import { deleteOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
+import { OCCASION_TYPES_QUERY_KEY, deleteOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 
@@ -29,7 +29,7 @@ export function DeleteOccasionTypeDialog({
       return undefined
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['occasion-types'] })
+      await queryClient.invalidateQueries({ queryKey: OCCASION_TYPES_QUERY_KEY })
       notifySuccess({ title: translate('occasion_types.mutation.deleted_toast') })
       onOpenChange(false)
     },

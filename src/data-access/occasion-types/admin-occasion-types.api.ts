@@ -10,6 +10,8 @@ import {
   type UpdateOccasionTypeInput,
 } from './admin-occasion-types.schemas'
 
+export const OCCASION_TYPES_QUERY_KEY = ['occasion-types'] as const
+
 interface ListAdminOccasionTypesParams {
   page?: number
   limit?: number
