@@ -54,6 +54,16 @@ function buildDefaultValues(props: OccasionTypeFormProps): OccasionTypeFormValue
   }
 }
 
+function resolveSubmitLabel(
+  isPending: boolean,
+  isEdit: boolean,
+  t: ReturnType<typeof useTranslate>,
+): string {
+  if (isPending) return t('occasion_types.form.submit_pending')
+  if (isEdit) return t('occasion_types.form.submit_edit')
+  return t('occasion_types.form.submit_create')
+}
+
 export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Element {
   const { mode, onSubmit, onDirtyChange, isPending } = props
   const t = useTranslate()
@@ -75,11 +85,7 @@ export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Elemen
   }, [isDirty, onDirtyChange])
 
   const isEdit = mode === 'edit'
-  const submitLabel = isPending
-    ? t('occasion_types.form.submit_pending')
-    : isEdit
-      ? t('occasion_types.form.submit_edit')
-      : t('occasion_types.form.submit_create')
+  const submitLabel = resolveSubmitLabel(isPending, isEdit, t)
 
   return (
     <Form {...form}>
