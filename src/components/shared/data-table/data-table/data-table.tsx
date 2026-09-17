@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ASC, useSortParam, type SortState } from '@/components/shared/use-sort-param'
+import { ASC, useSortParam, type SortDirection } from '@/components/shared/use-sort-param'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
 
@@ -83,23 +83,27 @@ export function DataTable<TRow>({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
-            {columns.map((column) => (
-              <TableHead key={column.key} className={column.className}>
-                {column.sortable === true ? (
-                  <button
-                    type="button"
-                    onClick={() => { cycleSort(column.sortField ?? column.key) }}
-                    aria-label={t('common.table.sort_by', { column: column.header })}
-                    className="flex cursor-pointer items-center gap-1 text-xs font-medium uppercase tracking-wide"
-                  >
-                    {column.header}
-                    {renderSortIcon(column.sortField ?? column.key, active)}
-                  </button>
-                ) : (
-                  column.header
-                )}
-              </TableHead>
-            ))}
+            {columns.map((column) => {
+              const sortField = column.sortField ?? column.key
+              const direction = active?.field === sortField ? active.direction : null
+              return (
+                <TableHead key={column.key} className={column.className}>
+                  {column.sortable === true ? (
+                    <button
+                      type="button"
+                      onClick={() => { cycleSort(sortField) }}
+                      aria-label={t('common.table.sort_by', { column: column.header })}
+                      className="flex cursor-pointer items-center gap-1 text-xs font-medium uppercase tracking-wide"
+                    >
+                      {column.header}
+                      {renderSortIcon(direction)}
+                    </button>
+                  ) : (
+                    column.header
+                  )}
+                </TableHead>
+              )
+            })}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -115,9 +119,9 @@ export function DataTable<TRow>({
   )
 }
 
-function renderSortIcon(field: string, active: SortState | null): ReactNode {
-  if (active?.field !== field) return <ArrowUpDown className="h-3.5 w-3.5" />
-  if (active.direction === ASC) return <ArrowUp className="h-3.5 w-3.5" />
+function renderSortIcon(direction: SortDirection | null): ReactNode {
+  if (direction === null) return <ArrowUpDown className="h-3.5 w-3.5" />
+  if (direction === ASC) return <ArrowUp className="h-3.5 w-3.5" />
   return <ArrowDown className="h-3.5 w-3.5" />
 }
 

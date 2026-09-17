@@ -6,7 +6,7 @@ import { PAGE_PARAM } from '@/lib/url-params'
 
 export const ASC = 'asc'
 export const DESC = 'desc'
-type SortDirection = typeof ASC | typeof DESC
+export type SortDirection = typeof ASC | typeof DESC
 
 export interface SortState {
   field: string
@@ -36,9 +36,9 @@ function parseSortParam(raw: string | null): SortState | null {
   return { field, direction }
 }
 
-function resolveNextDirection(field: string, active: SortState | null): SortDirection | null {
-  if (active?.field !== field) return ASC
-  if (active.direction === ASC) return DESC
+function resolveNextDirection(current: SortDirection | null): SortDirection | null {
+  if (current === null) return ASC
+  if (current === ASC) return DESC
   return null
 }
 
@@ -49,7 +49,8 @@ export function useSortParam(): UseSortParamReturn {
   const active = parseSortParam(searchParams.get(SORT_PARAM))
 
   const cycleSort = useCallback((field: string): void => {
-    const nextDirection = resolveNextDirection(field, active)
+    const currentDirection = active?.field === field ? active.direction : null
+    const nextDirection = resolveNextDirection(currentDirection)
     const next = new URLSearchParams(searchParams.toString())
     next.delete(PAGE_PARAM)
     next.delete(SORT_PARAM)
