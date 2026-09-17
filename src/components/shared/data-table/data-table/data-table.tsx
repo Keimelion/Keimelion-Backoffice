@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ASC, useSortParam, type SortState } from '@/components/shared/use-sort-param'
+import { useSortParam, type SortState } from '@/components/shared/use-sort-param'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
 
@@ -117,7 +117,7 @@ export function DataTable<TRow>({
 
 function renderSortIcon(field: string, active: SortState | null): ReactNode {
   if (active?.field !== field) return <ArrowUpDown className="h-3.5 w-3.5" />
-  if (active.direction === ASC) return <ArrowUp className="h-3.5 w-3.5" />
+  if (active.direction === 'asc') return <ArrowUp className="h-3.5 w-3.5" />
   return <ArrowDown className="h-3.5 w-3.5" />
 }
 

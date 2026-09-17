@@ -4,9 +4,7 @@ import { useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { PAGE_PARAM } from '@/lib/url-params'
 
-const SORT_DIRECTIONS = ['asc', 'desc'] as const
-type SortDirection = typeof SORT_DIRECTIONS[number]
-export const [ASC, DESC] = SORT_DIRECTIONS
+type SortDirection = 'asc' | 'desc'
 
 export interface SortState {
   field: string
@@ -19,10 +17,10 @@ interface UseSortParamReturn {
 }
 
 const SORT_PARAM = 'sort'
-const SORT_PATTERN = new RegExp(`^(.+):(${SORT_DIRECTIONS.join('|')})$`)
+const SORT_PATTERN = /^(.+):(asc|desc)$/
 
 function isSortDirection(value: string | undefined): value is SortDirection {
-  return value !== undefined && (SORT_DIRECTIONS as readonly string[]).includes(value)
+  return value === 'asc' || value === 'desc'
 }
 
 function parseSortParam(raw: string | null): SortState | null {
@@ -37,8 +35,8 @@ function parseSortParam(raw: string | null): SortState | null {
 }
 
 function resolveNextDirection(field: string, active: SortState | null): SortDirection | null {
-  if (active?.field !== field) return ASC
-  if (active.direction === ASC) return DESC
+  if (active?.field !== field) return 'asc'
+  if (active.direction === 'asc') return 'desc'
   return null
 }
 
@@ -52,11 +50,8 @@ export function useSortParam(): UseSortParamReturn {
     const nextDirection = resolveNextDirection(field, active)
     const next = new URLSearchParams(searchParams.toString())
     next.delete(PAGE_PARAM)
-    if (nextDirection === null) {
-      next.delete(SORT_PARAM)
-    } else {
-      next.set(SORT_PARAM, `${field}:${nextDirection}`)
-    }
+    next.delete(SORT_PARAM)
+    if (nextDirection !== null) next.set(SORT_PARAM, `${field}:${nextDirection}`)
     router.replace(`?${next.toString()}`, { scroll: false })
   }, [router, searchParams, active])
 
