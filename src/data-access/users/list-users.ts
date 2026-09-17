@@ -6,7 +6,16 @@ import { parseApiResponse } from '@/data-access/_shared/parse-response'
 import { buildQueryParams } from '@/data-access/_shared/query-params'
 import { apiUserSchema } from '@/data-access/_shared/user'
 
-const SORT_VALUES = ['createdAt:desc', 'createdAt:asc'] as const
+const SORT_VALUES = [
+  'createdAt:desc',
+  'createdAt:asc',
+  'email:asc',
+  'email:desc',
+  'username:asc',
+  'username:desc',
+  'lastActiveAt:asc',
+  'lastActiveAt:desc',
+] as const
 
 export const adminUserSchema = apiUserSchema.extend({
   bannedAt: z.string().nullable(),

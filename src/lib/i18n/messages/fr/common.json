@@ -9,5 +9,6 @@
   "common.pagination.previous": "Précédent",
   "common.pagination.next": "Suivant",
   "common.locale_picker.select_language": "Choisir la langue",
-  "common.theme_toggle.toggle": "Changer de thème"
+  "common.theme_toggle.toggle": "Changer de thème",
+  "common.table.sort_by": "Trier par {column}"
 }

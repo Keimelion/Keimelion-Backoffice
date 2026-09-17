@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -11,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useSortParam } from '@/components/shared/use-sort-param'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +21,8 @@ export interface DataTableColumn<TRow> {
   header: string
   cell: (row: TRow) => ReactNode
   className?: string
+  sortable?: boolean
+  sortField?: string
 }
 
 interface DataTableProps<TRow> {
@@ -49,6 +53,7 @@ export function DataTable<TRow>({
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
   const t = useTranslate()
+  const { activeField, activeDirection, cycleSort } = useSortParam()
 
   if (error) {
     return (
@@ -80,7 +85,19 @@ export function DataTable<TRow>({
           <TableRow className="bg-muted/40 hover:bg-muted/40">
             {columns.map((column) => (
               <TableHead key={column.key} className={column.className}>
-                {column.header}
+                {column.sortable === true ? (
+                  <button
+                    type="button"
+                    onClick={() => { cycleSort(column.sortField ?? column.key) }}
+                    aria-label={t('common.table.sort_by', { column: column.header })}
+                    className="flex cursor-pointer items-center gap-1 text-xs font-medium uppercase tracking-wide"
+                  >
+                    {column.header}
+                    {renderSortIcon(column.sortField ?? column.key, activeField, activeDirection)}
+                  </button>
+                ) : (
+                  column.header
+                )}
               </TableHead>
             ))}
           </TableRow>
@@ -96,6 +113,16 @@ export function DataTable<TRow>({
       ) : null}
     </div>
   )
+}
+
+function renderSortIcon(
+  field: string,
+  activeField: string | null,
+  activeDirection: 'asc' | 'desc' | null,
+): ReactNode {
+  if (activeField !== field) return <ArrowUpDown className="h-3.5 w-3.5" />
+  if (activeDirection === 'asc') return <ArrowUp className="h-3.5 w-3.5" />
+  return <ArrowDown className="h-3.5 w-3.5" />
 }
 
 function renderSkeletonRows<TRow>(
