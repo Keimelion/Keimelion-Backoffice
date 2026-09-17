@@ -68,11 +68,13 @@ export function UsersPageContent(): React.JSX.Element {
     {
       key: 'email',
       header: t('users.table.column.email'),
+      sortable: true,
       cell: (user) => <span className="font-medium">{user.email}</span>,
     },
     {
       key: 'username',
       header: t('users.table.column.username'),
+      sortable: true,
       cell: (user) => (
         <span className="text-muted-foreground">{user.username ?? '—'}</span>
       ),
@@ -85,11 +87,13 @@ export function UsersPageContent(): React.JSX.Element {
     {
       key: 'createdAt',
       header: t('users.table.column.created'),
+      sortable: true,
       cell: (user) => formatDate(user.createdAt),
     },
     {
       key: 'lastActiveAt',
       header: t('users.table.column.last_active'),
+      sortable: true,
       cell: (user) => (user.lastActiveAt !== null ? formatDate(user.lastActiveAt) : '—'),
     },
     {

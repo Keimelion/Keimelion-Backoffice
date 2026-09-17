@@ -3,9 +3,12 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
+const replaceMock = vi.fn()
+const useSearchParamsMock = vi.fn(() => new URLSearchParams())
+
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ replace: replaceMock }),
+  useSearchParams: () => useSearchParamsMock(),
 }))
 
 vi.mock('@/features/users/hooks/use-users', () => ({
@@ -67,6 +70,7 @@ function makeUser(overrides: Partial<{
 
 beforeEach(() => {
   vi.clearAllMocks()
+  useSearchParamsMock.mockReturnValue(new URLSearchParams())
 })
 
 function firstDataRow(): HTMLElement {
@@ -149,5 +153,43 @@ describe('UsersPageContent', () => {
     renderContent()
     expect(screen.getByRole('button', { name: 'Update ghost@keimelion.app' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete ghost@keimelion.app' })).toBeInTheDocument()
+  })
+
+  describe('sortable columns', () => {
+    beforeEach(() => {
+      vi.mocked(useUsers).mockReturnValue(
+        mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser()]) }),
+      )
+    })
+
+    it('email column header renders as a sort button', () => {
+      renderContent()
+      expect(screen.getByRole('button', { name: /sort by email/i })).toBeInTheDocument()
+    })
+
+    it('username column header renders as a sort button', () => {
+      renderContent()
+      expect(screen.getByRole('button', { name: /sort by username/i })).toBeInTheDocument()
+    })
+
+    it('created column header renders as a sort button', () => {
+      renderContent()
+      expect(screen.getByRole('button', { name: /sort by created/i })).toBeInTheDocument()
+    })
+
+    it('last active column header renders as a sort button', () => {
+      renderContent()
+      expect(screen.getByRole('button', { name: /sort by last active/i })).toBeInTheDocument()
+    })
+
+    it('role column header does not render as a button', () => {
+      renderContent()
+      expect(screen.queryByRole('button', { name: /sort by role/i })).not.toBeInTheDocument()
+    })
+
+    it('status column header does not render as a button', () => {
+      renderContent()
+      expect(screen.queryByRole('button', { name: /sort by status/i })).not.toBeInTheDocument()
+    })
   })
 })

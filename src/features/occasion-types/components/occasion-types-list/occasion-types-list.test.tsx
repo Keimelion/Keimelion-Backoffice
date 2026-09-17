@@ -4,6 +4,11 @@ import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-types.schemas'
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 vi.mock('@/features/occasion-types/hooks/use-occasion-types', () => ({
   useOccasionTypes: vi.fn(),
 }))
