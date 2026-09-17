@@ -13,11 +13,10 @@ vi.mock('sonner', () => ({
 }))
 
 import type { UseFormSetError } from 'react-hook-form'
-import type { CreateOccasionTypeInput, UpdateOccasionTypeInput } from '@/data-access/occasion-types/admin-occasion-types.schemas'
-import { OccasionTypeCreateForm, OccasionTypeEditForm } from './occasion-type-form'
-import type { EditFormValues } from './occasion-type-form'
+import { OccasionTypeForm } from './occasion-type-form'
+import type { OccasionTypeFormValues } from './occasion-type-form'
 
-const INITIAL_EDIT_VALUES: EditFormValues = {
+const INITIAL_EDIT_VALUES: OccasionTypeFormValues = {
   slug: 'birthday',
   emoji: '🎂',
   sortOrder: 0,
@@ -28,7 +27,7 @@ const INITIAL_EDIT_VALUES: EditFormValues = {
 
 function renderCreateForm(onSubmit = vi.fn(), onDirtyChange = vi.fn()): void {
   renderWithQueryClient(
-    <OccasionTypeCreateForm
+    <OccasionTypeForm
       mode="create"
       onSubmit={onSubmit}
       onDirtyChange={onDirtyChange}
@@ -43,7 +42,7 @@ function renderEditForm(
   onDirtyChange = vi.fn(),
 ): void {
   renderWithQueryClient(
-    <OccasionTypeEditForm
+    <OccasionTypeForm
       mode="edit"
       initialValues={initialValues}
       onSubmit={onSubmit}
@@ -57,7 +56,7 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('OccasionTypeCreateForm', () => {
+describe('OccasionTypeForm (create mode)', () => {
   it('renders all create-mode fields', () => {
     renderCreateForm()
     expect(screen.getByText('Slug')).toBeInTheDocument()
@@ -121,8 +120,8 @@ describe('OccasionTypeCreateForm', () => {
 
   it('displays root error when setError is called with root', async () => {
     const onSubmit = vi.fn((
-      _values: CreateOccasionTypeInput,
-      setError: UseFormSetError<CreateOccasionTypeInput>,
+      _values: OccasionTypeFormValues,
+      setError: UseFormSetError<OccasionTypeFormValues>,
     ) => {
       setError('root', { message: 'Unprocessable entity.' })
     })
@@ -137,8 +136,8 @@ describe('OccasionTypeCreateForm', () => {
 
   it('displays slug error when setError is called with slug (409)', async () => {
     const onSubmit = vi.fn((
-      _values: CreateOccasionTypeInput,
-      setError: UseFormSetError<CreateOccasionTypeInput>,
+      _values: OccasionTypeFormValues,
+      setError: UseFormSetError<OccasionTypeFormValues>,
     ) => {
       setError('slug', { message: 'This slug is already in use.' })
     })
@@ -162,7 +161,7 @@ describe('OccasionTypeCreateForm', () => {
   })
 })
 
-describe('OccasionTypeEditForm', () => {
+describe('OccasionTypeForm (edit mode)', () => {
   it('pre-populates fields with initial values', () => {
     renderEditForm()
     expect(screen.getByDisplayValue('Birthday')).toBeInTheDocument()
@@ -193,8 +192,8 @@ describe('OccasionTypeEditForm', () => {
 
   it('shows root error for 422 on submit via setError', async () => {
     const onSubmit = vi.fn((
-      _values: UpdateOccasionTypeInput,
-      setError: UseFormSetError<UpdateOccasionTypeInput>,
+      _values: OccasionTypeFormValues,
+      setError: UseFormSetError<OccasionTypeFormValues>,
     ) => {
       setError('root', { message: 'Validation failed.' })
     })

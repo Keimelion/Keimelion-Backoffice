@@ -10,8 +10,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { DiscardChangesDialog } from '@/components/shared/discard-changes-dialog'
-import { OccasionTypeEditForm } from '@/features/occasion-types/components/occasion-type-form'
-import type { EditFormValues } from '@/features/occasion-types/components/occasion-type-form'
+import { OccasionTypeForm } from '@/features/occasion-types/components/occasion-type-form'
+import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
 import { updateOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
 import type { AdminOccasionType, UpdateOccasionTypeInput } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 import { translate } from '@/lib/i18n/translate'
@@ -27,7 +27,17 @@ interface EditOccasionTypeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   occasionTypeId: string
-  initialValues: EditFormValues
+  initialValues: OccasionTypeFormValues
+}
+
+function toUpdateInput(values: OccasionTypeFormValues): UpdateOccasionTypeInput {
+  return {
+    emoji: values.emoji,
+    sortOrder: values.sortOrder,
+    isActive: values.isActive,
+    labelEn: values.labelEn,
+    labelFr: values.labelFr,
+  }
 }
 
 export function EditOccasionTypeDialog({
@@ -52,11 +62,11 @@ export function EditOccasionTypeDialog({
   })
 
   function handleSubmit(
-    values: UpdateOccasionTypeInput,
-    setError: UseFormSetError<UpdateOccasionTypeInput>,
+    values: OccasionTypeFormValues,
+    setError: UseFormSetError<OccasionTypeFormValues>,
   ): void {
     mutation.mutate(
-      { id: occasionTypeId, input: values },
+      { id: occasionTypeId, input: toUpdateInput(values) },
       {
         onError: (error) => {
           setError('root', { message: error.message })
@@ -88,7 +98,7 @@ export function EditOccasionTypeDialog({
           <DialogHeader>
             <DialogTitle>{t('occasion_types.admin.edit_dialog_title')}</DialogTitle>
           </DialogHeader>
-          <OccasionTypeEditForm
+          <OccasionTypeForm
             mode="edit"
             initialValues={initialValues}
             onSubmit={handleSubmit}

@@ -13,7 +13,7 @@ import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occas
 import { CreateOccasionTypeDialog } from '@/features/occasion-types/components/create-occasion-type-dialog'
 import { EditOccasionTypeDialog } from '@/features/occasion-types/components/edit-occasion-type-dialog'
 import { DeleteOccasionTypeDialog } from '@/features/occasion-types/components/delete-occasion-type-dialog'
-import type { EditFormValues } from '@/features/occasion-types/components/occasion-type-form'
+import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
 import { useAdminOccasionTypes } from '@/features/occasion-types/hooks/use-admin-occasion-types'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -35,7 +35,7 @@ function resolveFrLabel(item: AdminOccasionType): string | null {
   return frTranslation?.label ?? null
 }
 
-function buildEditFormValues(item: AdminOccasionType): EditFormValues {
+function buildEditFormValues(item: AdminOccasionType): OccasionTypeFormValues {
   return {
     slug: item.slug,
     emoji: item.emoji,

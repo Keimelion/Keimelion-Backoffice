@@ -1,2 +1,2 @@
-export { OccasionTypeCreateForm, OccasionTypeEditForm } from './occasion-type-form'
-export type { EditFormValues, OccasionTypeFormCreateProps, OccasionTypeFormEditProps } from './occasion-type-form'
+export { OccasionTypeForm } from './occasion-type-form'
+export type { OccasionTypeFormValues } from './occasion-type-form'

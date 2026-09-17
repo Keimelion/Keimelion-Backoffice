@@ -10,9 +10,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { DiscardChangesDialog } from '@/components/shared/discard-changes-dialog'
-import { OccasionTypeCreateForm } from '@/features/occasion-types/components/occasion-type-form'
+import { OccasionTypeForm } from '@/features/occasion-types/components/occasion-type-form'
+import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
 import { createOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
-import type { AdminOccasionType, CreateOccasionTypeInput } from '@/data-access/occasion-types/admin-occasion-types.schemas'
+import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
@@ -34,7 +35,7 @@ export function CreateOccasionTypeDialog({
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
   const [isDiscardOpen, setIsDiscardOpen] = useState<boolean>(false)
 
-  const mutation = useMutation<AdminOccasionType, Error, CreateOccasionTypeInput>({
+  const mutation = useMutation<AdminOccasionType, Error, OccasionTypeFormValues>({
     mutationFn: createOccasionType,
     meta: { silent: true },
     onSuccess: async () => {
@@ -45,8 +46,8 @@ export function CreateOccasionTypeDialog({
   })
 
   function handleSubmit(
-    values: CreateOccasionTypeInput,
-    setError: UseFormSetError<CreateOccasionTypeInput>,
+    values: OccasionTypeFormValues,
+    setError: UseFormSetError<OccasionTypeFormValues>,
   ): void {
     mutation.mutate(values, {
       onError: (error) => {
@@ -82,7 +83,7 @@ export function CreateOccasionTypeDialog({
           <DialogHeader>
             <DialogTitle>{t('occasion_types.admin.create_dialog_title')}</DialogTitle>
           </DialogHeader>
-          <OccasionTypeCreateForm
+          <OccasionTypeForm
             mode="create"
             onSubmit={handleSubmit}
             onDirtyChange={setIsFormDirty}
