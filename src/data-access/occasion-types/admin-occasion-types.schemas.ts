@@ -42,17 +42,11 @@ export const adminOccasionTypeListResponseSchema = z.object({
 
 export type AdminOccasionTypeListResponse = z.infer<typeof adminOccasionTypeListResponseSchema>
 
-export const adminOccasionTypeCreateResponseSchema = z.object({
+export const adminOccasionTypeMutationResponseSchema = z.object({
   occasionType: adminOccasionTypeSchema,
 })
 
-export type AdminOccasionTypeCreateResponse = z.infer<typeof adminOccasionTypeCreateResponseSchema>
-
-export const adminOccasionTypeUpdateResponseSchema = z.object({
-  occasionType: adminOccasionTypeSchema,
-})
-
-export type AdminOccasionTypeUpdateResponse = z.infer<typeof adminOccasionTypeUpdateResponseSchema>
+export type AdminOccasionTypeMutationResponse = z.infer<typeof adminOccasionTypeMutationResponseSchema>
 
 const SLUG_INVALID_MESSAGE = 'Slug must be lowercase letters and digits separated by hyphens (e.g. my-occasion).'
 const EN_LABEL_REQUIRED_MESSAGE = 'The English label is required.'
@@ -76,16 +70,4 @@ export const createOccasionTypeInputSchema = z.object({
 
 export type CreateOccasionTypeInput = z.infer<typeof createOccasionTypeInputSchema>
 
-export const updateOccasionTypeInputSchema = z.object({
-  emoji: z.string().trim().max(EMOJI_MAX_LENGTH).nullable().optional(),
-  sortOrder: z
-    .number()
-    .int()
-    .min(SORT_ORDER_MIN)
-    .max(SORT_ORDER_MAX),
-  isActive: z.boolean(),
-  labelEn: z.string().min(LABEL_MIN_LENGTH, { message: EN_LABEL_REQUIRED_MESSAGE }),
-  labelFr: z.string().nullable().optional(),
-})
-
-export type UpdateOccasionTypeInput = z.infer<typeof updateOccasionTypeInputSchema>
+export type UpdateOccasionTypeInput = Omit<CreateOccasionTypeInput, 'slug'>

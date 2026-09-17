@@ -4,8 +4,7 @@ import { parseApiResponse } from '@/data-access/_shared/parse-response'
 import { buildQueryParams } from '@/data-access/_shared/query-params'
 import {
   adminOccasionTypeListResponseSchema,
-  adminOccasionTypeCreateResponseSchema,
-  adminOccasionTypeUpdateResponseSchema,
+  adminOccasionTypeMutationResponseSchema,
   type AdminOccasionType,
   type CreateOccasionTypeInput,
   type UpdateOccasionTypeInput,
@@ -27,18 +26,20 @@ export async function listAdminOccasionTypes(
 
 interface OccasionTypeTranslationPayload {
   locale: string
-  label: string
+  label: string | null
 }
 
-interface CreateOccasionTypePayload {
+interface OccasionTypeMutationPayload {
   slug: string
-  emoji: string | null | undefined
+  emoji: string | null
   sortOrder: number
   isActive: boolean
   translations: OccasionTypeTranslationPayload[]
 }
 
-function buildCreatePayload(input: CreateOccasionTypeInput): CreateOccasionTypePayload {
+type UpdateOccasionTypePayload = Omit<OccasionTypeMutationPayload, 'slug'>
+
+function buildCreatePayload(input: CreateOccasionTypeInput): OccasionTypeMutationPayload {
   const translations: OccasionTypeTranslationPayload[] = [
     { locale: 'en', label: input.labelEn },
   ]
@@ -54,35 +55,22 @@ function buildCreatePayload(input: CreateOccasionTypeInput): CreateOccasionTypeP
   }
 }
 
-export async function createOccasionType(input: CreateOccasionTypeInput): Promise<AdminOccasionType> {
-  const response = await axiosInstance.post<unknown>('/admin/occasion-types', buildCreatePayload(input))
-  const parsed = parseApiResponse(adminOccasionTypeCreateResponseSchema, response, 'admin occasion type')
-  return parsed.occasionType
-}
-
-interface OccasionTypeUpdateTranslationPayload {
-  locale: string
-  label: string | null
-}
-
-interface UpdateOccasionTypePayload {
-  emoji: string | null | undefined
-  sortOrder: number
-  isActive: boolean
-  translations: OccasionTypeUpdateTranslationPayload[]
-}
-
 function buildUpdatePayload(input: UpdateOccasionTypeInput): UpdateOccasionTypePayload {
-  const translations: OccasionTypeUpdateTranslationPayload[] = [
-    { locale: 'en', label: input.labelEn },
-    { locale: 'fr', label: input.labelFr ?? null },
-  ]
   return {
     emoji: input.emoji ?? null,
     sortOrder: input.sortOrder,
     isActive: input.isActive,
-    translations,
+    translations: [
+      { locale: 'en', label: input.labelEn },
+      { locale: 'fr', label: input.labelFr ?? null },
+    ],
   }
+}
+
+export async function createOccasionType(input: CreateOccasionTypeInput): Promise<AdminOccasionType> {
+  const response = await axiosInstance.post<unknown>('/admin/occasion-types', buildCreatePayload(input))
+  const parsed = parseApiResponse(adminOccasionTypeMutationResponseSchema, response, 'admin occasion type')
+  return parsed.occasionType
 }
 
 export async function updateOccasionType(
@@ -90,7 +78,7 @@ export async function updateOccasionType(
   input: UpdateOccasionTypeInput,
 ): Promise<AdminOccasionType> {
   const response = await axiosInstance.patch<unknown>(`/admin/occasion-types/${id}`, buildUpdatePayload(input))
-  const parsed = parseApiResponse(adminOccasionTypeUpdateResponseSchema, response, 'admin occasion type')
+  const parsed = parseApiResponse(adminOccasionTypeMutationResponseSchema, response, 'admin occasion type')
   return parsed.occasionType
 }
 
