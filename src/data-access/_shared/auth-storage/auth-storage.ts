@@ -14,6 +14,10 @@ export function isAllowedBackofficeRole(role: string): boolean {
   return (ALLOWED_BACKOFFICE_ROLES as readonly string[]).includes(role)
 }
 
+export function isAdmin(role: string): boolean {
+  return role === UserRoles.ADMIN
+}
+
 function writeSessionCookie(role: string): void {
   document.cookie = `${SESSION_COOKIE_NAME}=${role}; path=/; max-age=${String(SESSION_COOKIE_MAX_AGE_SECONDS)}; samesite=lax`
 }
