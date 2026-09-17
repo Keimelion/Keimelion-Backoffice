@@ -4,7 +4,8 @@ import { useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { PAGE_PARAM } from '@/lib/url-params'
 
-type SortDirection = 'asc' | 'desc'
+const SORT_DIRECTIONS = ['asc', 'desc'] as const
+type SortDirection = typeof SORT_DIRECTIONS[number]
 
 interface SortState {
   field: string
@@ -18,7 +19,11 @@ interface UseSortParamReturn {
 }
 
 const SORT_PARAM = 'sort'
-const SORT_PATTERN = /^(.+):(asc|desc)$/
+const SORT_PATTERN = new RegExp(`^(.+):(${SORT_DIRECTIONS.join('|')})$`)
+
+function isSortDirection(value: string | undefined): value is SortDirection {
+  return value !== undefined && (SORT_DIRECTIONS as readonly string[]).includes(value)
+}
 
 function parseSortParam(raw: string): SortState | null {
   const match = SORT_PATTERN.exec(raw)
@@ -26,7 +31,7 @@ function parseSortParam(raw: string): SortState | null {
   const field = match[1]
   const direction = match[2]
   if (field === undefined) return null
-  if (direction !== 'asc' && direction !== 'desc') return null
+  if (!isSortDirection(direction)) return null
   return { field, direction }
 }
 
