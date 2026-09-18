@@ -12,7 +12,6 @@ type NamespaceWithDescription = NamespaceOf<'description', Extract<MessageId, `$
 type NamespaceWithConfirm = NamespaceOf<'confirm', Extract<MessageId, `${string}.confirm`>>
 type NamespaceWithCancel = NamespaceOf<'cancel', Extract<MessageId, `${string}.cancel`>>
 
-// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents -- each constituent enforces a distinct required suffix; the intersection is intentional and stays sound as new namespaces are added
 export type ConfirmDialogNamespace = NamespaceWithTitle & NamespaceWithDescription & NamespaceWithConfirm & NamespaceWithCancel
 
 interface TranslatedConfirmDialogProps {
