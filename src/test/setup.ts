@@ -10,6 +10,14 @@ const ResizeObserverStub = class {
 
 globalThis.ResizeObserver = ResizeObserverStub
 
+if (typeof Element !== 'undefined') {
+  Object.assign(Element.prototype, {
+    hasPointerCapture: (): boolean => false,
+    releasePointerCapture: (): void => undefined,
+    scrollIntoView: (): void => undefined,
+  })
+}
+
 afterEach(() => {
   cleanup()
 })
