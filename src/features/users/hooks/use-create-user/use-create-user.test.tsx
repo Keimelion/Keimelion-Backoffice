@@ -25,6 +25,7 @@ describe('useCreateUser', () => {
       id: 'u-1',
       email: 'new@keimelion.app',
       username: null,
+      authProvider: 'email',
       role: 'user',
       avatarUrl: null,
       isCgvAccepted: false,

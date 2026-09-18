@@ -17,8 +17,6 @@ interface CreateUserDialogProps {
 }
 
 const CONFLICT_STATUS = 409
-const EMAIL_CONFLICT_CODE = 'EMAIL_CONFLICT'
-const USERNAME_CONFLICT_CODE = 'USERNAME_CONFLICT'
 
 export function CreateUserDialog({
   open,
@@ -42,15 +40,7 @@ export function CreateUserDialog({
       },
       onError: (error) => {
         if (error instanceof ApiRequestError && error.status === CONFLICT_STATUS) {
-          if (error.code === EMAIL_CONFLICT_CODE) {
-            setError('email', { message: t('users.form.error.email_conflict') })
-            return
-          }
-          if (error.code === USERNAME_CONFLICT_CODE) {
-            setError('username', { message: t('users.form.error.username_conflict') })
-            return
-          }
-          setError('root', { message: error.message })
+          setError('root', { message: t('users.form.error.conflict') })
           return
         }
         setError('root', { message: error.message })

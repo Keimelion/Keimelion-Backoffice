@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  adminUserMutationUserSchema,
   adminUserMutationResponseSchema,
   createAdminUserInputSchema,
   updateAdminUserInputSchema,
@@ -10,6 +9,7 @@ const MOCK_MUTATION_USER = {
   id: 'u-1',
   email: 'user@keimelion.app',
   username: 'testuser',
+  authProvider: 'email',
   role: 'user',
   avatarUrl: null,
   isCgvAccepted: false,
@@ -24,43 +24,6 @@ const MOCK_MUTATION_USER = {
   deletedAt: null,
 }
 
-describe('adminUserMutationUserSchema', () => {
-  it('parses a full user object', () => {
-    const result = adminUserMutationUserSchema.safeParse(MOCK_MUTATION_USER)
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.id).toBe('u-1')
-    expect(result.data.email).toBe('user@keimelion.app')
-    expect(result.data.role).toBe('user')
-  })
-
-  it('parses a user with null nullable fields', () => {
-    const result = adminUserMutationUserSchema.safeParse({
-      ...MOCK_MUTATION_USER,
-      username: null,
-      avatarUrl: null,
-      deletedAt: null,
-      bannedAt: null,
-    })
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.username).toBeNull()
-  })
-
-  it('fails when required fields are missing', () => {
-    const result = adminUserMutationUserSchema.safeParse({ id: 'u-1' })
-    expect(result.success).toBe(false)
-  })
-
-  it('fails for an invalid role value', () => {
-    const result = adminUserMutationUserSchema.safeParse({
-      ...MOCK_MUTATION_USER,
-      role: 'superadmin',
-    })
-    expect(result.success).toBe(false)
-  })
-})
-
 describe('adminUserMutationResponseSchema', () => {
   it('parses a valid mutation response', () => {
     const raw = { user: MOCK_MUTATION_USER }
@@ -68,10 +31,27 @@ describe('adminUserMutationResponseSchema', () => {
     expect(result.success).toBe(true)
     if (!result.success) return
     expect(result.data.user.id).toBe('u-1')
+    expect(result.data.user.role).toBe('user')
+  })
+
+  it('parses a user with null nullable fields', () => {
+    const result = adminUserMutationResponseSchema.safeParse({
+      user: { ...MOCK_MUTATION_USER, username: null, avatarUrl: null },
+    })
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.user.username).toBeNull()
   })
 
   it('fails when the user field is missing', () => {
     const result = adminUserMutationResponseSchema.safeParse({})
+    expect(result.success).toBe(false)
+  })
+
+  it('fails for an invalid role value', () => {
+    const result = adminUserMutationResponseSchema.safeParse({
+      user: { ...MOCK_MUTATION_USER, role: 'superadmin' },
+    })
     expect(result.success).toBe(false)
   })
 })
@@ -85,11 +65,10 @@ describe('createAdminUserInputSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('parses a full create input with all optional fields', () => {
+  it('parses a full create input with username', () => {
     const result = createAdminUserInputSchema.safeParse({
       email: 'new@keimelion.app',
       username: 'newuser',
-      displayName: 'New User',
       role: 'admin',
     })
     expect(result.success).toBe(true)
@@ -121,6 +100,15 @@ describe('createAdminUserInputSchema', () => {
       email: 'new@keimelion.app',
       username: 'ab',
       role: 'user',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects unknown fields (strict)', () => {
+    const result = createAdminUserInputSchema.safeParse({
+      email: 'new@keimelion.app',
+      role: 'user',
+      displayName: 'ignored',
     })
     expect(result.success).toBe(false)
   })

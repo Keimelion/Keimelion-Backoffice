@@ -14,6 +14,7 @@ const MOCK_UPDATED_USER = {
   id: 'u-1',
   email: 'user@keimelion.app',
   username: 'testuser',
+  authProvider: 'email' as const,
   role: 'moderator' as const,
   avatarUrl: null,
   isCgvAccepted: true,

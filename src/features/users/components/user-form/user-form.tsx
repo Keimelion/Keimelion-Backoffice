@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import type { UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
+import type { UserRole } from '@keimelion/api/shared/enums/user-role'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -31,6 +32,9 @@ import {
 } from '@/data-access/users/admin-users.schemas'
 import type { AdminApiUser } from '@/data-access/users/list-users'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { TranslateFn } from '@/lib/i18n/use-translate'
+
+const DEFAULT_ROLE: UserRole = 'user'
 
 export type UserFormCreateValues = CreateAdminUserInput
 export type UserFormEditValues = UpdateAdminUserInput
@@ -50,60 +54,44 @@ type UserFormProps =
       isPending: boolean
     }
 
-function resolveSubmitLabel(
-  isPending: boolean,
-  isEdit: boolean,
-  t: ReturnType<typeof useTranslate>,
-): string {
+export function UserForm(props: UserFormProps): React.JSX.Element {
+  if (props.mode === 'edit') {
+    return (
+      <UserEditForm
+        user={props.user}
+        onSubmit={props.onSubmit}
+        onDirtyChange={props.onDirtyChange}
+        isPending={props.isPending}
+      />
+    )
+  }
+  return (
+    <UserCreateForm
+      onSubmit={props.onSubmit}
+      onDirtyChange={props.onDirtyChange}
+      isPending={props.isPending}
+    />
+  )
+}
+
+function resolveSubmitLabel(isPending: boolean, isEdit: boolean, t: TranslateFn): string {
   if (isPending) return t('users.form.submit_pending')
   if (isEdit) return t('users.form.submit_edit')
   return t('users.form.submit_create')
 }
 
-export function UserForm(props: UserFormProps): React.JSX.Element {
-  const { onDirtyChange, isPending } = props
-  const t = useTranslate()
-
-  if (props.mode === 'edit') {
-    return (
-      <UserEditFormInner
-        user={props.user}
-        onSubmit={props.onSubmit}
-        onDirtyChange={onDirtyChange}
-        isPending={isPending}
-        resolveSubmitLabel={resolveSubmitLabel}
-        t={t}
-      />
-    )
-  }
-
-  return (
-    <UserCreateFormInner
-      onSubmit={props.onSubmit}
-      onDirtyChange={onDirtyChange}
-      isPending={isPending}
-      resolveSubmitLabel={resolveSubmitLabel}
-      t={t}
-    />
-  )
-}
-
-interface UserCreateFormInnerProps {
+interface UserCreateFormProps {
   onSubmit: (values: UserFormCreateValues, setError: UseFormSetError<UserFormCreateValues>) => void
   onDirtyChange: (isDirty: boolean) => void
   isPending: boolean
-  resolveSubmitLabel: (isPending: boolean, isEdit: boolean, t: ReturnType<typeof useTranslate>) => string
-  t: ReturnType<typeof useTranslate>
 }
 
-function UserCreateFormInner({
+function UserCreateForm({
   onSubmit,
   onDirtyChange,
   isPending,
-  resolveSubmitLabel: getSubmitLabel,
-  t,
-}: UserCreateFormInnerProps): React.JSX.Element {
-  const DEFAULT_ROLE = 'user' as const
+}: UserCreateFormProps): React.JSX.Element {
+  const t = useTranslate()
 
   const form = useForm<UserFormCreateValues>({
     resolver: zodResolver(createAdminUserInputSchema),
@@ -112,7 +100,6 @@ function UserCreateFormInner({
     defaultValues: {
       email: '',
       username: null,
-      displayName: null,
       role: DEFAULT_ROLE,
     },
   })
@@ -125,8 +112,6 @@ function UserCreateFormInner({
   useEffect(() => {
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
-
-  const submitLabel = getSubmitLabel(isPending, false, t)
 
   return (
     <Form {...form}>
@@ -183,37 +168,11 @@ function UserCreateFormInner({
 
         <FormField
           control={form.control}
-          name="displayName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('users.form.display_name_label')}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t('users.form.display_name_placeholder')}
-                  disabled={isPending}
-                  value={field.value ?? ''}
-                  onChange={(event) => {
-                    const next = event.target.value
-                    field.onChange(next.length > 0 ? next : null)
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="role"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('users.form.role_label')}</FormLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isPending}
-              >
+              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue />
@@ -241,7 +200,7 @@ function UserCreateFormInner({
 
         <div className="flex justify-end pt-2">
           <Button type="submit" disabled={!canSubmit}>
-            {submitLabel}
+            {resolveSubmitLabel(isPending, false, t)}
           </Button>
         </div>
       </form>
@@ -249,23 +208,21 @@ function UserCreateFormInner({
   )
 }
 
-interface UserEditFormInnerProps {
+interface UserEditFormProps {
   user: AdminApiUser
   onSubmit: (values: UserFormEditValues, setError: UseFormSetError<UserFormEditValues>) => void
   onDirtyChange: (isDirty: boolean) => void
   isPending: boolean
-  resolveSubmitLabel: (isPending: boolean, isEdit: boolean, t: ReturnType<typeof useTranslate>) => string
-  t: ReturnType<typeof useTranslate>
 }
 
-function UserEditFormInner({
+function UserEditForm({
   user,
   onSubmit,
   onDirtyChange,
   isPending,
-  resolveSubmitLabel: getSubmitLabel,
-  t,
-}: UserEditFormInnerProps): React.JSX.Element {
+}: UserEditFormProps): React.JSX.Element {
+  const t = useTranslate()
+
   const form = useForm<UserFormEditValues>({
     resolver: zodResolver(updateAdminUserInputSchema),
     mode: 'onTouched',
@@ -284,8 +241,6 @@ function UserEditFormInner({
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
 
-  const submitLabel = getSubmitLabel(isPending, true, t)
-
   return (
     <Form {...form}>
       <form
@@ -303,11 +258,7 @@ function UserEditFormInner({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('users.form.role_label')}</FormLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isPending}
-              >
+              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue />
@@ -340,7 +291,7 @@ function UserEditFormInner({
 
         <div className="flex justify-end pt-2">
           <Button type="submit" disabled={!canSubmit}>
-            {submitLabel}
+            {resolveSubmitLabel(isPending, true, t)}
           </Button>
         </div>
       </form>

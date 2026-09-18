@@ -68,12 +68,16 @@ beforeEach(() => {
 })
 
 describe('UserForm (create mode)', () => {
-  it('renders all create-mode fields', () => {
+  it('renders email, username, and role fields', () => {
     renderCreateForm()
     expect(screen.getByText('Email')).toBeInTheDocument()
     expect(screen.getByText('Username')).toBeInTheDocument()
-    expect(screen.getByText('Display name')).toBeInTheDocument()
     expect(screen.getByText('Role')).toBeInTheDocument()
+  })
+
+  it('does not render a display name field', () => {
+    renderCreateForm()
+    expect(screen.queryByText('Display name')).not.toBeInTheDocument()
   })
 
   it('keeps the submit button disabled while the form is empty (no email)', () => {
@@ -121,21 +125,6 @@ describe('UserForm (create mode)', () => {
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
       expect(screen.getByText('Server error.')).toBeInTheDocument()
-    })
-  })
-
-  it('displays email field error when setError is called with email', async () => {
-    const onSubmit = vi.fn((
-      _values: UserFormCreateValues,
-      setError: UseFormSetError<UserFormCreateValues>,
-    ) => {
-      setError('email', { message: 'Email already in use.' })
-    })
-    renderCreateForm(onSubmit)
-    await userEvent.type(screen.getByPlaceholderText(EMAIL_PLACEHOLDER), 'existing@keimelion.app')
-    await userEvent.click(screen.getByRole('button', { name: /create/i }))
-    await waitFor(() => {
-      expect(screen.getByText('Email already in use.')).toBeInTheDocument()
     })
   })
 
