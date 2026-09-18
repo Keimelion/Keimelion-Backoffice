@@ -1,4 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
+import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { clearSession } from '@/data-access/_shared/auth-storage'
 import { translate } from '@/lib/i18n/translate'
@@ -14,7 +15,7 @@ interface MutationMeta {
 let redirectInFlight = false
 
 function isUnauthorized(error: unknown): boolean {
-  return error instanceof ApiRequestError && error.status === 401
+  return error instanceof ApiRequestError && error.status === HttpStatus.UNAUTHORIZED
 }
 
 function handleUnauthorized(client: QueryClient): void {
@@ -56,7 +57,7 @@ export function createQueryClient(): QueryClient {
       queries: {
         staleTime: STALE_TIME_MS,
         retry: (failureCount, error) => {
-          if (error instanceof ApiRequestError && error.status < 500) {
+          if (error instanceof ApiRequestError && error.status < HttpStatus.INTERNAL_SERVER_ERROR) {
             return false
           }
           return failureCount < 2

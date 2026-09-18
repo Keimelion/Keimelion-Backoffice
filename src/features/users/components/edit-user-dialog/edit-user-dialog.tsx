@@ -2,19 +2,26 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { UserForm } from '@/features/users/components/user-form'
 import type { UserFormEditValues } from '@/features/users/components/user-form'
+import { ADMIN_USERS_QUERY_KEY, updateAdminUser } from '@/data-access/users/admin-users.api'
+import type { AdminUserMutationUser } from '@/data-access/users/admin-users.schemas'
 import type { AdminApiUser } from '@/data-access/users/list-users'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
-import { useUpdateUser } from '@/features/users/hooks/use-update-user'
 
 interface EditUserDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   user: AdminApiUser
+}
+
+interface UpdateUserVariables {
+  id: string
+  input: UserFormEditValues
 }
 
 export function EditUserDialog({
@@ -23,9 +30,18 @@ export function EditUserDialog({
   user,
 }: EditUserDialogProps): React.JSX.Element {
   const t = useTranslate()
+  const queryClient = useQueryClient()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
 
-  const mutation = useUpdateUser()
+  const mutation = useMutation<AdminUserMutationUser, Error, UpdateUserVariables>({
+    mutationFn: ({ id, input }) => updateAdminUser(id, input),
+    meta: { silent: true },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
+      notifySuccess({ title: translate('users.mutation.updated_toast') })
+      onOpenChange(false)
+    },
+  })
 
   function handleSubmit(
     values: UserFormEditValues,
@@ -34,10 +50,6 @@ export function EditUserDialog({
     mutation.mutate(
       { id: user.id, input: values },
       {
-        onSuccess: () => {
-          notifySuccess({ title: translate('users.mutation.updated_toast') })
-          onOpenChange(false)
-        },
         onError: (error) => {
           setError('root', { message: error.message })
         },

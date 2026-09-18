@@ -1,10 +1,11 @@
 'use client'
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
+import { ADMIN_USERS_QUERY_KEY, deleteAdminUser } from '@/data-access/users/admin-users.api'
 import type { AdminApiUser } from '@/data-access/users/list-users'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
-import { useDeleteUser } from '@/features/users/hooks/use-delete-user'
 
 interface DeleteUserDialogProps {
   open: boolean
@@ -17,15 +18,19 @@ export function DeleteUserDialog({
   onOpenChange,
   user,
 }: DeleteUserDialogProps): React.JSX.Element {
-  const mutation = useDeleteUser()
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: deleteAdminUser,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
+      notifySuccess({ title: translate('users.mutation.deleted_toast') })
+      onOpenChange(false)
+    },
+  })
 
   async function handleConfirm(): Promise<void> {
-    await mutation.mutateAsync(user.id, {
-      onSuccess: () => {
-        notifySuccess({ title: translate('users.mutation.deleted_toast') })
-        onOpenChange(false)
-      },
-    })
+    await mutation.mutateAsync(user.id)
   }
 
   return (

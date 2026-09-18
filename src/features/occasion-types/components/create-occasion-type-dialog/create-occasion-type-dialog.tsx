@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
+import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { OccasionTypeForm } from '@/features/occasion-types/components/occasion-type-form'
 import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
@@ -17,8 +18,6 @@ interface CreateOccasionTypeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
-
-const SLUG_CONFLICT_STATUS = 409
 
 export function CreateOccasionTypeDialog({
   open,
@@ -44,7 +43,7 @@ export function CreateOccasionTypeDialog({
   ): void {
     mutation.mutate(values, {
       onError: (error) => {
-        if (error instanceof ApiRequestError && error.status === SLUG_CONFLICT_STATUS) {
+        if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
           setError('slug', { message: t('occasion_types.form.error.slug_conflict') })
           return
         }
