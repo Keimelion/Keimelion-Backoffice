@@ -647,6 +647,19 @@ export function useUsers(page: number): ReturnType<typeof useQuery<PaginatedResp
 }
 ```
 
+## One form component for create + update
+
+When a resource needs both a create and an edit form, write a **single component** with a `mode: 'create' | 'edit'` discriminated union prop. Never split into two parallel components — the shared shell (`<Form>`, `handleSubmit`, dirty-state effect, root-error rendering, submit button) and the shared field JSX dwarf the mode-specific parts. Splitting also doubles the surface for later drift.
+
+- Type the internal `useForm` on the **create shape** (the superset). In edit mode, `defaultValues` come from the resource prop; extract the subset at submit (`{ role: submitted.role }`).
+- Use the create schema as the resolver so field-level validation still runs. Gate the submit button by picking the appropriate schema in the `isFormValid` computation (`isEdit ? updateSchema.safeParse({ role }).success : createSchema.safeParse(values).success`).
+- Render create-only fields under `{isEdit ? null : (<>...</>)}`; edit-only affordances (like a role-change warning) under `{isEdit && isDirty ? ... : null}`.
+- Inline the submit label ternary in the button JSX — don't extract a `resolveSubmitLabel` helper (see the "Prefer inline over premature dispatchers" rule above).
+
+Reference implementations: `src/features/users/components/user-form/user-form.tsx` and `src/features/occasion-types/components/occasion-type-form/occasion-type-form.tsx`.
+
+---
+
 ## `data-access/` never touches React
 
 Files under `src/data-access/` export plain async functions that call the Keimelion API through `lib/api-client`. They import no React, no hooks, no TanStack Query. Types returned from these functions are the source of truth for what the UI receives.
