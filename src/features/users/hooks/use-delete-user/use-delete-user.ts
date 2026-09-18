@@ -14,7 +14,6 @@ export function useDeleteUser(): UseMutationResult<DeleteResult, Error, string> 
       await deleteAdminUser(id)
       return undefined
     },
-    meta: { silent: true },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
     },
