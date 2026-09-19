@@ -4,8 +4,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import type { UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
-import type { UserRole } from '@keimelion/api/shared/enums/user-role'
+import { USER_ROLE_VALUES, UserRoles } from '@keimelion/api/shared/enums/user-role'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -33,7 +32,7 @@ import {
 import type { AdminApiUser } from '@/data-access/users/list-users'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
-const DEFAULT_ROLE: UserRole = 'user'
+const DEFAULT_ROLE = UserRoles.USER
 
 export type UserFormCreateValues = CreateAdminUserInput
 export type UserFormEditValues = UpdateAdminUserInput
