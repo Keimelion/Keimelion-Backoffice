@@ -68,6 +68,7 @@ Every user-facing string in the Backoffice is rendered through `react-intl`. The
 - **One component per file** — file name matches component name in kebab-case (`user-form.tsx` exports `UserForm`)
 - **Folder-per-component when 2+ files** — if a component has more than one file (a `.tsx` plus `.test.tsx`, `.scss`, `.stories.tsx`…), wrap them in a folder named after the component and add an `index.ts` that re-exports so imports stay short. Example: `components/ui/input/{input.tsx, input.scss, index.ts}` — imported as `@/components/ui/input`. Single-file components stay flat.
 - **Hooks prefix** — all custom hooks start with `use` (`useUsers`, `useLogin`)
+- **One form for create + update** — single component with a `mode: 'create' | 'edit'` discriminated union prop; never two parallel forms (`UserForm`, not `UserCreateForm` + `UserEditForm`). See `.claude/coding-standards.md` for the pattern; reference: `src/features/users/components/user-form/user-form.tsx`.
 
 ## Project structure
 

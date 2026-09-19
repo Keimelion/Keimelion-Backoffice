@@ -1,6 +1,7 @@
 import axios, { AxiosHeaders } from 'axios'
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { z } from 'zod'
+import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { clearSession, getAccessToken, getRefreshToken } from '@/data-access/_shared/auth-storage'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { refreshTokens } from '@/data-access/auth/refresh'
@@ -27,7 +28,7 @@ function isRefreshExemptPath(path: string): boolean {
 function abortRefresh(code: string, message: string): never {
   clearSession()
   window.location.assign(LOGIN_REDIRECT)
-  throw new ApiRequestError(code, message, 401)
+  throw new ApiRequestError(code, message, HttpStatus.UNAUTHORIZED)
 }
 
 async function executeTokenRefresh(): Promise<string> {
@@ -104,7 +105,7 @@ axiosInstance.interceptors.response.use(
     const requestPath = originalConfig?.url ?? ''
     const status = axiosError.response?.status
 
-    if (status === 401 && !isRefreshExemptPath(requestPath) && originalConfig) {
+    if (status === HttpStatus.UNAUTHORIZED && !isRefreshExemptPath(requestPath) && originalConfig) {
       const newAccessToken = await refreshAccessToken()
       return axiosInstance.request({
         ...originalConfig,

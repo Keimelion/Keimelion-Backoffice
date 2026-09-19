@@ -10,6 +10,7 @@ interface IconButtonProps {
   label: string
   onClick?: () => void
   tone?: IconButtonTone
+  disabled?: boolean
   className?: string
   children: ReactNode
 }
@@ -27,6 +28,7 @@ export function IconButton({
   label,
   onClick,
   tone = 'default',
+  disabled = false,
   className,
   children,
 }: IconButtonProps): React.JSX.Element {
@@ -37,7 +39,8 @@ export function IconButton({
           type="button"
           aria-label={label}
           onClick={onClick}
-          className={cn(BASE_CLASSES, TONE_CLASSES[tone], className)}
+          disabled={disabled}
+          className={cn(BASE_CLASSES, TONE_CLASSES[tone], disabled && 'pointer-events-none opacity-40', className)}
         >
           {children}
           <span className="sr-only">{label}</span>

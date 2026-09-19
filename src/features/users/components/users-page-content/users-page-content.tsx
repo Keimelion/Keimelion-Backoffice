@@ -1,7 +1,9 @@
 'use client'
 
-import { Pencil, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   ClearFiltersButton,
   DataTable,
@@ -11,17 +13,30 @@ import {
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
+import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
 import { listUsersQuerySchema, type AdminApiUser } from '@/data-access/users/list-users'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useUsers } from '@/features/users/hooks/use-users'
+import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { ROLE_PARAM, RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
+import { CreateUserDialog } from '@/features/users/components/create-user-dialog'
+import { EditUserDialog } from '@/features/users/components/edit-user-dialog'
+import { DeleteUserDialog } from '@/features/users/components/delete-user-dialog'
 
 export function UsersPageContent(): React.JSX.Element {
   const t = useTranslate()
   const filters = useListSearchParams(listUsersQuerySchema)
+  const currentRole = useCurrentUserRole()
+  const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
+  const currentUserId = getStoredUser()?.id ?? null
+
+  const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
+  const [editTarget, setEditTarget] = useState<AdminApiUser | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminApiUser | null>(null)
+
   const usersQuery = useUsers({
     page: filters.page,
     limit: filters.limit,
@@ -103,54 +118,113 @@ export function UsersPageContent(): React.JSX.Element {
         <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
       ),
     },
-    {
-      key: 'actions',
-      header: t('users.table.column.actions'),
-      className: 'w-28 text-right',
-      cell: (user) => {
-        const identifier = user.username ?? user.email
-        return (
-          <div className="flex justify-end gap-1">
-            <IconButton label={t('common.actions.update', { name: identifier })}>
-              <Pencil />
-            </IconButton>
-            <IconButton label={t('common.actions.delete', { name: identifier })} tone="destructive">
-              <Trash2 />
-            </IconButton>
-          </div>
-        )
-      },
-    },
+    ...(isCurrentUserAdmin
+      ? [
+          {
+            key: 'actions',
+            header: t('users.table.column.actions'),
+            className: 'w-28 text-right',
+            cell: (user: AdminApiUser) => {
+              const identifier = user.username ?? user.email
+              const isSelf = user.id === currentUserId
+              return (
+                <div className="flex justify-end gap-1">
+                  <IconButton
+                    label={
+                      isSelf
+                        ? t('users.actions.edit_own_tooltip')
+                        : t('common.actions.update', { name: identifier })
+                    }
+                    disabled={isSelf}
+                    onClick={() => { setEditTarget(user) }}
+                  >
+                    <Pencil />
+                  </IconButton>
+                  <IconButton
+                    label={
+                      isSelf
+                        ? t('users.actions.delete_own_tooltip')
+                        : t('common.actions.delete', { name: identifier })
+                    }
+                    tone="destructive"
+                    disabled={isSelf}
+                    onClick={() => { setDeleteTarget(user) }}
+                  >
+                    <Trash2 />
+                  </IconButton>
+                </div>
+              )
+            },
+          } satisfies DataTableColumn<AdminApiUser>,
+        ]
+      : []),
   ]
 
   const usersClearableParams = [...usersFilters.map((filter) => filter.paramName), ROLE_PARAM]
 
   return (
-    <DataTable
-      columns={usersColumns}
-      data={data}
-      isLoading={usersQuery.isLoading}
-      error={usersQuery.error}
-      emptyLabel={emptyLabel}
-      skeletonRowCount={filters.limit}
-      onRetry={() => { void usersQuery.refetch() }}
-      getRowClassName={resolveRowClassName}
-      toolbar={
-        <div className="flex flex-wrap items-center gap-3">
-          <DataTableFilters filters={usersFilters} />
-          <div className="h-6 w-px bg-border" />
-          <RoleFilter />
-          <ClearFiltersButton paramNames={usersClearableParams} />
-        </div>
-      }
-      footer={
-        <DataTablePagination
-          page={filters.page}
-          pageSize={filters.limit}
-          total={total}
+    <>
+      <DataTable
+        columns={usersColumns}
+        data={data}
+        isLoading={usersQuery.isLoading}
+        error={usersQuery.error}
+        emptyLabel={emptyLabel}
+        skeletonRowCount={filters.limit}
+        onRetry={() => { void usersQuery.refetch() }}
+        getRowClassName={resolveRowClassName}
+        toolbar={
+          <div className="flex flex-wrap items-center gap-3">
+            <DataTableFilters filters={usersFilters} />
+            <div className="h-6 w-px bg-border" />
+            <RoleFilter />
+            <ClearFiltersButton paramNames={usersClearableParams} />
+            {isCurrentUserAdmin ? (
+              <div className="ml-auto">
+                <Button size="sm" onClick={() => { setIsCreateOpen(true) }}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('users.actions.create_button')}
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        }
+        footer={
+          <DataTablePagination
+            page={filters.page}
+            pageSize={filters.limit}
+            total={total}
+          />
+        }
+      />
+
+      {isCurrentUserAdmin ? (
+        <CreateUserDialog
+          open={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
         />
-      }
-    />
+      ) : null}
+
+      {editTarget !== null ? (
+        <EditUserDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setEditTarget(null)
+          }}
+          user={editTarget}
+        />
+      ) : null}
+
+      {deleteTarget !== null ? (
+        <DeleteUserDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setDeleteTarget(null)
+          }}
+          user={deleteTarget}
+        />
+      ) : null}
+    </>
   )
 }
 
