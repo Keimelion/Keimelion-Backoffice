@@ -287,6 +287,20 @@ if (item.status === ItemStatuses.RESERVED) { ... }
 
 Enums shared with the API come from `@keimelion/api/shared/enums/*` — never redeclare them locally. See CLAUDE.md → *Type sharing with the API* for the list of safe imports.
 
+When a dedicated helper exists for a specific enum check (e.g. `isAdmin(role)` in `data-access/_shared/auth-storage`), prefer it over an inline enum comparison — it centralises the semantic and reads better at the call site. Only fall back to `role === UserRoles.ADMIN` when no helper exists yet.
+
+```typescript
+// ❌ — magic string
+if (currentRole === 'admin') { ... }
+
+// ⚠️ — enum comparison, acceptable if no helper exists
+if (currentRole === UserRoles.ADMIN) { ... }
+
+// ✅ — dedicated helper
+import { isAdmin } from '@/data-access/_shared/auth-storage'
+if (currentRole !== null && isAdmin(currentRole)) { ... }
+```
+
 ---
 
 ## No magic numbers or strings — local constants

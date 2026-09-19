@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import type * as AuthStorageModule from '@/data-access/_shared/auth-storage'
 
 const replaceMock = vi.fn()
 const useSearchParamsMock = vi.fn(() => new URLSearchParams())
@@ -19,9 +20,13 @@ vi.mock('@/features/auth/hooks/use-current-user-role', () => ({
   useCurrentUserRole: vi.fn(),
 }))
 
-vi.mock('@/data-access/_shared/auth-storage', () => ({
-  getStoredUser: vi.fn(),
-}))
+vi.mock('@/data-access/_shared/auth-storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof AuthStorageModule>()
+  return {
+    ...actual,
+    getStoredUser: vi.fn(),
+  }
+})
 
 import { useUsers } from '@/features/users/hooks/use-users'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'

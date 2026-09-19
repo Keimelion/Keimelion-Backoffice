@@ -13,7 +13,7 @@ import {
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
-import { getStoredUser } from '@/data-access/_shared/auth-storage'
+import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
 import { listUsersQuerySchema, type AdminApiUser } from '@/data-access/users/list-users'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -30,7 +30,7 @@ export function UsersPageContent(): React.JSX.Element {
   const t = useTranslate()
   const filters = useListSearchParams(listUsersQuerySchema)
   const currentRole = useCurrentUserRole()
-  const isAdmin = currentRole === 'admin'
+  const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
   const currentUserId = getStoredUser()?.id ?? null
 
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
@@ -118,7 +118,7 @@ export function UsersPageContent(): React.JSX.Element {
         <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
       ),
     },
-    ...(isAdmin
+    ...(isCurrentUserAdmin
       ? [
           {
             key: 'actions',
@@ -179,7 +179,7 @@ export function UsersPageContent(): React.JSX.Element {
             <div className="h-6 w-px bg-border" />
             <RoleFilter />
             <ClearFiltersButton paramNames={usersClearableParams} />
-            {isAdmin ? (
+            {isCurrentUserAdmin ? (
               <div className="ml-auto">
                 <Button size="sm" onClick={() => { setIsCreateOpen(true) }}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -198,7 +198,7 @@ export function UsersPageContent(): React.JSX.Element {
         }
       />
 
-      {isAdmin ? (
+      {isCurrentUserAdmin ? (
         <CreateUserDialog
           open={isCreateOpen}
           onOpenChange={setIsCreateOpen}
