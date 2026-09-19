@@ -30,6 +30,7 @@
   "users.form.role_label": "Rôle",
   "users.form.role_help_create": "Le rôle accordé à cet utilisateur à la création.",
   "users.form.role_change_warning": "Modifier le rôle de cet utilisateur le déconnectera de toutes ses sessions.",
+  "users.form.invitation_note": "L'utilisateur recevra un e-mail pour définir son mot de passe.",
   "users.form.submit_create": "Créer",
   "users.form.submit_edit": "Enregistrer",
   "users.form.submit_pending": "Enregistrement…",

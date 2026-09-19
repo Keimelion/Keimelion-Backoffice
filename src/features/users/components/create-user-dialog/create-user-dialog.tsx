@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
 import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { UserForm } from '@/features/users/components/user-form'
@@ -59,6 +60,10 @@ export function CreateUserDialog({
       title={t('users.create.dialog_title')}
       isFormDirty={isFormDirty}
     >
+      <div className="mb-4 flex items-center gap-3 rounded-lg border border-emerald-500/50 bg-emerald-50 p-4 text-sm text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-100">
+        <Info className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <p>{t('users.form.invitation_note')}</p>
+      </div>
       <UserForm
         mode="create"
         onSubmit={handleSubmit}

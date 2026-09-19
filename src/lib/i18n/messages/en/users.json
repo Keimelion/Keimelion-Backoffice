@@ -30,6 +30,7 @@
   "users.form.role_label": "Role",
   "users.form.role_help_create": "The role granted to this user on creation.",
   "users.form.role_change_warning": "Changing this user's role will sign them out of all sessions.",
+  "users.form.invitation_note": "The user will receive an email to set their password.",
   "users.form.submit_create": "Create",
   "users.form.submit_edit": "Save changes",
   "users.form.submit_pending": "Saving…",
