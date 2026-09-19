@@ -31,6 +31,7 @@ import {
 } from '@/data-access/users/admin-users.schemas'
 import type { AdminApiUser } from '@/data-access/users/list-users'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { RoleBadge } from '@/features/users/components/role-badge'
 
 const DEFAULT_ROLE = UserRoles.USER
 
@@ -162,7 +163,7 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
                 <SelectContent>
                   {USER_ROLE_VALUES.map((role) => (
                     <SelectItem key={role} value={role}>
-                      {t(`users.role.${role}`)}
+                      <RoleBadge role={role} />
                     </SelectItem>
                   ))}
                 </SelectContent>
