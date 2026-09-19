@@ -41,14 +41,14 @@ describe('DeleteOccasionTypeDialog', () => {
   it('renders the dialog with title and contextual buttons', () => {
     renderDialog()
     expect(screen.getByText('Delete occasion type')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Yes, delete Birthday' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'No, keep Birthday' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Yes, delete' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'No, keep it' })).toBeInTheDocument()
   })
 
   it('calls deleteOccasionType when the confirm button is clicked', async () => {
     vi.mocked(deleteOccasionType).mockResolvedValue(undefined)
     renderDialog()
-    await userEvent.click(screen.getByRole('button', { name: 'Yes, delete Birthday' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Yes, delete' }))
     await waitFor(() => {
       expect(deleteOccasionType).toHaveBeenCalledWith('ot-1')
     })
@@ -56,7 +56,7 @@ describe('DeleteOccasionTypeDialog', () => {
 
   it('does not call deleteOccasionType when the cancel button is clicked', async () => {
     renderDialog()
-    await userEvent.click(screen.getByRole('button', { name: 'No, keep Birthday' }))
+    await userEvent.click(screen.getByRole('button', { name: 'No, keep it' }))
     expect(deleteOccasionType).not.toHaveBeenCalled()
   })
 

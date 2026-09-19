@@ -28,8 +28,8 @@ describe('TranslatedConfirmDialog', () => {
     expect(
       screen.getByText('You are about to permanently delete "Birthday". This action cannot be undone.'),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Yes, delete Birthday' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'No, keep Birthday' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Yes, delete' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'No, keep it' })).toBeInTheDocument()
   })
 
   it('invokes onConfirm when the confirm button is clicked', async () => {
@@ -44,7 +44,7 @@ describe('TranslatedConfirmDialog', () => {
         destructive
       />,
     )
-    await userEvent.click(screen.getByRole('button', { name: 'Yes, delete Birthday' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Yes, delete' }))
     expect(onConfirm).toHaveBeenCalledOnce()
   })
 })
