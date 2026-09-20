@@ -2,6 +2,7 @@ import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { axiosInstance } from '@/data-access/_shared/axios'
 import { parseApiResponse } from '@/data-access/_shared/parse-response'
 import { buildQueryParams } from '@/data-access/_shared/query-params'
+import { LOCALES } from '@/lib/i18n/locale'
 import {
   adminOccasionTypeListResponseSchema,
   adminOccasionTypeMutationResponseSchema,
@@ -42,12 +43,11 @@ interface OccasionTypeMutationPayload {
 type UpdateOccasionTypePayload = Omit<OccasionTypeMutationPayload, 'slug'>
 
 function buildCreatePayload(input: CreateOccasionTypeInput): OccasionTypeMutationPayload {
-  const translations: OccasionTypeTranslationPayload[] = [
-    { locale: 'en', label: input.labelEn },
-  ]
-  if (input.labelFr) {
-    translations.push({ locale: 'fr', label: input.labelFr })
-  }
+  const translations = LOCALES.flatMap((locale) => {
+    const label = input.translations[locale]
+    if (typeof label !== 'string' || label.length === 0) return []
+    return [{ locale, label }]
+  })
   return {
     slug: input.slug,
     emoji: input.emoji ?? null,
@@ -58,14 +58,15 @@ function buildCreatePayload(input: CreateOccasionTypeInput): OccasionTypeMutatio
 }
 
 function buildUpdatePayload(input: UpdateOccasionTypeInput): UpdateOccasionTypePayload {
+  const translations = LOCALES.map((locale) => {
+    const label = input.translations[locale]
+    return { locale, label: typeof label === 'string' ? label : null }
+  })
   return {
     emoji: input.emoji ?? null,
     sortOrder: input.sortOrder,
     isActive: input.isActive,
-    translations: [
-      { locale: 'en', label: input.labelEn },
-      { locale: 'fr', label: input.labelFr ?? null },
-    ],
+    translations,
   }
 }
 
