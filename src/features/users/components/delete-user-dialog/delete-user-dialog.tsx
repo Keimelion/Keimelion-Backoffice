@@ -38,10 +38,7 @@ export function DeleteUserDialog({
       open={open}
       onOpenChange={onOpenChange}
       namespace="users.delete_dialog"
-      values={{
-        email: user.email,
-        username: user.username ?? user.email,
-      }}
+      values={{ email: user.email }}
       onConfirm={handleConfirm}
       destructive
     />

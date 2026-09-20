@@ -40,7 +40,7 @@
   "users.mutation.deleted_toast": "Utilisateur supprimé.",
   "users.delete_dialog.title": "Supprimer l'utilisateur",
   "users.delete_dialog.description": "Vous êtes sur le point de supprimer {email}. Son compte sera masqué et il sera déconnecté de toutes ses sessions. Cette action peut être examinée par un super-administrateur.",
-  "users.delete_dialog.confirm": "Oui, supprimer {email}",
+  "users.delete_dialog.confirm": "Oui, supprimer l'utilisateur",
   "users.delete_dialog.cancel": "Non, conserver le compte",
   "users.actions.edit_own_tooltip": "Vous ne pouvez pas modifier votre propre compte.",
   "users.actions.delete_own_tooltip": "Vous ne pouvez pas supprimer votre propre compte."
