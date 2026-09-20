@@ -20,6 +20,7 @@ import {
   createOccasionTypeInputSchema,
   type CreateOccasionTypeInput,
 } from '@/data-access/occasion-types/admin-occasion-types.schemas'
+import { LOCALES, DEFAULT_LOCALE, LOCALE_NATIVE_NAMES } from '@/lib/i18n/locale'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 const DEFAULT_SORT_ORDER = 0
@@ -42,6 +43,12 @@ type OccasionTypeFormProps =
       isPending: boolean
     }
 
+function buildDefaultTranslations(): CreateOccasionTypeInput['translations'] {
+  return Object.fromEntries(
+    LOCALES.map((locale) => [locale, locale === DEFAULT_LOCALE ? '' : null]),
+  ) as CreateOccasionTypeInput['translations']
+}
+
 function buildDefaultValues(props: OccasionTypeFormProps): OccasionTypeFormValues {
   if (props.mode === 'edit') return props.initialValues
   return {
@@ -49,19 +56,8 @@ function buildDefaultValues(props: OccasionTypeFormProps): OccasionTypeFormValue
     emoji: null,
     sortOrder: DEFAULT_SORT_ORDER,
     isActive: true,
-    labelEn: '',
-    labelFr: null,
+    translations: buildDefaultTranslations(),
   }
-}
-
-function resolveSubmitLabel(
-  isPending: boolean,
-  isEdit: boolean,
-  t: ReturnType<typeof useTranslate>,
-): string {
-  if (isPending) return t('occasion_types.form.submit_pending')
-  if (isEdit) return t('occasion_types.form.submit_edit')
-  return t('occasion_types.form.submit_create')
 }
 
 export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Element {
@@ -85,7 +81,12 @@ export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Elemen
   }, [isDirty, onDirtyChange])
 
   const isEdit = mode === 'edit'
-  const submitLabel = resolveSubmitLabel(isPending, isEdit, t)
+
+  const submitLabel = isPending
+    ? t('occasion_types.form.submit_pending')
+    : isEdit
+      ? t('occasion_types.form.submit_edit')
+      : t('occasion_types.form.submit_create')
 
   return (
     <Form {...form}>
@@ -184,40 +185,36 @@ export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Elemen
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="labelEn"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('occasion_types.form.label_en_label')}</FormLabel>
-                <FormControl>
-                  <Input disabled={isPending} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="labelFr"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('occasion_types.form.label_fr_label')}</FormLabel>
-                <FormControl>
-                  <Input
-                    disabled={isPending}
-                    value={field.value ?? ''}
-                    onChange={(event) => {
-                      const nextValue = event.target.value
-                      field.onChange(nextValue.length > 0 ? nextValue : null)
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {LOCALES.map((locale) => (
+            <FormField
+              key={locale}
+              control={form.control}
+              name={`translations.${locale}`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t('occasion_types.form.label_for_locale', { locale: LOCALE_NATIVE_NAMES[locale] })}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      value={typeof field.value === 'string' ? field.value : ''}
+                      onBlur={field.onBlur}
+                      onChange={(event) => {
+                        const nextValue = event.target.value
+                        if (locale === DEFAULT_LOCALE) {
+                          field.onChange(nextValue)
+                          return
+                        }
+                        field.onChange(nextValue.length > 0 ? nextValue : null)
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
         </div>
 
         {form.formState.errors.root ? (

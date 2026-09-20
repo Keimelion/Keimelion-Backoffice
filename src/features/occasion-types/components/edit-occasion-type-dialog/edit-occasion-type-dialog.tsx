@@ -29,8 +29,7 @@ function toUpdateInput(values: OccasionTypeFormValues): UpdateOccasionTypeInput 
     emoji: values.emoji,
     sortOrder: values.sortOrder,
     isActive: values.isActive,
-    labelEn: values.labelEn,
-    labelFr: values.labelFr,
+    translations: values.translations,
   }
 }
 

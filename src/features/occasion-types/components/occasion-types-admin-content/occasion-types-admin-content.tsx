@@ -15,6 +15,8 @@ import { EditOccasionTypeDialog } from '@/features/occasion-types/components/edi
 import { DeleteOccasionTypeDialog } from '@/features/occasion-types/components/delete-occasion-type-dialog'
 import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
 import { useAdminOccasionTypes } from '@/features/occasion-types/hooks/use-admin-occasion-types'
+import { LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/locale'
+import type { Locale } from '@/lib/i18n/locale'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
@@ -25,24 +27,25 @@ const adminOccasionTypesQuerySchema = z.object({
   limit: z.coerce.number().int().positive().catch(DEFAULT_LIMIT),
 })
 
-function resolveEnLabel(item: AdminOccasionType): string {
-  const enTranslation = item.translations.find((tr) => tr.locale === 'en')
-  return enTranslation?.label ?? item.slug
-}
-
-function resolveFrLabel(item: AdminOccasionType): string | null {
-  const frTranslation = item.translations.find((tr) => tr.locale === 'fr')
-  return frTranslation?.label ?? null
+function resolveLabel(item: AdminOccasionType, locale: Locale): string {
+  const translation = item.translations.find((tr) => tr.locale === locale)
+  return translation?.label ?? item.slug
 }
 
 function buildEditFormValues(item: AdminOccasionType): OccasionTypeFormValues {
+  const translations = Object.fromEntries(
+    LOCALES.map((locale) => {
+      const translation = item.translations.find((tr) => tr.locale === locale)
+      return [locale, translation?.label ?? '']
+    }),
+  ) as Record<Locale, string>
+
   return {
     slug: item.slug,
     emoji: item.emoji,
     sortOrder: item.sortOrder,
     isActive: item.isActive,
-    labelEn: resolveEnLabel(item),
-    labelFr: resolveFrLabel(item),
+    translations,
   }
 }
 
@@ -79,7 +82,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
     {
       key: 'label',
       header: t('occasion_types.admin.column.label'),
-      cell: (item) => <span className="font-medium">{resolveEnLabel(item)}</span>,
+      cell: (item) => <span className="font-medium">{resolveLabel(item, DEFAULT_LOCALE)}</span>,
     },
     {
       key: 'sortOrder',
@@ -110,13 +113,13 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
       cell: (item) => (
         <div className="flex justify-end gap-1">
           <IconButton
-            label={t('common.actions.update', { name: resolveEnLabel(item) })}
+            label={t('common.actions.update', { name: resolveLabel(item, DEFAULT_LOCALE) })}
             onClick={() => { setEditTarget(item) }}
           >
             <Pencil />
           </IconButton>
           <IconButton
-            label={t('common.actions.delete', { name: resolveEnLabel(item) })}
+            label={t('common.actions.delete', { name: resolveLabel(item, DEFAULT_LOCALE) })}
             tone="destructive"
             onClick={() => { setDeleteTarget(item) }}
           >
@@ -178,7 +181,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
             if (!open) setDeleteTarget(null)
           }}
           occasionTypeId={deleteTarget.id}
-          label={resolveEnLabel(deleteTarget)}
+          label={resolveLabel(deleteTarget, DEFAULT_LOCALE)}
         />
       ) : null}
     </>

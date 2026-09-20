@@ -15,14 +15,17 @@ vi.mock('sonner', () => ({
 import type { UseFormSetError } from 'react-hook-form'
 import { OccasionTypeForm } from './occasion-type-form'
 import type { OccasionTypeFormValues } from './occasion-type-form'
+import { LOCALES, DEFAULT_LOCALE, LOCALE_NATIVE_NAMES } from '@/lib/i18n/locale'
 
 const INITIAL_EDIT_VALUES: OccasionTypeFormValues = {
   slug: 'birthday',
   emoji: '🎂',
   sortOrder: 0,
   isActive: true,
-  labelEn: 'Birthday',
-  labelFr: 'Anniversaire',
+  translations: {
+    en: 'Birthday',
+    fr: 'Anniversaire',
+  },
 }
 
 function renderCreateForm(onSubmit = vi.fn(), onDirtyChange = vi.fn()): void {
@@ -57,13 +60,23 @@ beforeEach(() => {
 })
 
 describe('OccasionTypeForm (create mode)', () => {
+  it('renders one label field per locale in LOCALES order', () => {
+    renderCreateForm()
+    LOCALES.forEach((locale) => {
+      expect(
+        screen.getByRole('textbox', { name: `Label (${LOCALE_NATIVE_NAMES[locale]})` }),
+      ).toBeInTheDocument()
+    })
+  })
+
   it('renders all create-mode fields', () => {
     renderCreateForm()
     expect(screen.getByText('Slug')).toBeInTheDocument()
     expect(screen.getByText('Emoji')).toBeInTheDocument()
     expect(screen.getByText('Sort order')).toBeInTheDocument()
-    expect(screen.getByText('Label (English)')).toBeInTheDocument()
-    expect(screen.getByText('Label (French)')).toBeInTheDocument()
+    LOCALES.forEach((locale) => {
+      expect(screen.getByText(`Label (${LOCALE_NATIVE_NAMES[locale]})`)).toBeInTheDocument()
+    })
   })
 
   it('does not render a cancel button (closure happens via Dialog primitive)', () => {
@@ -79,7 +92,10 @@ describe('OccasionTypeForm (create mode)', () => {
   it('enables the submit button once required fields pass validation', async () => {
     renderCreateForm()
     await userEvent.type(screen.getByPlaceholderText('my-occasion'), 'birthday')
-    await userEvent.type(screen.getByRole('textbox', { name: 'Label (English)' }), 'Birthday')
+    await userEvent.type(
+      screen.getByRole('textbox', { name: `Label (${LOCALE_NATIVE_NAMES[DEFAULT_LOCALE]})` }),
+      'Birthday',
+    )
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /create/i })).toBeEnabled()
     })
@@ -97,13 +113,29 @@ describe('OccasionTypeForm (create mode)', () => {
     })
   })
 
-  it('shows required error for empty english label after touching then leaving it empty', async () => {
+  it('shows required error for empty default locale label after touching then leaving it empty', async () => {
     renderCreateForm()
-    const enInput = screen.getByRole('textbox', { name: 'Label (English)' })
-    await userEvent.click(enInput)
+    const defaultLocaleInput = screen.getByRole('textbox', {
+      name: `Label (${LOCALE_NATIVE_NAMES[DEFAULT_LOCALE]})`,
+    })
+    await userEvent.click(defaultLocaleInput)
     await userEvent.tab()
     await waitFor(() => {
       expect(screen.getByText('The English label is required.')).toBeInTheDocument()
+    })
+  })
+
+  it('does not show a validation error when a non-default locale label is left empty', async () => {
+    renderCreateForm()
+    const nonDefaultLocale = LOCALES.find((locale) => locale !== DEFAULT_LOCALE)
+    if (!nonDefaultLocale) throw new Error('No non-default locale found')
+    const nonDefaultInput = screen.getByRole('textbox', {
+      name: `Label (${LOCALE_NATIVE_NAMES[nonDefaultLocale]})`,
+    })
+    await userEvent.click(nonDefaultInput)
+    await userEvent.tab()
+    await waitFor(() => {
+      expect(screen.queryByText('The English label is required.')).not.toBeInTheDocument()
     })
   })
 
@@ -111,7 +143,10 @@ describe('OccasionTypeForm (create mode)', () => {
     const onSubmit = vi.fn()
     renderCreateForm(onSubmit)
     await userEvent.type(screen.getByPlaceholderText('my-occasion'), 'birthday')
-    await userEvent.type(screen.getByRole('textbox', { name: 'Label (English)' }), 'Birthday')
+    await userEvent.type(
+      screen.getByRole('textbox', { name: `Label (${LOCALE_NATIVE_NAMES[DEFAULT_LOCALE]})` }),
+      'Birthday',
+    )
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalled()
@@ -127,7 +162,10 @@ describe('OccasionTypeForm (create mode)', () => {
     })
     renderCreateForm(onSubmit)
     await userEvent.type(screen.getByPlaceholderText('my-occasion'), 'birthday')
-    await userEvent.type(screen.getByRole('textbox', { name: 'Label (English)' }), 'Birthday')
+    await userEvent.type(
+      screen.getByRole('textbox', { name: `Label (${LOCALE_NATIVE_NAMES[DEFAULT_LOCALE]})` }),
+      'Birthday',
+    )
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
       expect(screen.getByText('Unprocessable entity.')).toBeInTheDocument()
@@ -143,7 +181,10 @@ describe('OccasionTypeForm (create mode)', () => {
     })
     renderCreateForm(onSubmit)
     await userEvent.type(screen.getByPlaceholderText('my-occasion'), 'birthday')
-    await userEvent.type(screen.getByRole('textbox', { name: 'Label (English)' }), 'Birthday')
+    await userEvent.type(
+      screen.getByRole('textbox', { name: `Label (${LOCALE_NATIVE_NAMES[DEFAULT_LOCALE]})` }),
+      'Birthday',
+    )
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
       expect(screen.getByText('This slug is already in use.')).toBeInTheDocument()
@@ -159,6 +200,7 @@ describe('OccasionTypeForm (create mode)', () => {
       expect(onDirtyChange).toHaveBeenLastCalledWith(true)
     })
   })
+
 })
 
 describe('OccasionTypeForm (edit mode)', () => {
@@ -208,13 +250,32 @@ describe('OccasionTypeForm (edit mode)', () => {
     })
   })
 
-  it('shows en required error when label is cleared', async () => {
+  it('shows default locale required error when label is cleared', async () => {
     renderEditForm()
-    const enInput = screen.getByDisplayValue('Birthday')
-    await userEvent.clear(enInput)
+    const defaultLocaleInput = screen.getByDisplayValue('Birthday')
+    await userEvent.clear(defaultLocaleInput)
     await userEvent.tab()
     await waitFor(() => {
       expect(screen.getByText('The English label is required.')).toBeInTheDocument()
+    })
+  })
+
+  it('calls onSubmit with null for cleared non-default locale translation', async () => {
+    const onSubmit = vi.fn()
+    const nonDefaultLocale = LOCALES.find((locale) => locale !== DEFAULT_LOCALE)
+    if (!nonDefaultLocale) throw new Error('No non-default locale found')
+
+    renderEditForm(INITIAL_EDIT_VALUES, onSubmit)
+    const nonDefaultInput = screen.getByDisplayValue('Anniversaire')
+    await userEvent.clear(nonDefaultInput)
+    const emojiInput = screen.getByDisplayValue('🎂')
+    await userEvent.clear(emojiInput)
+    await userEvent.type(emojiInput, '🎉')
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalled()
+      const submittedValues = onSubmit.mock.calls[0]?.[0] as OccasionTypeFormValues
+      expect(submittedValues.translations[nonDefaultLocale]).toBeNull()
     })
   })
 })
