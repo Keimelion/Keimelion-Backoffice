@@ -138,6 +138,30 @@ describe('reactive 401 interception', () => {
     expect(caught).toMatchObject({ code: 'NETWORK_ERROR' })
   })
 
+  it('carries the metadata field through to ApiRequestError on a 409 response', async () => {
+    mock.onDelete('/admin/items/item-1').replyOnce(409, {
+      code: 'CONFLICT',
+      message: 'Item referenced by 3 list_items',
+      metadata: { message: 'Item referenced by 3 list_items' },
+    })
+
+    const caught = await axiosInstance.delete('/admin/items/item-1').catch((error: unknown) => error)
+
+    expect(caught).toBeInstanceOf(ApiRequestError)
+    expect((caught as InstanceType<typeof ApiRequestError>).metadata).toEqual({
+      message: 'Item referenced by 3 list_items',
+    })
+  })
+
+  it('leaves metadata undefined when the response omits it', async () => {
+    mock.onGet('/users/1').replyOnce(404, { code: 'NOT_FOUND', message: 'Not found' })
+
+    const caught = await axiosInstance.get('/users/1').catch((error: unknown) => error)
+
+    expect(caught).toBeInstanceOf(ApiRequestError)
+    expect((caught as InstanceType<typeof ApiRequestError>).metadata).toBeUndefined()
+  })
+
   it('deduplicates concurrent refreshes — issues only one refreshTokens call', async () => {
     localStorage.setItem(ACCESS_TOKEN_KEY, 'expired-access')
     localStorage.setItem(REFRESH_TOKEN_KEY, 'valid-refresh')

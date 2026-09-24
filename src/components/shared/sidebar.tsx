@@ -18,7 +18,7 @@ interface NavItem {
 const NAV_ITEMS: readonly NavItem[] = [
   { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
   { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo },
-  { labelId: 'sidebar.nav.products', href: '/products', icon: Package },
+  { labelId: 'sidebar.nav.items', href: '/items', icon: Package },
   { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
   { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
 ]
