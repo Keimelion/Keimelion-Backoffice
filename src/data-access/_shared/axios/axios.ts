@@ -17,6 +17,7 @@ const LOGIN_REDIRECT = '/login'
 const apiErrorBodySchema = z.object({
   code: z.string().min(1),
   message: z.string().min(1),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 let refreshPromise: Promise<string> | null = null
@@ -66,7 +67,7 @@ function mapAxiosError(axiosError: AxiosError): ApiRequestError {
 
   const parsedBody = apiErrorBodySchema.safeParse(axiosError.response.data)
   if (parsedBody.success) {
-    return new ApiRequestError(parsedBody.data.code, parsedBody.data.message, status)
+    return new ApiRequestError(parsedBody.data.code, parsedBody.data.message, status, parsedBody.data.metadata)
   }
 
   return new ApiRequestError(
