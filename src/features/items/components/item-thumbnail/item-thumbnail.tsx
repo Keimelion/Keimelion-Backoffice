@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ImageOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { isHttpsUrl } from '@/lib/url'
 
 interface ItemThumbnailProps {
   imageUrl: string | null
@@ -14,8 +15,9 @@ interface ItemThumbnailProps {
 export function ItemThumbnail({ imageUrl, name, className }: ItemThumbnailProps): React.JSX.Element {
   const t = useTranslate()
   const [hasErrored, setHasErrored] = useState<boolean>(false)
+  const isSafeImage = isHttpsUrl(imageUrl)
 
-  if (imageUrl === null || hasErrored) {
+  if (!isSafeImage || hasErrored) {
     return (
       <div
         role="img"

@@ -22,6 +22,7 @@ import { useItemSources } from '@/features/items/hooks/use-item-sources'
 import { useUpdateItemSource } from '@/features/items/hooks/use-item-source-mutations'
 import { useShops } from '@/features/shops/hooks/use-shops'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { isHttpsUrl } from '@/lib/url'
 
 const SKELETON_ROW_COUNT = 3
 
@@ -113,28 +114,31 @@ export function ItemSourcesTable({ itemId, isLocked }: ItemSourcesTableProps): R
                 sources.map((source) => {
                   const shopName = resolveShopName(source.shopId, shops)
                   const actionsLabel = isLocked ? t('items.detail.locked_tooltip') : null
+                  const rawSourceUrl = source.sourceUrl
                   return (
                     <TableRow key={source.id}>
                       <TableCell>
                         <RadioGroupItem
                           value={source.id}
                           aria-label={t('items.sources_table.primary_radio_label', {
-                            url: source.sourceUrl ?? t('items.sources_table.no_url'),
+                            url: rawSourceUrl ?? t('items.sources_table.no_url'),
                           })}
                         />
                       </TableCell>
                       <TableCell>
-                        {source.sourceUrl !== null ? (
+                        {rawSourceUrl === null ? (
+                          t('items.sources_table.no_url')
+                        ) : isHttpsUrl(rawSourceUrl) ? (
                           <a
-                            href={source.sourceUrl}
+                            href={rawSourceUrl}
                             target="_blank"
                             rel="noopener noreferrer nofollow"
                             className="text-primary underline-offset-4 hover:underline"
                           >
-                            {source.sourceUrl}
+                            {rawSourceUrl}
                           </a>
                         ) : (
-                          t('items.sources_table.no_url')
+                          <span className="text-muted-foreground">{rawSourceUrl}</span>
                         )}
                       </TableCell>
                       <TableCell>

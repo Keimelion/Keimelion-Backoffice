@@ -146,4 +146,22 @@ describe('ItemSourcesTable', () => {
     expect(screen.getByText('Network error')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
   })
+
+  it('does not render a clickable link for a non-https source URL', () => {
+    vi.mocked(useItemSources).mockReturnValue(
+      mockUseQueryResult({ data: [makeSource({ sourceUrl: 'javascript:alert(1)' })] }),
+    )
+    renderTable()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.getByText('javascript:alert(1)')).toBeInTheDocument()
+  })
+
+  it('does not render a clickable link for an http source URL', () => {
+    vi.mocked(useItemSources).mockReturnValue(
+      mockUseQueryResult({ data: [makeSource({ sourceUrl: 'http://insecure.example.com' })] }),
+    )
+    renderTable()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.getByText('http://insecure.example.com')).toBeInTheDocument()
+  })
 })
