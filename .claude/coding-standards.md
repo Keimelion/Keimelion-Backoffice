@@ -1,6 +1,6 @@
 # Coding Standards — Keimelion Backoffice
 
-These standards apply to all TypeScript source code in the Backoffice. The Dev agent follows them when implementing; the Lead Dev agent enforces them during code review.
+These standards apply to all TypeScript source code in the Backoffice. The Dev agent follows them when implementing and enforces them during its own self-review pass.
 
 They are shared with the Keimelion API. Rules that only apply on the backend (Drizzle repositories, Hono routes) are omitted here. React/Next-specific rules are appended at the end.
 
