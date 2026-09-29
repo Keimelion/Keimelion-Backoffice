@@ -93,7 +93,10 @@ export function DataTable<TRow>({
                       type="button"
                       onClick={() => { cycleSort(sortField) }}
                       aria-label={t('common.table.sort_by', { column: column.header })}
-                      className="flex cursor-pointer items-center gap-1 text-xs font-medium uppercase tracking-wide"
+                      className={cn(
+                        'flex cursor-pointer items-center gap-1 text-xs uppercase tracking-wide',
+                        direction === null ? 'font-medium' : 'font-semibold text-foreground',
+                      )}
                     >
                       {column.header}
                       {renderSortIcon(direction)}
