@@ -26,9 +26,12 @@ function makeItem(overrides: Partial<{
   moderationStatus: 'approved' | 'pending' | 'rejected'
   imageUrl: string | null
   deletedAt: string | null
+  sourcesCount: number
 }> = {}) {
+  const id = overrides.id ?? 'item-1'
+  const sourcesCount = overrides.sourcesCount ?? 2
   return {
-    id: overrides.id ?? 'item-1',
+    id,
     name: overrides.name ?? 'Espresso machine',
     description: null,
     imageUrl: overrides.imageUrl ?? null,
@@ -37,6 +40,17 @@ function makeItem(overrides: Partial<{
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-02T00:00:00.000Z',
     deletedAt: overrides.deletedAt ?? null,
+    sources: Array.from({ length: sourcesCount }, (_, index) => ({
+      id: `${id}-source-${index.toString()}`,
+      itemId: id,
+      shopId: null,
+      sourceUrl: `https://example.com/${id}/source-${index.toString()}`,
+      price: null,
+      currency: 'EUR',
+      isPrimary: index === 0,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-02T00:00:00.000Z',
+    })),
   }
 }
 

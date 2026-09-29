@@ -27,6 +27,27 @@ const MOCK_ITEM = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   deletedAt: null,
+  sources: [
+    {
+      id: 'item-1-source-1',
+      itemId: 'item-1',
+      shopId: null,
+      sourceUrl: 'https://example.com/product',
+      price: null,
+      currency: 'EUR',
+      isPrimary: true,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    },
+  ],
+}
+
+const MOCK_SOURCE_INPUT = {
+  shopId: null,
+  sourceUrl: 'https://example.com/product',
+  price: null,
+  currency: 'EUR',
+  isPrimary: true,
 }
 
 beforeEach(() => {
@@ -44,6 +65,7 @@ describe('useCreateItem', () => {
         description: null,
         imageUrl: null,
         moderationStatus: 'approved',
+        sources: [MOCK_SOURCE_INPUT],
       })
     })
 
@@ -56,6 +78,7 @@ describe('useCreateItem', () => {
         description: null,
         imageUrl: null,
         moderationStatus: 'approved',
+        sources: [MOCK_SOURCE_INPUT],
       },
       expect.anything(),
     )

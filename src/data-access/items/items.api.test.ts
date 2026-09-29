@@ -7,6 +7,18 @@ import {
   listItemsQuerySchema,
 } from './items.schemas'
 
+const MOCK_SOURCE = {
+  id: 'item-1-source-1',
+  itemId: 'item-1',
+  shopId: null,
+  sourceUrl: 'https://example.com/product',
+  price: null,
+  currency: 'EUR',
+  isPrimary: true,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+}
+
 const MOCK_ITEM = {
   id: 'item-1',
   name: 'Espresso machine',
@@ -17,6 +29,15 @@ const MOCK_ITEM = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   deletedAt: null,
+  sources: [MOCK_SOURCE],
+}
+
+const MOCK_SOURCE_INPUT = {
+  shopId: null,
+  sourceUrl: 'https://example.com/product',
+  price: null,
+  currency: 'EUR',
+  isPrimary: true,
 }
 
 describe('adminItemSchema', () => {
@@ -77,6 +98,7 @@ describe('createItemInputSchema', () => {
     description: null,
     imageUrl: null,
     moderationStatus: 'approved',
+    sources: [MOCK_SOURCE_INPUT],
   }
 
   it('parses a minimal valid input', () => {

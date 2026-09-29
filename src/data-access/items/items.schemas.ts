@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { MODERATION_STATUS_VALUES } from '@keimelion/api/shared/enums/moderation-status'
+import { createItemSourceInputSchema, itemSourceSchema } from './item-sources.schemas'
 
 const NAME_MAX_LENGTH = 300
 const DESCRIPTION_MAX_LENGTH = 5000
@@ -22,6 +23,7 @@ export const adminItemSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   deletedAt: z.string().nullable(),
+  sources: z.array(itemSourceSchema),
 })
 
 export type ApiAdminItem = z.infer<typeof adminItemSchema>
@@ -74,11 +76,12 @@ export const createItemInputSchema = z
     description: z.string().trim().max(DESCRIPTION_MAX_LENGTH).nullable(),
     imageUrl: httpsUrlSchema,
     moderationStatus: z.enum(MODERATION_STATUS_VALUES),
+    sources: z.array(createItemSourceInputSchema).min(1),
   })
   .strict()
 
 export type CreateItemInput = z.infer<typeof createItemInputSchema>
 
-export const updateItemInputSchema = createItemInputSchema
+export const updateItemInputSchema = createItemInputSchema.omit({ sources: true })
 
 export type UpdateItemInput = z.infer<typeof updateItemInputSchema>

@@ -27,7 +27,13 @@ import { createItemInputSchema, type CreateItemInput } from '@/data-access/items
 import { ModerationStatusBadge } from '@/features/items/components/moderation-status-badge'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
-export type ItemFormValues = CreateItemInput
+// Sources are managed separately via the sources sheet on the items table, so the
+// item form itself never collects them. In create mode, callers must merge in a
+// sources array before submitting to the API (TODO(slice-4): move source collection
+// into the create form itself and drop this indirection).
+const itemFormSchema = createItemInputSchema.omit({ sources: true })
+
+export type ItemFormValues = Omit<CreateItemInput, 'sources'>
 
 type ItemFormProps =
   | {
@@ -61,14 +67,14 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
   const isEdit = mode === 'edit'
 
   const form = useForm<ItemFormValues>({
-    resolver: zodResolver(createItemInputSchema),
+    resolver: zodResolver(itemFormSchema),
     mode: 'onTouched',
     reValidateMode: 'onChange',
     defaultValues: buildDefaultValues(props),
   })
 
   const values = form.watch()
-  const isFormValid = createItemInputSchema.safeParse(values).success
+  const isFormValid = itemFormSchema.safeParse(values).success
   const { isDirty } = form.formState
   const canSubmit = isFormValid && isDirty && !isPending
 

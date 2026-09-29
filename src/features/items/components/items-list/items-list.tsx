@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -21,6 +20,7 @@ import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useItems } from '@/features/items/hooks/use-items'
 import { ItemThumbnail } from '@/features/items/components/item-thumbnail'
+import { ManageItemSourcesSheet } from '@/features/items/components/manage-item-sources-sheet'
 import { ModerationStatusBadge } from '@/features/items/components/moderation-status-badge'
 import { ModerationStatusFilter, MODERATION_STATUS_PARAM } from '@/features/items/components/moderation-status-filter'
 import { CreateItemDialog } from '@/features/items/components/create-item-dialog'
@@ -46,6 +46,7 @@ export function ItemsList(): React.JSX.Element {
   const [editTarget, setEditTarget] = useState<ApiAdminItem | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ApiAdminItem | null>(null)
   const [restoreTarget, setRestoreTarget] = useState<ApiAdminItem | null>(null)
+  const [sourcesTarget, setSourcesTarget] = useState<ApiAdminItem | null>(null)
 
   const itemsQuery = useItems({
     page: filters.page,
@@ -79,10 +80,21 @@ export function ItemsList(): React.JSX.Element {
       key: 'name',
       header: t('items.table.column.name'),
       sortable: true,
+      cell: (item) => <span className="font-medium">{item.name}</span>,
+    },
+    {
+      key: 'sources',
+      header: t('items.table.column.sources'),
+      className: 'w-24',
       cell: (item) => (
-        <Link href={`/items/${item.id}`} className="font-medium text-primary hover:underline">
-          {item.name}
-        </Link>
+        <button
+          type="button"
+          onClick={() => { setSourcesTarget(item) }}
+          className="inline-flex cursor-pointer items-center rounded-md border border-border bg-muted/50 px-2 py-1 text-sm font-medium tabular-nums hover:bg-muted"
+          aria-label={t('items.actions.manage_sources', { name: item.name, count: item.sources.length })}
+        >
+          {item.sources.length}
+        </button>
       ),
     },
     {
@@ -217,6 +229,16 @@ export function ItemsList(): React.JSX.Element {
           }}
           itemId={restoreTarget.id}
           itemName={restoreTarget.name}
+        />
+      ) : null}
+
+      {sourcesTarget !== null ? (
+        <ManageItemSourcesSheet
+          open
+          onOpenChange={(open) => {
+            if (!open) setSourcesTarget(null)
+          }}
+          item={sourcesTarget}
         />
       ) : null}
     </>

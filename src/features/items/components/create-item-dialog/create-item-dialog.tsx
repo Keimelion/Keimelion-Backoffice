@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
 import { FormDialog } from '@/components/shared/form-dialog'
+import type { CreateItemInput } from '@/data-access/items/items.schemas'
 import { ItemForm } from '@/features/items/components/item-form'
 import type { ItemFormValues } from '@/features/items/components/item-form'
 import { useCreateItem } from '@/features/items/hooks/use-item-mutations'
@@ -15,13 +16,23 @@ interface CreateItemDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+// TODO(slice-4): drop this placeholder once ItemForm collects sources directly.
+const PLACEHOLDER_SOURCE = {
+  shopId: null,
+  sourceUrl: null,
+  price: null,
+  currency: 'EUR',
+  isPrimary: true,
+}
+
 export function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps): React.JSX.Element {
   const t = useTranslate()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
   const mutation = useCreateItem()
 
   function handleSubmit(values: ItemFormValues, setError: UseFormSetError<ItemFormValues>): void {
-    mutation.mutate(values, {
+    const input: CreateItemInput = { ...values, sources: [PLACEHOLDER_SOURCE] }
+    mutation.mutate(input, {
       onSuccess: () => {
         notifySuccess({ title: translate('items.mutation.created_toast') })
         onOpenChange(false)

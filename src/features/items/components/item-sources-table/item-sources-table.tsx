@@ -113,7 +113,7 @@ export function ItemSourcesTable({ itemId, isLocked }: ItemSourcesTableProps): R
               ) : (
                 sources.map((source) => {
                   const shopName = resolveShopName(source.shopId, shops)
-                  const actionsLabel = isLocked ? t('items.detail.locked_tooltip') : null
+                  const actionsLabel = isLocked ? t('items.sources_sheet.locked_tooltip') : null
                   const rawSourceUrl = source.sourceUrl
                   return (
                     <TableRow key={source.id}>

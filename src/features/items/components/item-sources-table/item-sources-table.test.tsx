@@ -137,7 +137,7 @@ describe('ItemSourcesTable', () => {
   it('disables row Edit/Delete actions with a locked tooltip when the item is soft-deleted', () => {
     vi.mocked(useItemSources).mockReturnValue(mockUseQueryResult({ data: [makeSource()] }))
     renderTable(true)
-    expect(screen.getAllByRole('button', { name: 'This item is soft-deleted. Restore it to manage its sources.' })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: 'This item is deleted. Restore it to manage its sources.' })).toHaveLength(2)
   })
 
   it('shows an error state with a retry button on fetch failure', () => {
