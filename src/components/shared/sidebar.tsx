@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Package, Users } from 'lucide-react'
+import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Package, Store, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { isAdmin } from '@/data-access/_shared/auth-storage'
 import { useLogout } from '@/features/auth/hooks/use-logout'
+import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
@@ -13,12 +15,14 @@ interface NavItem {
   labelId: MessageId
   href: string
   icon: LucideIcon
+  adminOnly?: boolean
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
   { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
   { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo },
   { labelId: 'sidebar.nav.products', href: '/products', icon: Package },
+  { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
   { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
   { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
 ]
@@ -30,6 +34,10 @@ export function Sidebar(): React.JSX.Element {
   const pathname = usePathname()
   const logout = useLogout()
   const t = useTranslate()
+  const currentRole = useCurrentUserRole()
+  const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
+
+  const visibleItems = NAV_ITEMS.filter((item) => item.adminOnly !== true || isCurrentUserAdmin)
 
   const handleLogout = (): void => {
     logout.mutate(null)
@@ -48,7 +56,7 @@ export function Sidebar(): React.JSX.Element {
         {t('common.nav.menu')}
       </div>
       <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
           const label = t(item.labelId)

@@ -88,3 +88,9 @@ export async function updateOccasionType(
 export async function deleteOccasionType(id: string): Promise<void> {
   await axiosInstance.delete<unknown>(`/admin/occasion-types/${id}`)
 }
+
+export async function patchOccasionTypeSortOrder(id: string, sortOrder: number): Promise<AdminOccasionType> {
+  const response = await axiosInstance.patch<unknown>(`/admin/occasion-types/${id}`, { sortOrder })
+  const parsed = parseApiResponse(adminOccasionTypeMutationResponseSchema, response, 'admin occasion type')
+  return parsed.occasionType
+}

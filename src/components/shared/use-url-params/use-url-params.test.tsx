@@ -69,6 +69,27 @@ describe('useUrlParams', () => {
     })
   })
 
+  describe('setPageSize', () => {
+    it('sets the limit param and removes the page param', () => {
+      useSearchParamsMock.mockReturnValue(new URLSearchParams('page=3&email=foo'))
+      const { result } = renderHook(() => useUrlParams())
+      act(() => { result.current.setPageSize(50) })
+      const url = lastCalledUrl()
+      expect(url).toContain('limit=50')
+      expect(url).not.toContain('page=')
+      expect(url).toContain('email=foo')
+    })
+
+    it('replaces an existing limit value', () => {
+      useSearchParamsMock.mockReturnValue(new URLSearchParams('limit=20'))
+      const { result } = renderHook(() => useUrlParams())
+      act(() => { result.current.setPageSize(100) })
+      const url = lastCalledUrl()
+      expect(url).toContain('limit=100')
+      expect(url).not.toContain('limit=20')
+    })
+  })
+
   describe('clearParams', () => {
     it('deletes every listed param plus page', () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('email=foo&role=admin&page=2'))
