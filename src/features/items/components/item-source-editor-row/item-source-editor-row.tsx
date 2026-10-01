@@ -103,7 +103,7 @@ export function ItemSourceEditorRow({
           ) : null}
 
           <div className="flex justify-end">
-            <Button type="submit" size="sm" variant="secondary" disabled={!canValidate}>
+            <Button type="submit" size="sm" disabled={!canValidate}>
               {isPending
                 ? t('items.form.submit_pending')
                 : t('items.form.source_validate_button')}
