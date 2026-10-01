@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useFieldArray, useForm, useFormContext } from 'react-hook-form'
 import type { FieldValues, UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { IconButton } from '@/components/shared/icon-button'
 import {
   createItemInputSchema,
   updateItemInputSchema,
@@ -27,6 +26,7 @@ import {
 } from '@/data-access/items/items.schemas'
 import { EMPTY_ITEM_SOURCE_INPUT } from '@/data-access/items/item-sources.schemas'
 import { useAdminShops } from '@/features/shops/hooks/use-admin-shops'
+import { ItemSourceEditorRowShell } from '@/features/items/components/item-source-editor-row'
 import { ItemSourceFields } from '@/features/items/components/item-source-fields'
 import {
   ItemSourceSummary,
@@ -210,23 +210,14 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
               }
 
               return (
-                <div
+                <ItemSourceEditorRowShell
                   key={field.id}
-                  className="flex flex-col gap-3 rounded-md border border-border bg-background p-3"
+                  title={t('items.form.source_row_title', { index: index + 1 })}
+                  canRemove={canRemoveSource}
+                  isPending={isPending}
+                  removeLabel={removeLabel}
+                  onRemove={() => { handleRemoveSourceRow(index, field.id) }}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      {t('items.form.source_row_title', { index: index + 1 })}
-                    </span>
-                    <IconButton
-                      label={removeLabel}
-                      tone="destructive"
-                      disabled={!canRemoveSource || isPending}
-                      onClick={() => { handleRemoveSourceRow(index, field.id) }}
-                    >
-                      <Trash2 />
-                    </IconButton>
-                  </div>
                   <ItemSourceFields<ItemFormCreateValues>
                     namePrefix={`sources.${String(index)}` as `sources.${number}`}
                     shops={shops}
@@ -244,7 +235,7 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
                       {t('items.form.source_validate_button')}
                     </Button>
                   </div>
-                </div>
+                </ItemSourceEditorRowShell>
               )
             })}
           </div>

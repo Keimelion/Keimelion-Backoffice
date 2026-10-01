@@ -3,16 +3,15 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
-import { IconButton } from '@/components/shared/icon-button'
 import {
   itemSourceInputSchema,
   type ItemSourceInput,
   type ItemSourceShop,
 } from '@/data-access/items/item-sources.schemas'
 import { ItemSourceFields } from '@/features/items/components/item-source-fields'
+import { ItemSourceEditorRowShell } from './item-source-editor-row-shell'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface ItemSourceEditorRowProps {
@@ -63,21 +62,13 @@ export function ItemSourceEditorRow({
   const canValidate = isFormValid && !isPending
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-border bg-background p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {title}
-        </span>
-        <IconButton
-          label={removeLabel}
-          tone="destructive"
-          disabled={!canRemove || isPending}
-          onClick={onRemove}
-        >
-          <Trash2 />
-        </IconButton>
-      </div>
-
+    <ItemSourceEditorRowShell
+      title={title}
+      canRemove={canRemove}
+      isPending={isPending}
+      removeLabel={removeLabel}
+      onRemove={onRemove}
+    >
       <Form {...form}>
         <form
           className="flex flex-col gap-3"
@@ -111,6 +102,6 @@ export function ItemSourceEditorRow({
           </div>
         </form>
       </Form>
-    </div>
+    </ItemSourceEditorRowShell>
   )
 }
