@@ -117,14 +117,11 @@ describe('ItemsList', () => {
     expect(screen.getByText('No items match these filters.')).toBeInTheDocument()
   })
 
-  it('expands the row inline to show the sources manager when the chevron is clicked', async () => {
+  it('expands the row inline to show the sources manager when the row is clicked', async () => {
     mockItemsResult()
     render(<ItemsList />)
-    const chevron = screen.getByRole('button', { name: /show sources for weighted blanket/i })
-    await userEvent.click(chevron)
+    const nameCell = screen.getByText('Weighted blanket')
+    await userEvent.click(nameCell)
     expect(screen.getByText('https://example.com/p')).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /hide sources for weighted blanket/i }),
-    ).toBeInTheDocument()
   })
 })

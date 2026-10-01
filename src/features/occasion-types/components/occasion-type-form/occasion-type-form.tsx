@@ -104,7 +104,7 @@ export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Elemen
           name="slug"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('occasion_types.form.slug_label')}</FormLabel>
+              <FormLabel required>{t('occasion_types.form.slug_label')}</FormLabel>
               <FormControl>
                 <Input
                   placeholder="my-occasion"
@@ -192,7 +192,7 @@ export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Elemen
               name={`translations.${locale}`}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
+                  <FormLabel required={locale === DEFAULT_LOCALE}>
                     {t('occasion_types.form.label_for_locale', { locale: LOCALE_NATIVE_NAMES[locale] })}
                   </FormLabel>
                   <FormControl>

@@ -390,7 +390,7 @@ function ItemCoreFields({ imagePreviewUrl, isPending }: ItemCoreFieldsProps): Re
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('items.form.name_label')}</FormLabel>
+            <FormLabel required>{t('items.form.name_label')}</FormLabel>
             <FormControl>
               <Input
                 placeholder={t('items.form.name_placeholder')}

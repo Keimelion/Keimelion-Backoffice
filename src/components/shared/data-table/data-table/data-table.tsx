@@ -59,6 +59,7 @@ interface DataTableProps<TRow extends DataTableBaseRow> {
   onReorder?: (nextItems: TRow[]) => void
   renderExpandedRow?: (row: TRow) => ReactNode
   isRowExpanded?: (row: TRow) => boolean
+  onRowClick?: (row: TRow) => void
   toolbar?: ReactNode
   footer?: ReactNode
 }
@@ -80,6 +81,7 @@ export function DataTable<TRow extends DataTableBaseRow>({
   onReorder,
   renderExpandedRow,
   isRowExpanded,
+  onRowClick,
   toolbar,
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
@@ -176,6 +178,7 @@ export function DataTable<TRow extends DataTableBaseRow>({
                 isDraggable,
                 renderExpandedRow,
                 isRowExpanded,
+                onRowClick,
                 sortableIds,
                 t,
               })
@@ -222,6 +225,7 @@ interface RenderDataRowsArgs<TRow extends DataTableBaseRow> {
   isDraggable: boolean
   renderExpandedRow: ((row: TRow) => ReactNode) | undefined
   isRowExpanded: ((row: TRow) => boolean) | undefined
+  onRowClick: ((row: TRow) => void) | undefined
   sortableIds: string[]
   t: TranslateFn
 }
@@ -235,6 +239,7 @@ function renderDataRows<TRow extends DataTableBaseRow>({
   isDraggable,
   renderExpandedRow,
   isRowExpanded,
+  onRowClick,
   sortableIds,
   t,
 }: RenderDataRowsArgs<TRow>): ReactNode {
@@ -261,6 +266,7 @@ function renderDataRows<TRow extends DataTableBaseRow>({
         isDraggable={isDraggable}
         expandedContent={expandedContent}
         isExpanded={isExpanded}
+        onClick={onRowClick}
         t={t}
       />
     )
@@ -283,8 +289,11 @@ interface DataTableRowProps<TRow extends DataTableBaseRow> {
   isDraggable: boolean
   expandedContent: ReactNode | null
   isExpanded: boolean
+  onClick: ((row: TRow) => void) | undefined
   t: TranslateFn
 }
+
+const INTERACTIVE_TARGET_SELECTOR = 'button, a, input, select, textarea, [role="button"], [role="link"]'
 
 function DataTableRow<TRow extends DataTableBaseRow>({
   row,
@@ -294,6 +303,7 @@ function DataTableRow<TRow extends DataTableBaseRow>({
   isDraggable,
   expandedContent,
   isExpanded,
+  onClick,
   t,
 }: DataTableRowProps<TRow>): React.JSX.Element {
   const {
@@ -316,7 +326,15 @@ function DataTableRow<TRow extends DataTableBaseRow>({
       <TableRow
         ref={setNodeRef}
         style={style}
-        className={cn('hover:bg-primary/10', className)}
+        className={cn('hover:bg-primary/10', onClick !== undefined && 'cursor-pointer', className)}
+        onClick={
+          onClick !== undefined
+            ? (event) => {
+                if ((event.target as HTMLElement).closest(INTERACTIVE_TARGET_SELECTOR)) return
+                onClick(row)
+              }
+            : undefined
+        }
       >
         {columns.map((column) => {
           if (column.key === DRAG_HANDLE_KEY) {
@@ -346,7 +364,7 @@ function DataTableRow<TRow extends DataTableBaseRow>({
       {expandedContent !== null ? (
         <TableRow
           data-state={isExpanded ? 'open' : 'closed'}
-          className="hover:bg-transparent data-[state=closed]:border-b-0 data-[state=open]:bg-muted/20 data-[state=open]:hover:bg-muted/20"
+          className="hover:bg-transparent data-[state=closed]:border-b-0 data-[state=open]:hover:bg-transparent"
         >
           <TableCell colSpan={columns.length} className="p-0">
             <div

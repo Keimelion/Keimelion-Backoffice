@@ -50,18 +50,20 @@ export function ItemSourcesManager({
 
   return (
     <>
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-end">
-          <Button size="sm" onClick={() => { setIsCreateOpen(true) }}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('items.sources.add_button')}
-          </Button>
-        </div>
+      <section className="flex flex-col gap-3 rounded-md border border-border bg-muted/20 p-4">
+        <header className="flex flex-col gap-1">
+          <h3 className="text-sm font-semibold text-foreground">
+            {t('items.form.sources_section_title')}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            {t('items.form.sources_section_help')}
+          </p>
+        </header>
 
         {itemQuery.isLoading ? (
           <div className="flex flex-col gap-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
           </div>
         ) : (
           <ItemSourcesTable
@@ -70,7 +72,18 @@ export function ItemSourcesManager({
             onDelete={setDeleteTarget}
           />
         )}
-      </div>
+
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="self-start"
+          onClick={() => { setIsCreateOpen(true) }}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          {t('items.sources.add_button')}
+        </Button>
+      </section>
 
       <CreateItemSourceDialog
         open={isCreateOpen}

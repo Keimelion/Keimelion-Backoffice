@@ -66,7 +66,7 @@ export function ForgotPasswordForm(): React.JSX.Element {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.forgot_password.email_label')}</FormLabel>
+                <FormLabel required>{t('auth.forgot_password.email_label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
