@@ -14,7 +14,7 @@ import type { DataTableColumn, FilterDefinition } from '@/components/shared/data
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
-import { listUsersQuerySchema, type AdminApiUser } from '@/data-access/users/list-users'
+import { listUsersQuerySchema, type AdminApiUser } from '@/data-access/users/admin-users.schemas'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useUsers } from '@/features/users/hooks/use-users'

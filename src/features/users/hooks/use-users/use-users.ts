@@ -1,10 +1,23 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import type { UseQueryResult } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { ADMIN_USERS_QUERY_KEY } from '@/data-access/users/admin-users.api'
-import { listUsers, type AdminApiUser, type ListUsersQuery } from '@/data-access/users/list-users'
+import { normalizeFilters } from '@/data-access/_shared/normalize-filters'
+import {
+  ADMIN_USERS_QUERY_KEY,
+  createAdminUser,
+  deleteAdminUser,
+  listUsers,
+  updateAdminUser,
+} from '@/data-access/users/admin-users.api'
+import type {
+  AdminApiUser,
+  AdminUserMutationUser,
+  CreateAdminUserInput,
+  ListUsersQuery,
+  UpdateAdminUserInput,
+} from '@/data-access/users/admin-users.schemas'
 
 type UsersListFilters = Partial<ListUsersQuery>
 
@@ -22,10 +35,39 @@ export function useUsers(filters: UsersListFilters): UseQueryResult<PaginatedRes
   })
 }
 
-function normalizeFilters(filters: UsersListFilters): UsersListFilters {
-  const entries = Object.entries(filters) as [keyof UsersListFilters, UsersListFilters[keyof UsersListFilters]][]
-  const normalized = entries
-    .filter(([, value]) => value !== undefined && value !== '')
-    .sort(([a], [b]) => a.localeCompare(b))
-  return Object.fromEntries(normalized)
+export function useCreateAdminUser(): UseMutationResult<AdminUserMutationUser, Error, CreateAdminUserInput> {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createAdminUser,
+    meta: { silent: true },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
+    },
+  })
+}
+
+interface UpdateAdminUserVariables {
+  id: string
+  input: UpdateAdminUserInput
+}
+
+export function useUpdateAdminUser(): UseMutationResult<AdminUserMutationUser, Error, UpdateAdminUserVariables> {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }) => updateAdminUser(id, input),
+    meta: { silent: true },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
+    },
+  })
+}
+
+export function useDeleteAdminUser(): UseMutationResult<void, Error, string> {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteAdminUser,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
+    },
+  })
 }

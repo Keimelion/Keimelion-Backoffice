@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
+import { normalizeFilters } from '@/data-access/_shared/normalize-filters'
 import { useReorderMutation } from '@/components/shared/data-table'
 import type { ReorderUpdate } from '@/components/shared/data-table'
 import {
@@ -88,10 +89,3 @@ export function useReorderShops(filters: ShopsListFilters): ReturnType<typeof us
   })
 }
 
-function normalizeFilters(filters: ShopsListFilters): ShopsListFilters {
-  const entries = Object.entries(filters) as [keyof ShopsListFilters, ShopsListFilters[keyof ShopsListFilters]][]
-  const normalized = entries
-    .filter(([, value]) => value !== undefined && value !== '')
-    .sort(([a], [b]) => a.localeCompare(b))
-  return Object.fromEntries(normalized)
-}

@@ -12,10 +12,14 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }))
 
-vi.mock('@/features/occasion-types/hooks/use-admin-occasion-types', () => ({
-  useAdminOccasionTypes: vi.fn(),
-  useReorderOccasionTypes: () => ({ mutate: vi.fn() }),
-}))
+vi.mock(import('@/features/occasion-types/hooks/use-admin-occasion-types'), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAdminOccasionTypes: vi.fn(),
+    useReorderOccasionTypes: () => ({ mutate: vi.fn() }),
+  }
+})
 
 import { useAdminOccasionTypes } from '@/features/occasion-types/hooks/use-admin-occasion-types'
 import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
