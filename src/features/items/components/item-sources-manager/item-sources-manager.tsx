@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -63,30 +63,27 @@ export function ItemSourcesManager({
   const createMutation = useCreateItemSource()
   const updateMutation = useUpdateItemSource()
 
-  const takenShopIdsForEditor = useCallback(
-    (excludeSourceId: string | null): ReadonlySet<string> => {
-      const taken = new Set<string>()
-      for (const source of sources) {
-        if (source.shopId === null) continue
-        if (excludeSourceId !== null && source.id === excludeSourceId) continue
-        taken.add(source.shopId)
-      }
-      return taken
-    },
-    [sources],
-  )
+  function takenShopIdsForEditor(excludeSourceId: string | null): ReadonlySet<string> {
+    const taken = new Set<string>()
+    for (const source of sources) {
+      if (source.shopId === null) continue
+      if (excludeSourceId !== null && source.id === excludeSourceId) continue
+      taken.add(source.shopId)
+    }
+    return taken
+  }
 
   const canDeleteExisting = sources.length > 1
 
-  const handleStartEditing = useCallback((source: ApiItemSource): void => {
+  function handleStartEditing(source: ApiItemSource): void {
     setEditingSourceIds((previous) => {
       const next = new Set(previous)
       next.add(source.id)
       return next
     })
-  }, [])
+  }
 
-  const handleCancelEditing = useCallback((sourceId: string): void => {
+  function handleCancelEditing(sourceId: string): void {
     setEditingSourceIds((previous) => {
       if (!previous.has(sourceId)) return previous
       const next = new Set(previous)
@@ -94,16 +91,16 @@ export function ItemSourcesManager({
       return next
     })
     setEditorErrors((previous) => omitKey(previous, sourceId))
-  }, [])
+  }
 
-  const handleAddNewRow = useCallback((): void => {
+  function handleAddNewRow(): void {
     setPendingNewRows((previous) => [...previous, { key: crypto.randomUUID() }])
-  }, [])
+  }
 
-  const handleRemoveNewRow = useCallback((key: string): void => {
+  function handleRemoveNewRow(key: string): void {
     setPendingNewRows((previous) => previous.filter((row) => row.key !== key))
     setEditorErrors((previous) => omitKey(previous, key))
-  }, [])
+  }
 
   function handleValidateNew(key: string, values: ItemSourceInput): void {
     const payload: CreateItemSourceInput = values
