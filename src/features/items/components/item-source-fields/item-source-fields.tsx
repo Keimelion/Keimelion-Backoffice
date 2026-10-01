@@ -27,6 +27,7 @@ interface ItemSourceFieldsProps<TValues extends FieldValues> {
   shops: ItemSourceShop[]
   isShopsLoading: boolean
   disabled: boolean
+  disabledShopIds?: ReadonlySet<string> | undefined
 }
 
 export function ItemSourceFields<TValues extends FieldValues>({
@@ -34,6 +35,7 @@ export function ItemSourceFields<TValues extends FieldValues>({
   shops,
   isShopsLoading,
   disabled,
+  disabledShopIds,
 }: ItemSourceFieldsProps<TValues>): React.JSX.Element {
   const form = useFormContext<TValues>()
   const t = useTranslate()
@@ -146,7 +148,11 @@ export function ItemSourceFields<TValues extends FieldValues>({
                   {t('items.form.source_shop_none')}
                 </SelectItem>
                 {shops.map((shop) => (
-                  <SelectItem key={shop.id} value={shop.id}>
+                  <SelectItem
+                    key={shop.id}
+                    value={shop.id}
+                    disabled={disabledShopIds?.has(shop.id) === true}
+                  >
                     {shop.name}
                   </SelectItem>
                 ))}

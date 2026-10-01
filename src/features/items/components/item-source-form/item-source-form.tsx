@@ -18,20 +18,16 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 
 export type ItemSourceFormValues = ItemSourceInput
 
+interface ItemSourceFormBaseProps {
+  onSubmit: (values: ItemSourceFormValues, setError: UseFormSetError<ItemSourceFormValues>) => void
+  onDirtyChange: (isDirty: boolean) => void
+  isPending: boolean
+  disabledShopIds?: ReadonlySet<string> | undefined
+}
+
 type ItemSourceFormProps =
-  | {
-      mode: 'create'
-      onSubmit: (values: ItemSourceFormValues, setError: UseFormSetError<ItemSourceFormValues>) => void
-      onDirtyChange: (isDirty: boolean) => void
-      isPending: boolean
-    }
-  | {
-      mode: 'edit'
-      source: ApiItemSource
-      onSubmit: (values: ItemSourceFormValues, setError: UseFormSetError<ItemSourceFormValues>) => void
-      onDirtyChange: (isDirty: boolean) => void
-      isPending: boolean
-    }
+  | ({ mode: 'create' } & ItemSourceFormBaseProps)
+  | ({ mode: 'edit'; source: ApiItemSource } & ItemSourceFormBaseProps)
 
 function buildDefaultValues(props: ItemSourceFormProps): ItemSourceFormValues {
   if (props.mode === 'edit') {
@@ -48,7 +44,7 @@ function buildDefaultValues(props: ItemSourceFormProps): ItemSourceFormValues {
 const SHOPS_FILTER = { page: 1, limit: 100, isActive: true } as const
 
 export function ItemSourceForm(props: ItemSourceFormProps): React.JSX.Element {
-  const { mode, onSubmit, onDirtyChange, isPending } = props
+  const { mode, onSubmit, onDirtyChange, isPending, disabledShopIds } = props
   const t = useTranslate()
   const isEdit = mode === 'edit'
   const shopsQuery = useAdminShops(SHOPS_FILTER)
@@ -92,6 +88,7 @@ export function ItemSourceForm(props: ItemSourceFormProps): React.JSX.Element {
           shops={shops}
           isShopsLoading={shopsQuery.isLoading}
           disabled={isPending}
+          disabledShopIds={disabledShopIds}
         />
 
         {form.formState.errors.root ? (

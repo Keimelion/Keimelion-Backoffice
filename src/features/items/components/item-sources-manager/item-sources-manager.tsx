@@ -1,15 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiAdminItem } from '@/data-access/items/items.schemas'
 import type { ApiItemSource } from '@/data-access/items/item-sources.schemas'
@@ -20,61 +13,66 @@ import { DeleteItemSourceDialog } from '@/features/items/components/delete-item-
 import { ItemSourcesTable } from '@/features/items/components/item-sources-table'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
-interface ManageItemSourcesSheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface ItemSourcesManagerProps {
   item: ApiAdminItem
 }
 
-export function ManageItemSourcesSheet({
-  open,
-  onOpenChange,
-  item,
-}: ManageItemSourcesSheetProps): React.JSX.Element {
+export function ItemSourcesManager({ item }: ItemSourcesManagerProps): React.JSX.Element {
   const t = useTranslate()
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
   const [editTarget, setEditTarget] = useState<ApiItemSource | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ApiItemSource | null>(null)
 
-  const itemQuery = useAdminItem(open ? item.id : null)
+  const itemQuery = useAdminItem(item.id)
   const sources = itemQuery.data?.sources ?? item.sources
+
+  const takenShopIdsForCreate = useMemo<ReadonlySet<string>>(() => {
+    return new Set(
+      sources
+        .map((source) => source.shopId)
+        .filter((shopId): shopId is string => shopId !== null),
+    )
+  }, [sources])
+
+  const takenShopIdsForEdit = useMemo<ReadonlySet<string>>(() => {
+    if (editTarget === null) return new Set<string>()
+    return new Set(
+      sources
+        .filter((source) => source.id !== editTarget.id)
+        .map((source) => source.shopId)
+        .filter((shopId): shopId is string => shopId !== null),
+    )
+  }, [editTarget, sources])
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="flex w-full flex-col gap-4 overflow-y-auto sm:max-w-2xl">
-          <SheetHeader>
-            <SheetTitle>{t('items.sources.sheet.title', { name: item.name })}</SheetTitle>
-            <SheetDescription>{t('items.sources.sheet.description')}</SheetDescription>
-          </SheetHeader>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-end">
+          <Button size="sm" onClick={() => { setIsCreateOpen(true) }}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('items.sources.add_button')}
+          </Button>
+        </div>
 
-          <div className="flex items-center justify-end">
-            <Button size="sm" onClick={() => { setIsCreateOpen(true) }}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('items.sources.sheet.add_button')}
-            </Button>
+        {itemQuery.isLoading ? (
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
           </div>
-
-          {itemQuery.isLoading ? (
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ) : (
-            <ItemSourcesTable
-              sources={sources}
-              onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+        ) : (
+          <ItemSourcesTable
+            sources={sources}
+            onEdit={setEditTarget}
+            onDelete={setDeleteTarget}
+          />
+        )}
+      </div>
 
       <CreateItemSourceDialog
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         itemId={item.id}
+        disabledShopIds={takenShopIdsForCreate}
       />
 
       {editTarget !== null ? (
@@ -85,6 +83,7 @@ export function ManageItemSourcesSheet({
           }}
           itemId={item.id}
           source={editTarget}
+          disabledShopIds={takenShopIdsForEdit}
         />
       ) : null}
 

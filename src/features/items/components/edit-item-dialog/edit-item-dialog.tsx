@@ -6,6 +6,7 @@ import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { ItemForm } from '@/features/items/components/item-form'
 import type { ItemFormEditValues } from '@/features/items/components/item-form'
+import { ItemSourcesManager } from '@/features/items/components/item-sources-manager'
 import { useUpdateItem } from '@/features/items/hooks/use-admin-items'
 import type { ApiAdminItem } from '@/data-access/items/items.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
@@ -60,13 +61,27 @@ export function EditItemDialog({
       title={t('items.admin.edit_dialog_title')}
       isFormDirty={isFormDirty}
     >
-      <ItemForm
-        mode="edit"
-        item={item}
-        onSubmit={handleSubmit}
-        onDirtyChange={setIsFormDirty}
-        isPending={mutation.isPending}
-      />
+      <div className="flex flex-col gap-6">
+        <ItemForm
+          mode="edit"
+          item={item}
+          onSubmit={handleSubmit}
+          onDirtyChange={setIsFormDirty}
+          isPending={mutation.isPending}
+        />
+
+        <section className="flex flex-col gap-3 border-t border-border pt-6">
+          <header className="flex flex-col gap-1">
+            <h3 className="text-sm font-semibold text-foreground">
+              {t('items.form.sources_section_title')}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {t('items.form.sources_section_help')}
+            </p>
+          </header>
+          <ItemSourcesManager item={item} />
+        </section>
+      </div>
     </FormDialog>
   )
 }
