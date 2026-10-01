@@ -2,14 +2,12 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
 import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { UserForm } from '@/features/users/components/user-form'
 import type { UserFormCreateValues } from '@/features/users/components/user-form'
-import { ADMIN_USERS_QUERY_KEY, createAdminUser } from '@/data-access/users/admin-users.api'
-import type { AdminUserMutationUser } from '@/data-access/users/admin-users.schemas'
+import { useCreateAdminUser } from '@/features/users/hooks/use-users'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
@@ -25,24 +23,18 @@ export function CreateUserDialog({
   onOpenChange,
 }: CreateUserDialogProps): React.JSX.Element {
   const t = useTranslate()
-  const queryClient = useQueryClient()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
-
-  const mutation = useMutation<AdminUserMutationUser, Error, UserFormCreateValues>({
-    mutationFn: createAdminUser,
-    meta: { silent: true },
-    onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
-      notifySuccess({ title: translate('users.mutation.created_toast', { email: variables.email }) })
-      onOpenChange(false)
-    },
-  })
+  const mutation = useCreateAdminUser()
 
   function handleSubmit(
     values: UserFormCreateValues,
     setError: UseFormSetError<UserFormCreateValues>,
   ): void {
     mutation.mutate(values, {
+      onSuccess: () => {
+        notifySuccess({ title: translate('users.mutation.created_toast', { email: values.email }) })
+        onOpenChange(false)
+      },
       onError: (error) => {
         if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
           setError('root', { message: t('users.form.error.conflict') })

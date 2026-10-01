@@ -12,9 +12,13 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => useSearchParamsMock(),
 }))
 
-vi.mock('@/features/users/hooks/use-users', () => ({
-  useUsers: vi.fn(),
-}))
+vi.mock(import('@/features/users/hooks/use-users'), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useUsers: vi.fn(),
+  }
+})
 
 vi.mock('@/features/auth/hooks/use-current-user-role', () => ({
   useCurrentUserRole: vi.fn(),

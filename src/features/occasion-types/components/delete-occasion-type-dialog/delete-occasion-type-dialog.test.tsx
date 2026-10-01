@@ -12,10 +12,13 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }))
 
-vi.mock('@/data-access/occasion-types/admin-occasion-types.api', () => ({
-  OCCASION_TYPES_QUERY_KEY: ['occasion-types'] as const,
-  deleteOccasionType: vi.fn(),
-}))
+vi.mock(import('@/data-access/occasion-types/admin-occasion-types.api'), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    deleteOccasionType: vi.fn(),
+  }
+})
 
 import { deleteOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
 import { DeleteOccasionTypeDialog } from './delete-occasion-type-dialog'
@@ -50,7 +53,7 @@ describe('DeleteOccasionTypeDialog', () => {
     renderDialog()
     await userEvent.click(screen.getByRole('button', { name: 'Yes, delete' }))
     await waitFor(() => {
-      expect(deleteOccasionType).toHaveBeenCalledWith('ot-1')
+      expect(deleteOccasionType).toHaveBeenCalledWith('ot-1', expect.anything())
     })
   })
 

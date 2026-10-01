@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { createQueryClientWrapper } from '@/test/test-utils'
 import { useUsers, buildUsersListKey } from './use-users'
 
-vi.mock(import('@/data-access/users/list-users'), async (importOriginal) => {
+vi.mock(import('@/data-access/users/admin-users.api'), async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,
@@ -11,7 +11,7 @@ vi.mock(import('@/data-access/users/list-users'), async (importOriginal) => {
   }
 })
 
-import { listUsers } from '@/data-access/users/list-users'
+import { listUsers } from '@/data-access/users/admin-users.api'
 
 const MOCK_USER = {
   id: 'u1',

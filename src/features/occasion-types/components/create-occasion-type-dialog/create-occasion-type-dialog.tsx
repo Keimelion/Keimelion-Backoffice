@@ -2,13 +2,11 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { OccasionTypeForm } from '@/features/occasion-types/components/occasion-type-form'
 import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
-import { OCCASION_TYPES_QUERY_KEY, createOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
-import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
+import { useCreateOccasionType } from '@/features/occasion-types/hooks/use-admin-occasion-types'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
@@ -24,24 +22,18 @@ export function CreateOccasionTypeDialog({
   onOpenChange,
 }: CreateOccasionTypeDialogProps): React.JSX.Element {
   const t = useTranslate()
-  const queryClient = useQueryClient()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
-
-  const mutation = useMutation<AdminOccasionType, Error, OccasionTypeFormValues>({
-    mutationFn: createOccasionType,
-    meta: { silent: true },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: OCCASION_TYPES_QUERY_KEY })
-      notifySuccess({ title: translate('occasion_types.mutation.created_toast') })
-      onOpenChange(false)
-    },
-  })
+  const mutation = useCreateOccasionType()
 
   function handleSubmit(
     values: OccasionTypeFormValues,
     setError: UseFormSetError<OccasionTypeFormValues>,
   ): void {
     mutation.mutate(values, {
+      onSuccess: () => {
+        notifySuccess({ title: translate('occasion_types.mutation.created_toast') })
+        onOpenChange(false)
+      },
       onError: (error) => {
         if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
           setError('slug', { message: t('occasion_types.form.error.slug_conflict') })
