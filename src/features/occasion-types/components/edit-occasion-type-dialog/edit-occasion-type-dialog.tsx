@@ -10,6 +10,7 @@ import { OCCASION_TYPES_QUERY_KEY, updateOccasionType } from '@/data-access/occa
 import type { AdminOccasionType, UpdateOccasionTypeInput } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
+import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface UpdateVariables {
@@ -24,14 +25,7 @@ interface EditOccasionTypeDialogProps {
   initialValues: OccasionTypeFormValues
 }
 
-function toUpdateInput(values: OccasionTypeFormValues): UpdateOccasionTypeInput {
-  return {
-    emoji: values.emoji,
-    sortOrder: values.sortOrder,
-    isActive: values.isActive,
-    translations: values.translations,
-  }
-}
+const EDITABLE_OCCASION_TYPE_FIELDS = ['emoji', 'sortOrder', 'isActive', 'translations'] as const satisfies readonly (keyof OccasionTypeFormValues)[]
 
 export function EditOccasionTypeDialog({
   open,
@@ -58,7 +52,7 @@ export function EditOccasionTypeDialog({
     setError: UseFormSetError<OccasionTypeFormValues>,
   ): void {
     mutation.mutate(
-      { id: occasionTypeId, input: toUpdateInput(values) },
+      { id: occasionTypeId, input: pickChangedFields(initialValues, values, EDITABLE_OCCASION_TYPE_FIELDS) },
       {
         onError: (error) => {
           setError('root', { message: error.message })

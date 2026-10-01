@@ -40,7 +40,7 @@ interface OccasionTypeMutationPayload {
   translations: OccasionTypeTranslationPayload[]
 }
 
-type UpdateOccasionTypePayload = Omit<OccasionTypeMutationPayload, 'slug'>
+type UpdateOccasionTypePayload = Partial<Omit<OccasionTypeMutationPayload, 'slug'>>
 
 function buildCreatePayload(input: CreateOccasionTypeInput): OccasionTypeMutationPayload {
   const translations = LOCALES.flatMap((locale) => {
@@ -58,16 +58,17 @@ function buildCreatePayload(input: CreateOccasionTypeInput): OccasionTypeMutatio
 }
 
 function buildUpdatePayload(input: UpdateOccasionTypeInput): UpdateOccasionTypePayload {
-  const translations = LOCALES.map((locale) => {
-    const label = input.translations[locale]
-    return { locale, label: typeof label === 'string' ? label : null }
-  })
-  return {
-    emoji: input.emoji ?? null,
-    sortOrder: input.sortOrder,
-    isActive: input.isActive,
-    translations,
+  const payload: UpdateOccasionTypePayload = {}
+  if (input.emoji !== undefined) payload.emoji = input.emoji
+  if (input.sortOrder !== undefined) payload.sortOrder = input.sortOrder
+  if (input.isActive !== undefined) payload.isActive = input.isActive
+  if (input.translations !== undefined) {
+    payload.translations = LOCALES.map((locale) => {
+      const label = input.translations?.[locale]
+      return { locale, label: typeof label === 'string' ? label : null }
+    })
   }
+  return payload
 }
 
 export async function createOccasionType(input: CreateOccasionTypeInput): Promise<AdminOccasionType> {

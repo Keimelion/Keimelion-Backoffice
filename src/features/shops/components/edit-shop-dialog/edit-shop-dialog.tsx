@@ -7,10 +7,11 @@ import { FormDialog } from '@/components/shared/form-dialog'
 import { ShopForm } from '@/features/shops/components/shop-form'
 import type { ShopFormValues } from '@/features/shops/components/shop-form'
 import { useUpdateShop } from '@/features/shops/hooks/use-admin-shops'
-import type { AdminShop, UpdateShopInput } from '@/data-access/shops/admin-shops.schemas'
+import type { AdminShop } from '@/data-access/shops/admin-shops.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
+import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface EditShopDialogProps {
@@ -19,16 +20,7 @@ interface EditShopDialogProps {
   shop: AdminShop
 }
 
-function pickChanged(shop: AdminShop, values: ShopFormValues): UpdateShopInput {
-  const patch: UpdateShopInput = {}
-  if (values.name !== shop.name) patch.name = values.name
-  if (values.domain !== shop.domain) patch.domain = values.domain
-  if (values.logoUrl !== shop.logoUrl) patch.logoUrl = values.logoUrl
-  if (values.isAffiliated !== shop.isAffiliated) patch.isAffiliated = values.isAffiliated
-  if (values.sortOrder !== shop.sortOrder) patch.sortOrder = values.sortOrder
-  if (values.isActive !== shop.isActive) patch.isActive = values.isActive
-  return patch
-}
+const EDITABLE_SHOP_FIELDS = ['name', 'domain', 'logoUrl', 'isAffiliated', 'sortOrder', 'isActive'] as const satisfies readonly (keyof ShopFormValues)[]
 
 export function EditShopDialog({
   open,
@@ -44,7 +36,7 @@ export function EditShopDialog({
     setError: UseFormSetError<ShopFormValues>,
   ): void {
     mutation.mutate(
-      { id: shop.id, input: pickChanged(shop, values) },
+      { id: shop.id, input: pickChangedFields(shop, values, EDITABLE_SHOP_FIELDS) },
       {
         onSuccess: () => {
           notifySuccess({ title: translate('shops.mutation.updated_toast', { name: values.name }) })
