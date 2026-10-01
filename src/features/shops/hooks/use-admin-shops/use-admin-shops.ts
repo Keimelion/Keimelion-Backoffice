@@ -84,6 +84,7 @@ export function useReorderShops(filters: ShopsListFilters): ReturnType<typeof us
     invalidateKey: SHOPS_QUERY_KEY,
     mutationFn: reorderShops,
     errorMessageKey: 'common.reorder.error_message',
+    successMessageKey: 'common.reorder.success_message',
   })
 }
 

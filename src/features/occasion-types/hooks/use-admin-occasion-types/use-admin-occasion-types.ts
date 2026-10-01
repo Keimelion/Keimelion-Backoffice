@@ -44,5 +44,6 @@ export function useReorderOccasionTypes(
     invalidateKey: OCCASION_TYPES_QUERY_KEY,
     mutationFn: reorderOccasionTypes,
     errorMessageKey: 'common.reorder.error_message',
+    successMessageKey: 'common.reorder.success_message',
   })
 }

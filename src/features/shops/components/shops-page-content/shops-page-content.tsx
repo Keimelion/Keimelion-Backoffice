@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -64,11 +64,30 @@ export function ShopsPageContent(): React.JSX.Element {
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
   const [editTarget, setEditTarget] = useState<AdminShop | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AdminShop | null>(null)
+  const [pendingOrder, setPendingOrder] = useState<AdminShop[] | null>(null)
 
   const shopsQuery = useAdminShops(filters)
   const shops = shopsQuery.data?.items ?? []
   const total = shopsQuery.data?.pagination.total ?? 0
   const reorderMutation = useReorderShops(filters)
+  const displayedShops = pendingOrder ?? shops
+
+  useEffect(() => {
+    if (!isReorderMode) setPendingOrder(null)
+  }, [isReorderMode])
+
+  async function handleReorderDone(): Promise<void> {
+    if (pendingOrder === null) {
+      exitReorderMode()
+      return
+    }
+    try {
+      await reorderMutation.mutateAsync({ previousItems: shops, nextItems: pendingOrder })
+      exitReorderMode()
+    } catch {
+      setPendingOrder(null)
+    }
+  }
 
   const shopsFilters: FilterDefinition[] = [
     {
@@ -190,7 +209,7 @@ export function ShopsPageContent(): React.JSX.Element {
   ]
 
   const toolbar = isReorderMode ? (
-    <ReorderBanner onExit={exitReorderMode} />
+    <ReorderBanner onDone={() => { void handleReorderDone() }} isPending={reorderMutation.isPending} />
   ) : (
     <div className="flex flex-wrap items-end gap-3">
       <DataTableFilters filters={shopsFilters} />
@@ -211,7 +230,7 @@ export function ShopsPageContent(): React.JSX.Element {
     <>
       <DataTable
         columns={columns}
-        data={shops}
+        data={displayedShops}
         isLoading={shopsQuery.isLoading}
         error={shopsQuery.error}
         emptyLabel={t('shops.table.empty')}
@@ -220,9 +239,7 @@ export function ShopsPageContent(): React.JSX.Element {
         getRowClassName={resolveRowClassName}
         getRowLabel={(shop) => shop.name}
         isReorderMode={isReorderMode && isCurrentUserAdmin}
-        onReorder={(nextItems) => {
-          reorderMutation.mutate({ previousItems: shops, nextItems })
-        }}
+        onReorder={setPendingOrder}
         toolbar={toolbar}
         footer={
           <DataTablePagination page={filters.page} pageSize={filters.limit} total={total} />

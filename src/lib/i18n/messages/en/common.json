@@ -13,6 +13,7 @@
   "common.reorder.end_button": "Done",
   "common.reorder.banner": "Reorder mode — drag the rows to change their order. Filters and sorting are paused.",
   "common.reorder.error_message": "Reordering failed. The previous order has been restored.",
+  "common.reorder.success_message": "Order updated.",
   "common.reorder.drag_handle_label": "Reorder {name}",
   "common.locale_picker.select_language": "Select language",
   "common.theme_toggle.toggle": "Toggle theme",

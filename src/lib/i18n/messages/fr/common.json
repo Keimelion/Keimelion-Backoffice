@@ -13,6 +13,7 @@
   "common.reorder.end_button": "Terminer",
   "common.reorder.banner": "Mode réorganisation — glissez les lignes pour changer leur ordre. Les filtres et le tri sont désactivés.",
   "common.reorder.error_message": "Le réordonnancement a échoué. L'ordre précédent a été restauré.",
+  "common.reorder.success_message": "Ordre mis à jour.",
   "common.reorder.drag_handle_label": "Réordonner {name}",
   "common.locale_picker.select_language": "Choisir la langue",
   "common.theme_toggle.toggle": "Changer de thème",

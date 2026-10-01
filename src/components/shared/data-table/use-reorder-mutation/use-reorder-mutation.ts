@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { notifyError } from '@/lib/notify'
+import { notifyError, notifySuccess } from '@/lib/notify'
 import { translate } from '@/lib/i18n/translate'
 import type { MessageId } from '@/lib/i18n/messages/en'
 
@@ -22,6 +22,7 @@ interface ReorderMutationOptions {
   invalidateKey: readonly unknown[]
   mutationFn: (updates: ReorderUpdate[]) => Promise<unknown>
   errorMessageKey: MessageId
+  successMessageKey?: MessageId
 }
 
 interface ReorderVariables<TRow extends ReorderableRow> {
@@ -54,7 +55,7 @@ export function useReorderMutation<TRow extends ReorderableRow>(
   options: ReorderMutationOptions,
 ): UseMutationResult<unknown, Error, ReorderVariables<TRow>, ReorderContext<TRow>> {
   const queryClient = useQueryClient()
-  const { queryKey, invalidateKey, mutationFn, errorMessageKey } = options
+  const { queryKey, invalidateKey, mutationFn, errorMessageKey, successMessageKey } = options
 
   return useMutation<unknown, Error, ReorderVariables<TRow>, ReorderContext<TRow>>({
     mutationFn: ({ previousItems, nextItems }) => {
@@ -79,6 +80,11 @@ export function useReorderMutation<TRow extends ReorderableRow>(
         queryClient.setQueryData(queryKey, context.previousData)
       }
       notifyError({ title: translate(errorMessageKey) })
+    },
+    onSuccess: () => {
+      if (successMessageKey !== undefined) {
+        notifySuccess({ title: translate(successMessageKey) })
+      }
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: invalidateKey })

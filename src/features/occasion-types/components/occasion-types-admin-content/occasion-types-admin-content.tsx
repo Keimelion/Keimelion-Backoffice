@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
@@ -68,11 +68,30 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
   const [editTarget, setEditTarget] = useState<AdminOccasionType | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AdminOccasionType | null>(null)
+  const [pendingOrder, setPendingOrder] = useState<AdminOccasionType[] | null>(null)
 
   const query = useAdminOccasionTypes({ page: filters.page, limit: filters.limit })
   const data = query.data?.items ?? []
   const total = query.data?.pagination.total ?? 0
   const reorderMutation = useReorderOccasionTypes({ page: filters.page, limit: filters.limit })
+  const displayedData = pendingOrder ?? data
+
+  useEffect(() => {
+    if (!isReorderMode) setPendingOrder(null)
+  }, [isReorderMode])
+
+  async function handleReorderDone(): Promise<void> {
+    if (pendingOrder === null) {
+      exitReorderMode()
+      return
+    }
+    try {
+      await reorderMutation.mutateAsync({ previousItems: data, nextItems: pendingOrder })
+      exitReorderMode()
+    } catch {
+      setPendingOrder(null)
+    }
+  }
 
   const columns: DataTableColumn<AdminOccasionType>[] = [
     {
@@ -138,7 +157,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
   ]
 
   const toolbar = isReorderMode ? (
-    <ReorderBanner onExit={exitReorderMode} />
+    <ReorderBanner onDone={() => { void handleReorderDone() }} isPending={reorderMutation.isPending} />
   ) : (
     <div className="flex items-center justify-end gap-2">
       <ReorderButton onClick={enterReorderMode} />
@@ -153,7 +172,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
     <>
       <DataTable
         columns={columns}
-        data={data}
+        data={displayedData}
         isLoading={query.isLoading}
         error={query.error}
         emptyLabel={t('occasion_types.admin.empty_state.title')}
@@ -162,9 +181,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
         getRowClassName={resolveRowClassName}
         getRowLabel={(item) => resolveLabel(item, DEFAULT_LOCALE)}
         isReorderMode={isReorderMode}
-        onReorder={(nextItems) => {
-          reorderMutation.mutate({ previousItems: data, nextItems })
-        }}
+        onReorder={setPendingOrder}
         toolbar={toolbar}
         footer={
           <DataTablePagination
