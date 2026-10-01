@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useFieldArray, useForm, useFormContext } from 'react-hook-form'
 import type { FieldValues, UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ExternalLink, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -28,6 +28,10 @@ import {
 import { EMPTY_ITEM_SOURCE_INPUT } from '@/data-access/items/item-sources.schemas'
 import { useAdminShops } from '@/features/shops/hooks/use-admin-shops'
 import { ItemSourceFields } from '@/features/items/components/item-source-fields'
+import {
+  ItemSourceSummary,
+  resolveShopName,
+} from '@/features/items/components/item-source-summary'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 const HTTPS_PREFIX = 'https://'
@@ -186,62 +190,19 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
 
               if (isCollapsed) {
                 const sourceValue = values.sources[index] ?? EMPTY_ITEM_SOURCE_INPUT
-                const shopName =
-                  sourceValue.shopId !== null
-                    ? (shops.find((shop) => shop.id === sourceValue.shopId)?.name ?? null)
-                    : null
-                const priceLabel =
-                  sourceValue.price !== null
-                    ? `${sourceValue.price} ${sourceValue.currency}`
-                    : t('items.sources.table.no_price')
                 return (
-                  <div
+                  <ItemSourceSummary
                     key={field.id}
-                    className="flex items-center gap-3 rounded-md border border-border bg-background p-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      {sourceValue.sourceUrl !== null ? (
-                        <a
-                          href={sourceValue.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex max-w-full items-center gap-1 text-sm text-primary underline-offset-2 hover:underline"
-                        >
-                          <span className="truncate">{sourceValue.sourceUrl}</span>
-                          <ExternalLink className="h-3 w-3 shrink-0" />
-                        </a>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          {t('items.sources.table.no_url')}
-                        </span>
-                      )}
-                    </div>
-                    <span className="whitespace-nowrap text-sm">{priceLabel}</span>
-                    <span className="w-32 truncate text-sm">
-                      {shopName ?? (
-                        <span className="text-muted-foreground">
-                          {t('items.sources.table.no_shop')}
-                        </span>
-                      )}
-                    </span>
-                    <div className="flex gap-1">
-                      <IconButton
-                        label={t('items.form.source_edit_tooltip')}
-                        disabled={isPending}
-                        onClick={() => { handleEditSourceRow(field.id) }}
-                      >
-                        <Pencil />
-                      </IconButton>
-                      <IconButton
-                        label={removeLabel}
-                        tone="destructive"
-                        disabled={!canRemoveSource || isPending}
-                        onClick={() => { handleRemoveSourceRow(index, field.id) }}
-                      >
-                        <Trash2 />
-                      </IconButton>
-                    </div>
-                  </div>
+                    values={sourceValue}
+                    shopName={resolveShopName(sourceValue.shopId, shops)}
+                    canRemove={canRemoveSource}
+                    isPending={isPending}
+                    editLabel={t('items.form.source_edit_tooltip')}
+                    removeLabel={t('items.form.sources_remove_tooltip')}
+                    removeDisabledLabel={t('items.form.sources_remove_last_tooltip')}
+                    onEdit={() => { handleEditSourceRow(field.id) }}
+                    onRemove={() => { handleRemoveSourceRow(index, field.id) }}
+                  />
                 )
               }
 
