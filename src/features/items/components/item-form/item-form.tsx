@@ -32,6 +32,7 @@ import {
   ItemSourceSummary,
   resolveShopName,
 } from '@/features/items/components/item-source-summary'
+import { ItemSourcesRecap } from '@/features/items/components/item-sources-recap'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 const HTTPS_PREFIX = 'https://'
@@ -175,6 +176,8 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
               {t('items.form.sources_section_help')}
             </p>
           </header>
+
+          <ItemSourcesRecap sources={values.sources} />
 
           <div className="flex flex-col gap-3">
             {sourcesArray.fields.map((field, index) => {
