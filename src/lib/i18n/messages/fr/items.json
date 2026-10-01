@@ -34,6 +34,8 @@
   "items.form.sources_remove_tooltip": "Retirer la source",
   "items.form.sources_remove_last_tooltip": "Au moins une source est requise.",
   "items.form.source_row_title": "Source {index}",
+  "items.form.source_validate_button": "Valider",
+  "items.form.source_edit_tooltip": "Modifier la source",
   "items.form.source_url_label": "URL de la source",
   "items.form.source_url_placeholder": "https://boutique.exemple.com/produit/123",
   "items.form.source_price_label": "Prix",
