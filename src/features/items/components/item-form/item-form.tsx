@@ -122,25 +122,13 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
         <ItemCoreFields imagePreviewUrl={imagePreviewUrl} isPending={isPending} />
 
         <section className="flex flex-col gap-3 rounded-md border border-border bg-muted/20 p-4">
-          <header className="flex items-start justify-between gap-2">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">
-                {t('items.form.sources_section_title')}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {t('items.form.sources_section_help')}
-              </p>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => { sourcesArray.append(EMPTY_ITEM_SOURCE_INPUT) }}
-              disabled={isPending}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {t('items.form.sources_add_button')}
-            </Button>
+          <header className="flex flex-col gap-1">
+            <h3 className="text-sm font-semibold text-foreground">
+              {t('items.form.sources_section_title')}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {t('items.form.sources_section_help')}
+            </p>
           </header>
 
           <div className="flex flex-col gap-3">
@@ -175,6 +163,18 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
               </div>
             ))}
           </div>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="self-start"
+            onClick={() => { sourcesArray.append(EMPTY_ITEM_SOURCE_INPUT) }}
+            disabled={isPending}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t('items.form.sources_add_button')}
+          </Button>
         </section>
 
         {form.formState.errors.root ? (
