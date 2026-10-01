@@ -126,7 +126,7 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
     [form],
   )
 
-  const handleEditSourceRow = useCallback((id: string): void => {
+  const uncollapseSourceRow = useCallback((id: string): void => {
     setCollapsedIds((previous) => {
       if (!previous.has(id)) return previous
       const next = new Set(previous)
@@ -136,14 +136,9 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
   }, [])
 
   const handleRemoveSourceRow = useCallback((index: number, id: string): void => {
-    setCollapsedIds((previous) => {
-      if (!previous.has(id)) return previous
-      const next = new Set(previous)
-      next.delete(id)
-      return next
-    })
+    uncollapseSourceRow(id)
     sourcesArray.remove(index)
-  }, [sourcesArray])
+  }, [sourcesArray, uncollapseSourceRow])
 
   useEffect(() => {
     onDirtyChange(isDirty)
@@ -203,7 +198,7 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
                     editLabel={t('items.form.source_edit_tooltip')}
                     removeLabel={t('items.form.sources_remove_tooltip')}
                     removeDisabledLabel={t('items.form.sources_remove_last_tooltip')}
-                    onEdit={() => { handleEditSourceRow(field.id) }}
+                    onEdit={() => { uncollapseSourceRow(field.id) }}
                     onRemove={() => { handleRemoveSourceRow(index, field.id) }}
                   />
                 )
