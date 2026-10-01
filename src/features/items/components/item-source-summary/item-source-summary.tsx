@@ -32,7 +32,7 @@ export function ItemSourceSummary({
   const priceLabel =
     values.price !== null
       ? `${values.price} ${values.currency}`
-      : t('items.sources.table.no_price')
+      : t('items.sources.no_price')
   const effectiveRemoveLabel = canRemove ? removeLabel : (removeDisabledLabel ?? removeLabel)
 
   return (
@@ -50,7 +50,7 @@ export function ItemSourceSummary({
           </a>
         ) : (
           <span className="text-sm text-muted-foreground">
-            {t('items.sources.table.no_url')}
+            {t('items.sources.no_url')}
           </span>
         )}
       </div>
@@ -58,7 +58,7 @@ export function ItemSourceSummary({
       <span className="w-32 truncate text-sm">
         {shopName ?? (
           <span className="text-muted-foreground">
-            {t('items.sources.table.no_shop')}
+            {t('items.sources.no_shop')}
           </span>
         )}
       </span>

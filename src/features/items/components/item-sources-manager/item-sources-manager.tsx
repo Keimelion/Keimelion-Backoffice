@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -151,9 +151,7 @@ export function ItemSourcesManager({
   }
 
   const addDisabled = createMutation.isPending || updateMutation.isPending
-
-  const hasPendingNew = pendingNewRows.length > 0
-  const totalRowsForTitle = useMemo(() => sources.length + pendingNewRows.length, [sources.length, pendingNewRows.length])
+  const isEmpty = sources.length === 0 && pendingNewRows.length === 0
 
   return (
     <>
@@ -176,15 +174,13 @@ export function ItemSourcesManager({
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {sources.map((source) => {
+            {sources.map((source, index) => {
               const isEditing = editingSourceIds.has(source.id)
               if (isEditing) {
                 return (
                   <ItemSourceEditorRow
                     key={source.id}
-                    title={t('items.form.source_row_title', {
-                      index: sources.indexOf(source) + 1,
-                    })}
+                    title={t('items.form.source_row_title', { index: index + 1 })}
                     defaultValues={{
                       shopId: source.shopId,
                       sourceUrl: source.sourceUrl,
@@ -244,9 +240,9 @@ export function ItemSourcesManager({
               />
             ))}
 
-            {sources.length === 0 && !hasPendingNew ? (
+            {isEmpty ? (
               <div className="rounded-md border border-border bg-background p-6 text-center text-sm text-muted-foreground">
-                {t('items.sources.table.empty')}
+                {t('items.sources.empty')}
               </div>
             ) : null}
           </div>
@@ -259,11 +255,6 @@ export function ItemSourcesManager({
           className="self-start"
           onClick={handleAddNewRow}
           disabled={addDisabled}
-          aria-label={
-            totalRowsForTitle === 0
-              ? t('items.sources.add_button')
-              : undefined
-          }
         >
           <Plus className="mr-2 h-4 w-4" />
           {t('items.sources.add_button')}
