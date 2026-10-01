@@ -30,6 +30,8 @@
   "items.form.image_preview_alt": "Aperçu de l'image de l'article",
   "items.form.sources_section_title": "Sources",
   "items.form.sources_section_help": "Au moins une source est requise.",
+  "items.sources.recap.count": "{count, plural, one {# source} other {# sources}}",
+  "items.sources.recap.average_label": "Moy.",
   "items.form.sources_add_button": "Ajouter une source",
   "items.form.sources_remove_tooltip": "Retirer la source",
   "items.form.sources_remove_last_tooltip": "Au moins une source est requise.",

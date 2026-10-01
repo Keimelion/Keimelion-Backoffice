@@ -21,6 +21,7 @@ import { useAdminShops } from '@/features/shops/hooks/use-admin-shops'
 import { DeleteItemSourceDialog } from '@/features/items/components/delete-item-source-dialog'
 import { ItemSourceEditorRow } from '@/features/items/components/item-source-editor-row'
 import { ItemSourceSummary } from '@/features/items/components/item-source-summary'
+import { ItemSourcesRecap } from '@/features/items/components/item-sources-recap'
 import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
@@ -165,6 +166,8 @@ export function ItemSourcesManager({
             {t('items.form.sources_section_help')}
           </p>
         </header>
+
+        <ItemSourcesRecap sources={sources} />
 
         {itemQuery.isLoading ? (
           <div className="flex flex-col gap-2">
