@@ -57,7 +57,8 @@ interface DataTableProps<TRow extends DataTableBaseRow> {
   getRowLabel?: (row: TRow) => string
   isReorderMode?: boolean
   onReorder?: (nextItems: TRow[]) => void
-  renderExpandedRow?: (row: TRow) => ReactNode | null
+  renderExpandedRow?: (row: TRow) => ReactNode
+  isRowExpanded?: (row: TRow) => boolean
   toolbar?: ReactNode
   footer?: ReactNode
 }
@@ -78,6 +79,7 @@ export function DataTable<TRow extends DataTableBaseRow>({
   isReorderMode = false,
   onReorder,
   renderExpandedRow,
+  isRowExpanded,
   toolbar,
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
@@ -173,6 +175,7 @@ export function DataTable<TRow extends DataTableBaseRow>({
                 getRowLabel,
                 isDraggable,
                 renderExpandedRow,
+                isRowExpanded,
                 sortableIds,
                 t,
               })
@@ -217,7 +220,8 @@ interface RenderDataRowsArgs<TRow extends DataTableBaseRow> {
   getRowClassName: ((row: TRow) => string | undefined) | undefined
   getRowLabel: ((row: TRow) => string) | undefined
   isDraggable: boolean
-  renderExpandedRow: ((row: TRow) => ReactNode | null) | undefined
+  renderExpandedRow: ((row: TRow) => ReactNode) | undefined
+  isRowExpanded: ((row: TRow) => boolean) | undefined
   sortableIds: string[]
   t: TranslateFn
 }
@@ -230,6 +234,7 @@ function renderDataRows<TRow extends DataTableBaseRow>({
   getRowLabel,
   isDraggable,
   renderExpandedRow,
+  isRowExpanded,
   sortableIds,
   t,
 }: RenderDataRowsArgs<TRow>): ReactNode {
@@ -245,6 +250,7 @@ function renderDataRows<TRow extends DataTableBaseRow>({
 
   const rows = data.map((row) => {
     const expandedContent = renderExpandedRow?.(row) ?? null
+    const isExpanded = expandedContent === null ? false : (isRowExpanded?.(row) ?? false)
     return (
       <DataTableRow
         key={row.id}
@@ -254,6 +260,7 @@ function renderDataRows<TRow extends DataTableBaseRow>({
         label={getRowLabel?.(row) ?? row.id}
         isDraggable={isDraggable}
         expandedContent={expandedContent}
+        isExpanded={isExpanded}
         t={t}
       />
     )
@@ -275,6 +282,7 @@ interface DataTableRowProps<TRow extends DataTableBaseRow> {
   label: string
   isDraggable: boolean
   expandedContent: ReactNode | null
+  isExpanded: boolean
   t: TranslateFn
 }
 
@@ -285,6 +293,7 @@ function DataTableRow<TRow extends DataTableBaseRow>({
   label,
   isDraggable,
   expandedContent,
+  isExpanded,
   t,
 }: DataTableRowProps<TRow>): React.JSX.Element {
   const {
@@ -335,9 +344,19 @@ function DataTableRow<TRow extends DataTableBaseRow>({
         })}
       </TableRow>
       {expandedContent !== null ? (
-        <TableRow className="bg-muted/20 hover:bg-muted/20">
+        <TableRow
+          data-state={isExpanded ? 'open' : 'closed'}
+          className="hover:bg-transparent data-[state=closed]:border-b-0 data-[state=open]:bg-muted/20 data-[state=open]:hover:bg-muted/20"
+        >
           <TableCell colSpan={columns.length} className="p-0">
-            <div className="px-4 py-3">{expandedContent}</div>
+            <div
+              data-state={isExpanded ? 'open' : 'closed'}
+              className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out data-[state=open]:grid-rows-[1fr]"
+            >
+              <div className="overflow-hidden">
+                <div className="px-4 py-3">{expandedContent}</div>
+              </div>
+            </div>
           </TableCell>
         </TableRow>
       ) : null}

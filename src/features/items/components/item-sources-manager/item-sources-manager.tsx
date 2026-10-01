@@ -15,15 +15,19 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface ItemSourcesManagerProps {
   item: ApiAdminItem
+  enabled?: boolean
 }
 
-export function ItemSourcesManager({ item }: ItemSourcesManagerProps): React.JSX.Element {
+export function ItemSourcesManager({
+  item,
+  enabled = true,
+}: ItemSourcesManagerProps): React.JSX.Element {
   const t = useTranslate()
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
   const [editTarget, setEditTarget] = useState<ApiItemSource | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ApiItemSource | null>(null)
 
-  const itemQuery = useAdminItem(item.id)
+  const itemQuery = useAdminItem(enabled ? item.id : null)
   const sources = itemQuery.data?.sources ?? item.sources
 
   const takenShopIdsForCreate = useMemo<ReadonlySet<string>>(() => {
