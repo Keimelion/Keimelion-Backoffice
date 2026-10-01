@@ -90,7 +90,7 @@ export function ItemSourceEditorRow({
         >
           <ItemSourceFields<ItemSourceInput>
             namePrefix=""
-            shops={[...shops]}
+            shops={shops}
             isShopsLoading={isShopsLoading}
             disabled={isPending}
             disabledShopIds={disabledShopIds}

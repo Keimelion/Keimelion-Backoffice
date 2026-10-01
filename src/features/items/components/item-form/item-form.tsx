@@ -258,7 +258,7 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
             disabled={isPending}
           >
             <Plus className="mr-2 h-4 w-4" />
-            {t('items.form.sources_add_button')}
+            {t('items.sources.add_button')}
           </Button>
         </section>
 

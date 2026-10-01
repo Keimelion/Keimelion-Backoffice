@@ -27,7 +27,7 @@ const NO_SHOP_VALUE = '__none__'
 
 interface ItemSourceFieldsProps<TValues extends FieldValues> {
   namePrefix: Path<TValues> | ''
-  shops: ItemSourceShop[]
+  shops: readonly ItemSourceShop[]
   isShopsLoading: boolean
   disabled: boolean
   disabledShopIds?: ReadonlySet<string> | undefined
