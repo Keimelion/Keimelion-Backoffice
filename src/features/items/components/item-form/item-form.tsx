@@ -238,7 +238,6 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
                     <Button
                       type="button"
                       size="sm"
-                      variant="secondary"
                       disabled={isPending}
                       onClick={() => { void handleValidateSourceRow(index, field.id) }}
                     >
