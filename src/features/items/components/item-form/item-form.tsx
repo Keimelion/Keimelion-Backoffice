@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useFieldArray, useForm, useFormContext } from 'react-hook-form'
 import type { FieldValues, UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Trash2 } from 'lucide-react'
+import { ExternalLink, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -99,6 +99,47 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
   const canSubmit = isFormValid && isDirty && !isPending
   const canRemoveSource = sourcesArray.fields.length > 1
 
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set())
+
+  const handleValidateSourceRow = useCallback(
+    async (index: number, id: string): Promise<void> => {
+      const prefix = `sources.${String(index)}` as `sources.${number}`
+      const paths = [
+        `${prefix}.sourceUrl`,
+        `${prefix}.price`,
+        `${prefix}.currency`,
+        `${prefix}.shopId`,
+      ] as const
+      const isSourceValid = await form.trigger(paths)
+      if (!isSourceValid) return
+      setCollapsedIds((previous) => {
+        const next = new Set(previous)
+        next.add(id)
+        return next
+      })
+    },
+    [form],
+  )
+
+  const handleEditSourceRow = useCallback((id: string): void => {
+    setCollapsedIds((previous) => {
+      if (!previous.has(id)) return previous
+      const next = new Set(previous)
+      next.delete(id)
+      return next
+    })
+  }, [])
+
+  const handleRemoveSourceRow = useCallback((index: number, id: string): void => {
+    setCollapsedIds((previous) => {
+      if (!previous.has(id)) return previous
+      const next = new Set(previous)
+      next.delete(id)
+      return next
+    })
+    sourcesArray.remove(index)
+  }, [sourcesArray])
+
   useEffect(() => {
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
@@ -132,36 +173,111 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
           </header>
 
           <div className="flex flex-col gap-3">
-            {sourcesArray.fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex flex-col gap-3 rounded-md border border-border bg-background p-3"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {t('items.form.source_row_title', { index: index + 1 })}
-                  </span>
-                  <IconButton
-                    label={
-                      canRemoveSource
-                        ? t('items.form.sources_remove_tooltip')
-                        : t('items.form.sources_remove_last_tooltip')
-                    }
-                    tone="destructive"
-                    disabled={!canRemoveSource || isPending}
-                    onClick={() => { sourcesArray.remove(index) }}
+            {sourcesArray.fields.map((field, index) => {
+              const isCollapsed = collapsedIds.has(field.id)
+              const removeLabel = canRemoveSource
+                ? t('items.form.sources_remove_tooltip')
+                : t('items.form.sources_remove_last_tooltip')
+
+              if (isCollapsed) {
+                const sourceValue = values.sources[index] ?? EMPTY_ITEM_SOURCE_INPUT
+                const shopName =
+                  sourceValue.shopId !== null
+                    ? (shops.find((shop) => shop.id === sourceValue.shopId)?.name ?? null)
+                    : null
+                const priceLabel =
+                  sourceValue.price !== null
+                    ? `${sourceValue.price} ${sourceValue.currency}`
+                    : t('items.sources.table.no_price')
+                return (
+                  <div
+                    key={field.id}
+                    className="flex items-center gap-3 rounded-md border border-border bg-background p-3"
                   >
-                    <Trash2 />
-                  </IconButton>
+                    <div className="min-w-0 flex-1">
+                      {sourceValue.sourceUrl !== null ? (
+                        <a
+                          href={sourceValue.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex max-w-full items-center gap-1 text-sm text-primary underline-offset-2 hover:underline"
+                        >
+                          <span className="truncate">{sourceValue.sourceUrl}</span>
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          {t('items.sources.table.no_url')}
+                        </span>
+                      )}
+                    </div>
+                    <span className="whitespace-nowrap text-sm">{priceLabel}</span>
+                    <span className="w-32 truncate text-sm">
+                      {shopName ?? (
+                        <span className="text-muted-foreground">
+                          {t('items.sources.table.no_shop')}
+                        </span>
+                      )}
+                    </span>
+                    <div className="flex gap-1">
+                      <IconButton
+                        label={t('items.form.source_edit_tooltip')}
+                        disabled={isPending}
+                        onClick={() => { handleEditSourceRow(field.id) }}
+                      >
+                        <Pencil />
+                      </IconButton>
+                      <IconButton
+                        label={removeLabel}
+                        tone="destructive"
+                        disabled={!canRemoveSource || isPending}
+                        onClick={() => { handleRemoveSourceRow(index, field.id) }}
+                      >
+                        <Trash2 />
+                      </IconButton>
+                    </div>
+                  </div>
+                )
+              }
+
+              return (
+                <div
+                  key={field.id}
+                  className="flex flex-col gap-3 rounded-md border border-border bg-background p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {t('items.form.source_row_title', { index: index + 1 })}
+                    </span>
+                    <IconButton
+                      label={removeLabel}
+                      tone="destructive"
+                      disabled={!canRemoveSource || isPending}
+                      onClick={() => { handleRemoveSourceRow(index, field.id) }}
+                    >
+                      <Trash2 />
+                    </IconButton>
+                  </div>
+                  <ItemSourceFields<ItemFormCreateValues>
+                    namePrefix={`sources.${String(index)}` as `sources.${number}`}
+                    shops={shops}
+                    isShopsLoading={shopsQuery.isLoading}
+                    disabled={isPending}
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      disabled={isPending}
+                      onClick={() => { void handleValidateSourceRow(index, field.id) }}
+                    >
+                      {t('items.form.source_validate_button')}
+                    </Button>
+                  </div>
                 </div>
-                <ItemSourceFields<ItemFormCreateValues>
-                  namePrefix={`sources.${String(index)}` as `sources.${number}`}
-                  shops={shops}
-                  isShopsLoading={shopsQuery.isLoading}
-                  disabled={isPending}
-                />
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <Button
