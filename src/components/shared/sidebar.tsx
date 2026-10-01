@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Package, Store, Users } from 'lucide-react'
+import { CalendarHeart, LayoutDashboard, ListTodo, LogOut, Store, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
@@ -21,7 +21,6 @@ interface NavItem {
 const NAV_ITEMS: readonly NavItem[] = [
   { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
   { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo },
-  { labelId: 'sidebar.nav.products', href: '/products', icon: Package },
   { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
   { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
   { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
