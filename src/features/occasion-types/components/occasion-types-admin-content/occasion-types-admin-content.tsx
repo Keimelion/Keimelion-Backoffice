@@ -1,30 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DataTable, DataTablePagination } from '@/components/shared/data-table'
+import {
+  DataTable,
+  DataTablePagination,
+  ReorderBanner,
+  ReorderButton,
+  useReorderMode,
+} from '@/components/shared/data-table'
 import type { DataTableColumn } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
+import { basePaginationShape } from '@/data-access/_shared/pagination'
 import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 import { CreateOccasionTypeDialog } from '@/features/occasion-types/components/create-occasion-type-dialog'
 import { EditOccasionTypeDialog } from '@/features/occasion-types/components/edit-occasion-type-dialog'
 import { DeleteOccasionTypeDialog } from '@/features/occasion-types/components/delete-occasion-type-dialog'
 import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
-import { useAdminOccasionTypes } from '@/features/occasion-types/hooks/use-admin-occasion-types'
+import {
+  useAdminOccasionTypes,
+  useReorderOccasionTypes,
+} from '@/features/occasion-types/hooks/use-admin-occasion-types'
 import { LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/locale'
 import type { Locale } from '@/lib/i18n/locale'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
-const DEFAULT_LIMIT = 20
-
 const adminOccasionTypesQuerySchema = z.object({
-  page: z.coerce.number().int().positive().catch(1),
-  limit: z.coerce.number().int().positive().catch(DEFAULT_LIMIT),
+  ...basePaginationShape,
 })
 
 function resolveLabel(item: AdminOccasionType, locale: Locale): string {
@@ -57,13 +64,34 @@ function resolveRowClassName(item: AdminOccasionType): string | undefined {
 export function OccasionTypesAdminContent(): React.JSX.Element {
   const t = useTranslate()
   const filters = useListSearchParams(adminOccasionTypesQuerySchema)
+  const { isReorderMode, enterReorderMode, exitReorderMode } = useReorderMode()
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
   const [editTarget, setEditTarget] = useState<AdminOccasionType | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AdminOccasionType | null>(null)
+  const [pendingOrder, setPendingOrder] = useState<AdminOccasionType[] | null>(null)
 
   const query = useAdminOccasionTypes({ page: filters.page, limit: filters.limit })
   const data = query.data?.items ?? []
   const total = query.data?.pagination.total ?? 0
+  const reorderMutation = useReorderOccasionTypes({ page: filters.page, limit: filters.limit })
+  const displayedData = pendingOrder ?? data
+
+  useEffect(() => {
+    if (!isReorderMode) setPendingOrder(null)
+  }, [isReorderMode])
+
+  async function handleReorderDone(): Promise<void> {
+    if (pendingOrder === null) {
+      exitReorderMode()
+      return
+    }
+    try {
+      await reorderMutation.mutateAsync({ previousItems: data, nextItems: pendingOrder })
+      exitReorderMode()
+    } catch {
+      setPendingOrder(null)
+    }
+  }
 
   const columns: DataTableColumn<AdminOccasionType>[] = [
     {
@@ -85,12 +113,6 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
       cell: (item) => <span className="font-medium">{resolveLabel(item, DEFAULT_LOCALE)}</span>,
     },
     {
-      key: 'sortOrder',
-      header: t('occasion_types.admin.column.sort_order'),
-      className: 'w-24',
-      cell: (item) => <span className="text-sm">{item.sortOrder}</span>,
-    },
-    {
       key: 'isActive',
       header: t('occasion_types.admin.column.is_active'),
       className: 'w-24',
@@ -106,49 +128,61 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
       header: t('occasion_types.admin.column.created_at'),
       cell: (item) => formatDate(item.createdAt),
     },
-    {
-      key: 'actions',
-      header: t('occasion_types.admin.column.actions'),
-      className: 'w-28 text-right',
-      cell: (item) => (
-        <div className="flex justify-end gap-1">
-          <IconButton
-            label={t('common.actions.update', { name: resolveLabel(item, DEFAULT_LOCALE) })}
-            onClick={() => { setEditTarget(item) }}
-          >
-            <Pencil />
-          </IconButton>
-          <IconButton
-            label={t('common.actions.delete', { name: resolveLabel(item, DEFAULT_LOCALE) })}
-            tone="destructive"
-            onClick={() => { setDeleteTarget(item) }}
-          >
-            <Trash2 />
-          </IconButton>
-        </div>
-      ),
-    },
+    ...(isReorderMode
+      ? []
+      : [
+          {
+            key: 'actions',
+            header: t('occasion_types.admin.column.actions'),
+            className: 'w-28 text-right',
+            cell: (item: AdminOccasionType) => (
+              <div className="flex justify-end gap-1">
+                <IconButton
+                  label={t('common.actions.update', { name: resolveLabel(item, DEFAULT_LOCALE) })}
+                  onClick={() => { setEditTarget(item) }}
+                >
+                  <Pencil />
+                </IconButton>
+                <IconButton
+                  label={t('common.actions.delete', { name: resolveLabel(item, DEFAULT_LOCALE) })}
+                  tone="destructive"
+                  onClick={() => { setDeleteTarget(item) }}
+                >
+                  <Trash2 />
+                </IconButton>
+              </div>
+            ),
+          } satisfies DataTableColumn<AdminOccasionType>,
+        ]),
   ]
+
+  const toolbar = isReorderMode ? (
+    <ReorderBanner onDone={() => { void handleReorderDone() }} isPending={reorderMutation.isPending} />
+  ) : (
+    <div className="flex items-center justify-end gap-2">
+      <ReorderButton onClick={enterReorderMode} />
+      <Button size="sm" onClick={() => { setIsCreateOpen(true) }}>
+        <Plus className="mr-2 h-4 w-4" />
+        {t('occasion_types.admin.create_button')}
+      </Button>
+    </div>
+  )
 
   return (
     <>
       <DataTable
         columns={columns}
-        data={data}
+        data={displayedData}
         isLoading={query.isLoading}
         error={query.error}
         emptyLabel={t('occasion_types.admin.empty_state.title')}
         skeletonRowCount={filters.limit}
         onRetry={() => { void query.refetch() }}
         getRowClassName={resolveRowClassName}
-        toolbar={
-          <div className="flex items-center justify-end">
-            <Button size="sm" onClick={() => { setIsCreateOpen(true) }}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('occasion_types.admin.create_button')}
-            </Button>
-          </div>
-        }
+        getRowLabel={(item) => resolveLabel(item, DEFAULT_LOCALE)}
+        isReorderMode={isReorderMode}
+        onReorder={setPendingOrder}
+        toolbar={toolbar}
         footer={
           <DataTablePagination
             page={filters.page}

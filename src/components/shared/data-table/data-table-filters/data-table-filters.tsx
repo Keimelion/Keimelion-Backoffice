@@ -89,16 +89,23 @@ function TextFilter({ definition, currentValue }: TextFilterProps): React.JSX.El
   }
 
   return (
-    <div className="relative">
-      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        id={definition.paramName}
-        aria-label={definition.label}
-        placeholder={definition.placeholder}
-        value={value}
-        onChange={handleChange}
-        className="h-8 w-56 pl-8 text-sm"
-      />
+    <div className="flex flex-col gap-1">
+      <label
+        htmlFor={definition.paramName}
+        className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+      >
+        {definition.label}
+      </label>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          id={definition.paramName}
+          placeholder={definition.placeholder}
+          value={value}
+          onChange={handleChange}
+          className="h-8 w-56 pl-8 text-sm"
+        />
+      </div>
     </div>
   )
 }
@@ -110,28 +117,33 @@ interface SelectFilterProps {
 
 function SelectFilter({ definition, currentValue }: SelectFilterProps): React.JSX.Element {
   const { setFilterParam } = useUrlParams()
+  const selectId = `select-${definition.paramName}`
 
   const handleValueChange = (selected: string): void => {
     setFilterParam(definition.paramName, selected === ALL_VALUE ? null : selected)
   }
 
   return (
-    <Select value={currentValue || ALL_VALUE} onValueChange={handleValueChange}>
-      <SelectTrigger
-        id={`select-${definition.paramName}`}
-        aria-label={definition.label}
-        className="h-8 w-40 text-sm"
+    <div className="flex flex-col gap-1">
+      <label
+        htmlFor={selectId}
+        className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
       >
-        <SelectValue placeholder={definition.placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL_VALUE}>{definition.placeholder}</SelectItem>
-        {definition.options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+        {definition.label}
+      </label>
+      <Select value={currentValue || ALL_VALUE} onValueChange={handleValueChange}>
+        <SelectTrigger id={selectId} className="h-8 w-40 text-sm">
+          <SelectValue placeholder={definition.placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_VALUE}>{definition.placeholder}</SelectItem>
+          {definition.options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }

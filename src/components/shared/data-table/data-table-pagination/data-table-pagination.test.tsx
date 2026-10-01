@@ -54,4 +54,11 @@ describe('DataTablePagination', () => {
     renderWithIntl(<DataTablePagination page={1} pageSize={10} total={30} />)
     expect(screen.getByText('Page 1 / 3')).toBeInTheDocument()
   })
+
+  it('updates the limit URL param and resets page when the page-size selector changes', async () => {
+    renderWithIntl(<DataTablePagination page={3} pageSize={20} total={200} />)
+    await userEvent.click(screen.getByRole('combobox'))
+    await userEvent.click(screen.getByRole('option', { name: '50' }))
+    expect(replaceMock).toHaveBeenCalledWith('?limit=50', { scroll: false })
+  })
 })

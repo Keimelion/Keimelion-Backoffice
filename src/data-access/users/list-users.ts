@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { axiosInstance } from '@/data-access/_shared/axios'
+import { basePaginationShape } from '@/data-access/_shared/pagination'
 import { parseApiResponse } from '@/data-access/_shared/parse-response'
 import { buildQueryParams } from '@/data-access/_shared/query-params'
 import { apiUserSchema } from '@/data-access/_shared/user'
@@ -26,8 +27,7 @@ export const adminUserSchema = apiUserSchema.extend({
 export type AdminApiUser = z.infer<typeof adminUserSchema>
 
 export const listUsersQuerySchema = z.object({
-  page: z.coerce.number().int().positive().catch(1),
-  limit: z.coerce.number().int().positive().catch(20),
+  ...basePaginationShape,
   email: z.string().optional(),
   username: z.string().optional(),
   role: z.enum(USER_ROLE_VALUES).optional(),

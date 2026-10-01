@@ -3,7 +3,13 @@
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { OCCASION_TYPES_QUERY_KEY, listAdminOccasionTypes } from '@/data-access/occasion-types/admin-occasion-types.api'
+import { useReorderMutation } from '@/components/shared/data-table'
+import type { ReorderUpdate } from '@/components/shared/data-table'
+import {
+  OCCASION_TYPES_QUERY_KEY,
+  listAdminOccasionTypes,
+  patchOccasionTypeSortOrder,
+} from '@/data-access/occasion-types/admin-occasion-types.api'
 import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 
 interface UseAdminOccasionTypesParams {
@@ -23,5 +29,21 @@ export function useAdminOccasionTypes(
   return useQuery({
     queryKey: buildAdminOccasionTypesKey(params),
     queryFn: () => listAdminOccasionTypes(params),
+  })
+}
+
+function reorderOccasionTypes(updates: ReorderUpdate[]): Promise<AdminOccasionType[]> {
+  return Promise.all(updates.map(({ id, sortOrder }) => patchOccasionTypeSortOrder(id, sortOrder)))
+}
+
+export function useReorderOccasionTypes(
+  params: UseAdminOccasionTypesParams,
+): ReturnType<typeof useReorderMutation<AdminOccasionType>> {
+  return useReorderMutation<AdminOccasionType>({
+    queryKey: buildAdminOccasionTypesKey(params),
+    invalidateKey: OCCASION_TYPES_QUERY_KEY,
+    mutationFn: reorderOccasionTypes,
+    errorMessageKey: 'common.reorder.error_message',
+    successMessageKey: 'common.reorder.success_message',
   })
 }

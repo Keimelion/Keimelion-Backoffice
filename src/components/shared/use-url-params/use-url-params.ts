@@ -8,8 +8,11 @@ interface UseUrlParamsReturn {
   searchParams: URLSearchParams
   setFilterParam: (name: string, value: string | null) => void
   setPage: (page: number) => void
+  setPageSize: (pageSize: number) => void
   clearParams: (names: string[]) => void
 }
+
+const LIMIT_PARAM = 'limit'
 
 export function useUrlParams(): UseUrlParamsReturn {
   const router = useRouter()
@@ -35,6 +38,13 @@ export function useUrlParams(): UseUrlParamsReturn {
     })
   }, [updateParams])
 
+  const setPageSize = useCallback((pageSize: number): void => {
+    updateParams((params) => {
+      params.set(LIMIT_PARAM, String(pageSize))
+      params.delete(PAGE_PARAM)
+    })
+  }, [updateParams])
+
   const clearParams = useCallback((names: string[]): void => {
     updateParams((params) => {
       for (const name of names) params.delete(name)
@@ -42,5 +52,5 @@ export function useUrlParams(): UseUrlParamsReturn {
     })
   }, [updateParams])
 
-  return { searchParams, setFilterParam, setPage, clearParams }
+  return { searchParams, setFilterParam, setPage, setPageSize, clearParams }
 }

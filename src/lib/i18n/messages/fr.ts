@@ -7,6 +7,7 @@ import lists from './fr/lists.json'
 import occasionTypes from './fr/occasion-types.json'
 import products from './fr/products.json'
 import query from './fr/query.json'
+import shops from './fr/shops.json'
 import sidebar from './fr/sidebar.json'
 import users from './fr/users.json'
 
@@ -18,6 +19,7 @@ export const frMessages = {
   ...occasionTypes,
   ...lists,
   ...products,
+  ...shops,
   ...sidebar,
   ...errorMessages,
   ...query,

@@ -81,4 +81,4 @@ export const createOccasionTypeInputSchema = z.object({
 
 export type CreateOccasionTypeInput = z.infer<typeof createOccasionTypeInputSchema>
 
-export type UpdateOccasionTypeInput = Omit<CreateOccasionTypeInput, 'slug'>
+export type UpdateOccasionTypeInput = Partial<Omit<CreateOccasionTypeInput, 'slug'>>

@@ -14,6 +14,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/features/occasion-types/hooks/use-admin-occasion-types', () => ({
   useAdminOccasionTypes: vi.fn(),
+  useReorderOccasionTypes: () => ({ mutate: vi.fn() }),
 }))
 
 import { useAdminOccasionTypes } from '@/features/occasion-types/hooks/use-admin-occasion-types'
@@ -68,7 +69,6 @@ describe('OccasionTypesAdminContent', () => {
     renderContent()
     expect(screen.getByText('Slug')).toBeInTheDocument()
     expect(screen.getByText('Label (en)')).toBeInTheDocument()
-    expect(screen.getByText('Sort order')).toBeInTheDocument()
     expect(screen.getByText('Active')).toBeInTheDocument()
   })
 
