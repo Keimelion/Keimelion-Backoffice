@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   ClearFiltersButton,
   DataTable,
@@ -18,8 +18,8 @@ import { useAdminItems } from '@/features/items/hooks/use-admin-items'
 import { CreateItemDialog } from '@/features/items/components/create-item-dialog'
 import { EditItemDialog } from '@/features/items/components/edit-item-dialog'
 import { DeleteItemDialog } from '@/features/items/components/delete-item-dialog'
+import { ItemSourcesManager } from '@/features/items/components/item-sources-manager'
 import { ItemThumbnail } from '@/features/items/components/item-thumbnail'
-import { ManageItemSourcesSheet } from '@/features/items/components/manage-item-sources-sheet'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
@@ -35,7 +35,16 @@ export function ItemsList(): React.JSX.Element {
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
   const [editTarget, setEditTarget] = useState<ApiAdminItem | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ApiAdminItem | null>(null)
-  const [sourcesTarget, setSourcesTarget] = useState<ApiAdminItem | null>(null)
+  const [expandedItemIds, setExpandedItemIds] = useState<Set<string>>(() => new Set())
+
+  function toggleExpanded(itemId: string): void {
+    setExpandedItemIds((previous) => {
+      const next = new Set(previous)
+      if (next.has(itemId)) next.delete(itemId)
+      else next.add(itemId)
+      return next
+    })
+  }
 
   const itemsQuery = useAdminItems(filters)
   const items = itemsQuery.data?.items ?? []
@@ -76,16 +85,29 @@ export function ItemsList(): React.JSX.Element {
       key: 'sources',
       header: t('items.table.column.sources'),
       className: 'w-28',
-      cell: (item) => (
-        <button
-          type="button"
-          onClick={() => { setSourcesTarget(item) }}
-          className="cursor-pointer rounded-full transition-opacity hover:opacity-80"
-          aria-label={t('items.sources.sheet.title', { name: item.name })}
-        >
-          <Badge variant="secondary">{item.sources.length}</Badge>
-        </button>
-      ),
+      cell: (item) => {
+        const isExpanded = expandedItemIds.has(item.id)
+        return (
+          <button
+            type="button"
+            onClick={() => { toggleExpanded(item.id) }}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 transition-colors hover:bg-muted/60"
+            aria-expanded={isExpanded}
+            aria-label={
+              isExpanded
+                ? t('items.sources.collapse_tooltip', { name: item.name })
+                : t('items.sources.expand_tooltip', { name: item.name })
+            }
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            )}
+            <Badge variant="secondary">{item.sources.length}</Badge>
+          </button>
+        )
+      },
     },
     {
       key: 'createdAt',
@@ -134,6 +156,9 @@ export function ItemsList(): React.JSX.Element {
         skeletonRowCount={filters.limit}
         onRetry={() => { void itemsQuery.refetch() }}
         getRowLabel={(item) => item.name}
+        renderExpandedRow={(item) =>
+          expandedItemIds.has(item.id) ? <ItemSourcesManager item={item} /> : null
+        }
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={itemsFilters} />
@@ -170,16 +195,6 @@ export function ItemsList(): React.JSX.Element {
             if (!open) setDeleteTarget(null)
           }}
           item={deleteTarget}
-        />
-      ) : null}
-
-      {sourcesTarget !== null ? (
-        <ManageItemSourcesSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) setSourcesTarget(null)
-          }}
-          item={sourcesTarget}
         />
       ) : null}
     </>

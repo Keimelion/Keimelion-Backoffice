@@ -178,6 +178,11 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
               const removeLabel = canRemoveSource
                 ? t('items.form.sources_remove_tooltip')
                 : t('items.form.sources_remove_last_tooltip')
+              const disabledShopIds = new Set(
+                values.sources
+                  .map((source, otherIndex) => (otherIndex === index ? null : source.shopId))
+                  .filter((shopId): shopId is string => shopId !== null),
+              )
 
               if (isCollapsed) {
                 const sourceValue = values.sources[index] ?? EMPTY_ITEM_SOURCE_INPUT
@@ -263,6 +268,7 @@ function CreateItemForm({ onSubmit, onDirtyChange, isPending }: CreateItemFormPr
                     shops={shops}
                     isShopsLoading={shopsQuery.isLoading}
                     disabled={isPending}
+                    disabledShopIds={disabledShopIds}
                   />
                   <div className="flex justify-end">
                     <Button

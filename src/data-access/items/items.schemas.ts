@@ -17,6 +17,7 @@ const IMAGE_URL_INVALID_MESSAGE = 'Image URL must be a valid URL.'
 const IMAGE_URL_HTTPS_MESSAGE = 'Image URL must use HTTPS.'
 const IMAGE_URL_TOO_LONG_MESSAGE = 'Image URL must be 2048 characters or fewer.'
 const SOURCES_MIN_MESSAGE = 'At least one source is required.'
+const SOURCES_SHOP_DUPLICATE_MESSAGE = 'This shop is already used by another source.'
 
 export const apiAdminItemSchema = z.object({
   id: z.string(),
@@ -97,6 +98,22 @@ export const createItemInputSchema = z
     sources: z.array(itemSourceInputSchema).min(1, { message: SOURCES_MIN_MESSAGE }),
   })
   .strict()
+  .superRefine((value, context) => {
+    const seenShopIndexByShopId = new Map<string, number>()
+    value.sources.forEach((source, index) => {
+      if (source.shopId === null) return
+      const previousIndex = seenShopIndexByShopId.get(source.shopId)
+      if (previousIndex === undefined) {
+        seenShopIndexByShopId.set(source.shopId, index)
+        return
+      }
+      context.addIssue({
+        code: 'custom',
+        message: SOURCES_SHOP_DUPLICATE_MESSAGE,
+        path: ['sources', index, 'shopId'],
+      })
+    })
+  })
 
 export type CreateItemInput = z.infer<typeof createItemInputSchema>
 

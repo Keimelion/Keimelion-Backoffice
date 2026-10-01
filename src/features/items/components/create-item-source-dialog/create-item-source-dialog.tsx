@@ -14,12 +14,14 @@ interface CreateItemSourceDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   itemId: string
+  disabledShopIds?: ReadonlySet<string> | undefined
 }
 
 export function CreateItemSourceDialog({
   open,
   onOpenChange,
   itemId,
+  disabledShopIds,
 }: CreateItemSourceDialogProps): React.JSX.Element {
   const t = useTranslate()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
@@ -55,6 +57,7 @@ export function CreateItemSourceDialog({
         onSubmit={handleSubmit}
         onDirtyChange={setIsFormDirty}
         isPending={mutation.isPending}
+        disabledShopIds={disabledShopIds}
       />
     </FormDialog>
   )

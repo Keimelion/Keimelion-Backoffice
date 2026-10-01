@@ -17,6 +17,7 @@ interface EditItemSourceDialogProps {
   onOpenChange: (open: boolean) => void
   itemId: string
   source: ApiItemSource
+  disabledShopIds?: ReadonlySet<string> | undefined
 }
 
 const EDITABLE_SOURCE_FIELDS = ['shopId', 'sourceUrl', 'price', 'currency'] as const satisfies readonly (keyof ItemSourceFormValues)[]
@@ -26,6 +27,7 @@ export function EditItemSourceDialog({
   onOpenChange,
   itemId,
   source,
+  disabledShopIds,
 }: EditItemSourceDialogProps): React.JSX.Element {
   const t = useTranslate()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
@@ -72,6 +74,7 @@ export function EditItemSourceDialog({
         onSubmit={handleSubmit}
         onDirtyChange={setIsFormDirty}
         isPending={mutation.isPending}
+        disabledShopIds={disabledShopIds}
       />
     </FormDialog>
   )
