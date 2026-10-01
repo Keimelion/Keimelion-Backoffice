@@ -61,7 +61,7 @@ export function EditItemDialog({
       title={t('items.admin.edit_dialog_title')}
       isFormDirty={isFormDirty}
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <ItemForm
           mode="edit"
           item={item}
@@ -69,18 +69,7 @@ export function EditItemDialog({
           onDirtyChange={setIsFormDirty}
           isPending={mutation.isPending}
         />
-
-        <section className="flex flex-col gap-3 border-t border-border pt-6">
-          <header className="flex flex-col gap-1">
-            <h3 className="text-sm font-semibold text-foreground">
-              {t('items.form.sources_section_title')}
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              {t('items.form.sources_section_help')}
-            </p>
-          </header>
-          <ItemSourcesManager item={item} />
-        </section>
+        <ItemSourcesManager item={item} />
       </div>
     </FormDialog>
   )

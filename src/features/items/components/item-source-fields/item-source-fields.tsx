@@ -105,7 +105,7 @@ export function ItemSourceFields<TValues extends FieldValues>({
         name={currencyName}
         render={({ field }) => (
           <FormItem className="sm:col-span-2">
-            <FormLabel>{t('items.form.source_currency_label')}</FormLabel>
+            <FormLabel required>{t('items.form.source_currency_label')}</FormLabel>
             <FormControl>
               <Input
                 maxLength={3}

@@ -99,15 +99,24 @@ const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
 )
 FormItem.displayName = 'FormItem'
 
+interface FormLabelProps
+  extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {
+  required?: boolean
+}
+
 const FormLabel = React.forwardRef<
   React.ComponentRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
+  FormLabelProps
+>(({ className, required = false, ...props }, ref) => {
   const { error, ids } = useFormField()
   return (
     <Label
       ref={ref}
-      className={cn(error ? 'text-destructive' : null, className)}
+      className={cn(
+        error ? 'text-destructive' : null,
+        required && "after:ml-0.5 after:text-destructive after:content-['*']",
+        className,
+      )}
       htmlFor={ids.item}
       {...props}
     />

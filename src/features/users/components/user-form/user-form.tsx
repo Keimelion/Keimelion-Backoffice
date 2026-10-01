@@ -109,7 +109,7 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('users.form.email_label')}</FormLabel>
+                  <FormLabel required>{t('users.form.email_label')}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -128,7 +128,7 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('users.form.username_label')}</FormLabel>
+                  <FormLabel required>{t('users.form.username_label')}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder={t('users.form.username_placeholder')}

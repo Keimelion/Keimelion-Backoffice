@@ -70,7 +70,7 @@ export function LoginForm(): React.JSX.Element {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.login.email_label')}</FormLabel>
+                <FormLabel required>{t('auth.login.email_label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
@@ -89,7 +89,7 @@ export function LoginForm(): React.JSX.Element {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.login.password_label')}</FormLabel>
+                <FormLabel required>{t('auth.login.password_label')}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"

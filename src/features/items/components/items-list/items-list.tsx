@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   ClearFiltersButton,
   DataTable,
@@ -102,37 +102,24 @@ export function ItemsList(): React.JSX.Element {
     {
       key: 'actions',
       header: t('items.table.column.actions'),
-      className: 'w-36 text-right',
-      cell: (item) => {
-        const isExpanded = expandedItemIds.has(item.id)
-        return (
-          <div className="flex justify-end gap-1">
-            <IconButton
-              label={
-                isExpanded
-                  ? t('items.sources.collapse_tooltip', { name: item.name })
-                  : t('items.sources.expand_tooltip', { name: item.name })
-              }
-              onClick={() => { toggleExpanded(item.id) }}
-            >
-              {isExpanded ? <ChevronDown /> : <ChevronRight />}
-            </IconButton>
-            <IconButton
-              label={t('common.actions.update', { name: item.name })}
-              onClick={() => { setEditTarget(item) }}
-            >
-              <Pencil />
-            </IconButton>
-            <IconButton
-              label={t('common.actions.delete', { name: item.name })}
-              tone="destructive"
-              onClick={() => { setDeleteTarget(item) }}
-            >
-              <Trash2 />
-            </IconButton>
-          </div>
-        )
-      },
+      className: 'w-28 text-right',
+      cell: (item) => (
+        <div className="flex justify-end gap-1">
+          <IconButton
+            label={t('common.actions.update', { name: item.name })}
+            onClick={() => { setEditTarget(item) }}
+          >
+            <Pencil />
+          </IconButton>
+          <IconButton
+            label={t('common.actions.delete', { name: item.name })}
+            tone="destructive"
+            onClick={() => { setDeleteTarget(item) }}
+          >
+            <Trash2 />
+          </IconButton>
+        </div>
+      ),
     },
   ]
 
@@ -151,6 +138,7 @@ export function ItemsList(): React.JSX.Element {
           <ItemSourcesManager item={item} enabled={expandedItemIds.has(item.id)} />
         )}
         isRowExpanded={(item) => expandedItemIds.has(item.id)}
+        onRowClick={(item) => { toggleExpanded(item.id) }}
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={itemsFilters} />
