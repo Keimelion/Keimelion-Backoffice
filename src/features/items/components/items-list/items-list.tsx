@@ -84,30 +84,8 @@ export function ItemsList(): React.JSX.Element {
     {
       key: 'sources',
       header: t('items.table.column.sources'),
-      className: 'w-28',
-      cell: (item) => {
-        const isExpanded = expandedItemIds.has(item.id)
-        return (
-          <button
-            type="button"
-            onClick={() => { toggleExpanded(item.id) }}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 transition-colors hover:bg-muted/60"
-            aria-expanded={isExpanded}
-            aria-label={
-              isExpanded
-                ? t('items.sources.collapse_tooltip', { name: item.name })
-                : t('items.sources.expand_tooltip', { name: item.name })
-            }
-          >
-            {isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            )}
-            <Badge variant="secondary">{item.sources.length}</Badge>
-          </button>
-        )
-      },
+      className: 'w-20',
+      cell: (item) => <Badge variant="secondary">{item.sources.length}</Badge>,
     },
     {
       key: 'createdAt',
@@ -124,24 +102,37 @@ export function ItemsList(): React.JSX.Element {
     {
       key: 'actions',
       header: t('items.table.column.actions'),
-      className: 'w-28 text-right',
-      cell: (item) => (
-        <div className="flex justify-end gap-1">
-          <IconButton
-            label={t('common.actions.update', { name: item.name })}
-            onClick={() => { setEditTarget(item) }}
-          >
-            <Pencil />
-          </IconButton>
-          <IconButton
-            label={t('common.actions.delete', { name: item.name })}
-            tone="destructive"
-            onClick={() => { setDeleteTarget(item) }}
-          >
-            <Trash2 />
-          </IconButton>
-        </div>
-      ),
+      className: 'w-36 text-right',
+      cell: (item) => {
+        const isExpanded = expandedItemIds.has(item.id)
+        return (
+          <div className="flex justify-end gap-1">
+            <IconButton
+              label={
+                isExpanded
+                  ? t('items.sources.collapse_tooltip', { name: item.name })
+                  : t('items.sources.expand_tooltip', { name: item.name })
+              }
+              onClick={() => { toggleExpanded(item.id) }}
+            >
+              {isExpanded ? <ChevronDown /> : <ChevronRight />}
+            </IconButton>
+            <IconButton
+              label={t('common.actions.update', { name: item.name })}
+              onClick={() => { setEditTarget(item) }}
+            >
+              <Pencil />
+            </IconButton>
+            <IconButton
+              label={t('common.actions.delete', { name: item.name })}
+              tone="destructive"
+              onClick={() => { setDeleteTarget(item) }}
+            >
+              <Trash2 />
+            </IconButton>
+          </div>
+        )
+      },
     },
   ]
 
@@ -156,9 +147,10 @@ export function ItemsList(): React.JSX.Element {
         skeletonRowCount={filters.limit}
         onRetry={() => { void itemsQuery.refetch() }}
         getRowLabel={(item) => item.name}
-        renderExpandedRow={(item) =>
-          expandedItemIds.has(item.id) ? <ItemSourcesManager item={item} /> : null
-        }
+        renderExpandedRow={(item) => (
+          <ItemSourcesManager item={item} enabled={expandedItemIds.has(item.id)} />
+        )}
+        isRowExpanded={(item) => expandedItemIds.has(item.id)}
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={itemsFilters} />
