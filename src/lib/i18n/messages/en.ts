@@ -2,6 +2,7 @@ import auth from './en/auth.json'
 import common from './en/common.json'
 import dashboard from './en/dashboard.json'
 import errorMessages from './en/error.json'
+import items from './en/items.json'
 import lists from './en/lists.json'
 import occasionTypes from './en/occasion-types.json'
 import products from './en/products.json'
@@ -15,6 +16,7 @@ export const enMessages = {
   ...auth,
   ...dashboard,
   ...users,
+  ...items,
   ...occasionTypes,
   ...lists,
   ...products,
