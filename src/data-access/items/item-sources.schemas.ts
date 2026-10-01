@@ -6,6 +6,9 @@ const CURRENCY_REGEX = /^[A-Z]{3}$/
 const CURRENCY_LENGTH = 3
 const DEFAULT_CURRENCY = 'EUR'
 
+export const SUPPORTED_CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY'] as const
+export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number]
+
 const SOURCE_URL_INVALID_MESSAGE = 'Source URL must be a valid URL.'
 const SOURCE_URL_HTTPS_MESSAGE = 'Source URL must use HTTPS.'
 const SOURCE_URL_TOO_LONG_MESSAGE = 'Source URL must be 2048 characters or fewer.'

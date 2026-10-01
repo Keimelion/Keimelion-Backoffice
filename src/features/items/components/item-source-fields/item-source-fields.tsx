@@ -17,7 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { ItemSourceShop } from '@/data-access/items/item-sources.schemas'
+import {
+  SUPPORTED_CURRENCIES,
+  type ItemSourceShop,
+} from '@/data-access/items/item-sources.schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 const NO_SHOP_VALUE = '__none__'
@@ -106,20 +109,24 @@ export function ItemSourceFields<TValues extends FieldValues>({
         render={({ field }) => (
           <FormItem className="sm:col-span-2">
             <FormLabel required>{t('items.form.source_currency_label')}</FormLabel>
-            <FormControl>
-              <Input
-                maxLength={3}
-                placeholder="EUR"
-                disabled={disabled}
-                value={typeof field.value === 'string' ? field.value : ''}
-                onChange={(event) => {
-                  field.onChange(event.target.value.toUpperCase())
-                }}
-                onBlur={field.onBlur}
-                name={field.name}
-                ref={field.ref}
-              />
-            </FormControl>
+            <Select
+              value={typeof field.value === 'string' ? field.value : ''}
+              onValueChange={field.onChange}
+              disabled={disabled}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {SUPPORTED_CURRENCIES.map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}
