@@ -29,7 +29,7 @@ import {
   type CreateAdminUserInput,
   type UpdateAdminUserInput,
 } from '@/data-access/users/admin-users.schemas'
-import type { AdminApiUser } from '@/data-access/users/list-users'
+import type { AdminApiUser } from '@/data-access/users/admin-users.schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { RoleBadge } from '@/features/users/components/role-badge'
 

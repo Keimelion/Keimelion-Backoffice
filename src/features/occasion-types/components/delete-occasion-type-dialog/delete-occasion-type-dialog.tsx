@@ -1,12 +1,9 @@
 'use client'
 
-import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
-import { OCCASION_TYPES_QUERY_KEY, deleteOccasionType } from '@/data-access/occasion-types/admin-occasion-types.api'
+import { useDeleteOccasionType } from '@/features/occasion-types/hooks/use-admin-occasion-types'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
-
-type DeleteResult = undefined
 
 interface DeleteOccasionTypeDialogProps {
   open: boolean
@@ -21,22 +18,12 @@ export function DeleteOccasionTypeDialog({
   occasionTypeId,
   label,
 }: DeleteOccasionTypeDialogProps): React.JSX.Element {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation<DeleteResult, Error, string>({
-    mutationFn: async (id) => {
-      await deleteOccasionType(id)
-      return undefined
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: OCCASION_TYPES_QUERY_KEY })
-      notifySuccess({ title: translate('occasion_types.mutation.deleted_toast') })
-      onOpenChange(false)
-    },
-  })
+  const mutation = useDeleteOccasionType()
 
   async function handleConfirm(): Promise<void> {
     await mutation.mutateAsync(occasionTypeId)
+    notifySuccess({ title: translate('occasion_types.mutation.deleted_toast') })
+    onOpenChange(false)
   }
 
   return (
