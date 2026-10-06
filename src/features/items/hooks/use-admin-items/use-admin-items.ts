@@ -40,9 +40,11 @@ export function useAdminItems(
   })
 }
 
+const DISABLED_ADMIN_ITEM_KEY = [...ITEMS_QUERY_KEY, 'detail', null] as const
+
 export function useAdminItem(id: string | null): UseQueryResult<ApiAdminItem> {
   return useQuery({
-    queryKey: buildAdminItemKey(id ?? ''),
+    queryKey: id === null ? DISABLED_ADMIN_ITEM_KEY : buildAdminItemKey(id),
     queryFn: () => fetchAdminItem(id ?? ''),
     enabled: id !== null,
   })

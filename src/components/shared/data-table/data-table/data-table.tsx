@@ -293,7 +293,8 @@ interface DataTableRowProps<TRow extends DataTableBaseRow> {
   t: TranslateFn
 }
 
-const INTERACTIVE_TARGET_SELECTOR = 'button, a, input, select, textarea, [role="button"], [role="link"]'
+const INTERACTIVE_TARGET_SELECTOR =
+  'button, a, input, select, textarea, label, [role="button"], [role="link"], [role="menuitem"], [role="option"]'
 
 function DataTableRow<TRow extends DataTableBaseRow>({
   row,
@@ -372,7 +373,7 @@ function DataTableRow<TRow extends DataTableBaseRow>({
               className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out data-[state=open]:grid-rows-[1fr]"
             >
               <div className="overflow-hidden">
-                <div className="px-4 py-3">{expandedContent}</div>
+                {isExpanded ? <div className="px-4 py-3">{expandedContent}</div> : null}
               </div>
             </div>
           </TableCell>

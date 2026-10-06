@@ -31,14 +31,15 @@ export function ItemThumbnail({
   if (safeImageUrl === null) {
     return (
       <div
+        role="img"
+        aria-label={alt}
         className={cn(
           'flex items-center justify-center rounded-md border border-border bg-muted text-muted-foreground',
           sizeClass,
           className,
         )}
-        aria-label={alt}
       >
-        <Package className="h-1/2 w-1/2" />
+        <Package aria-hidden="true" className="h-1/2 w-1/2" />
       </div>
     )
   }

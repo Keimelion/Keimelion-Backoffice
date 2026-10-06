@@ -25,6 +25,7 @@ interface FormFieldContextValue {
 
 interface FormItemContextValue {
   id: string
+  requiredRef: React.MutableRefObject<boolean>
 }
 
 interface FieldIds {
@@ -35,6 +36,8 @@ interface FieldIds {
 interface FormFieldState {
   ids: FieldIds
   error: FieldError | undefined
+  required: boolean
+  markRequired: () => void
 }
 
 const FormFieldContext = React.createContext<FormFieldContextValue | null>(null)
@@ -84,14 +87,20 @@ function useFormField(): FormFieldState {
   return {
     ids: buildFieldIds(itemContext.id),
     error: fieldState.error,
+    required: itemContext.requiredRef.current,
+    markRequired: () => {
+      itemContext.requiredRef.current = true
+    },
   }
 }
 
 const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
     const id = React.useId()
+    const requiredRef = React.useRef<boolean>(false)
+    requiredRef.current = false
     return (
-      <FormItemContext.Provider value={{ id }}>
+      <FormItemContext.Provider value={{ id, requiredRef }}>
         <div ref={ref} className={cn('flex flex-col gap-1.5', className)} {...props} />
       </FormItemContext.Provider>
     )
@@ -108,7 +117,8 @@ const FormLabel = React.forwardRef<
   React.ComponentRef<typeof LabelPrimitive.Root>,
   FormLabelProps
 >(({ className, required = false, ...props }, ref) => {
-  const { error, ids } = useFormField()
+  const { error, ids, markRequired } = useFormField()
+  if (required) markRequired()
   return (
     <Label
       ref={ref}
@@ -128,13 +138,14 @@ const FormControl = React.forwardRef<
   React.ComponentRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot>
 >((props, ref) => {
-  const { error, ids } = useFormField()
+  const { error, ids, required } = useFormField()
   const hasError = error !== undefined
   return (
     <Slot
       ref={ref}
       id={ids.item}
       aria-invalid={hasError}
+      aria-required={required ? true : undefined}
       aria-describedby={hasError ? ids.message : undefined}
       {...props}
     />

@@ -70,6 +70,18 @@ Every user-facing string in the Backoffice is rendered through `react-intl`. The
 - **Hooks prefix** — all custom hooks start with `use` (`useUsers`, `useLogin`)
 - **One form for create + update** — single component with a `mode: 'create' | 'edit'` discriminated union prop; never two parallel forms (`UserForm`, not `UserCreateForm` + `UserEditForm`). See `.claude/coding-standards.md` for the pattern; reference: `src/features/users/components/user-form/user-form.tsx`.
 
+### Review-learned pitfalls
+
+Rules distilled from past code reviews — follow unless there's an explicit reason to deviate.
+
+- **Mount only what the user sees.** `DataTable renderExpandedRow` content must not mount until the row is actually expanded — otherwise every row runs its hooks and queries while collapsed. The gating lives in `data-table.tsx` (`{isExpanded ? expandedContent : null}`); callers just return the JSX unconditionally. Same principle for tabs, accordions, modals, popovers: render inner trees only when active.
+- **Prune transient `Set`/`Map` state when its source list changes.** Local sets like `expandedIds` or `selectedIds` must drop entries that no longer exist in the current page/filter — otherwise they leak across pagination/search and resurrect stale items. Use a `useEffect` keyed on the visible-id set.
+- **Nullable id → sentinel queryKey + `enabled: false`.** Never do `useQuery({ queryKey: [..., id ?? ''], enabled: id !== null })`: the empty-string fallback collides across every call site that passes `null`, and would hit real routes if `enabled` ever flips. Pattern: `queryKey: id === null ? [...KEY, 'detail', null] : build(id)`.
+- **Zod schemas with "at least one of X / Y" must `superRefine`.** When several fields are each nullable but the record is meaningless with all of them null (e.g., `shopId | sourceUrl` on an item source), add a `superRefine` that enforces the invariant. A schema that happily parses an all-null record is a client-side bug waiting for a server 4xx.
+- **Required form fields: `<FormLabel required>` is sufficient.** `FormControl` picks up requiredness via `FormItemContext` and sets `aria-required` on the input automatically. Don't duplicate the asterisk manually or add `sr-only "required"` text — that pollutes the input's accessible name and breaks `getByLabelText` tests.
+- **Cap concurrent pending editor rows.** When a feature lets the user append new rows that each mount their own `useForm` + data queries (sources manager, image gallery editor, …), allow at most one unsaved pending row at a time — not an unbounded array the user can stack to N instances. Hide the "Add" button while a pending row is open.
+- **Keep `INTERACTIVE_TARGET_SELECTOR` in sync.** `DataTable`'s row-click handler skips clicks whose target closes to `button, a, input, select, textarea, label, [role="button"|"link"|"menuitem"|"option"]`. Any new interactive descendant inside a clickable row (dropdown items, custom chips, labels wrapping inputs…) must be covered — otherwise clicking it double-fires row click.
+
 ## Project structure
 
 ```

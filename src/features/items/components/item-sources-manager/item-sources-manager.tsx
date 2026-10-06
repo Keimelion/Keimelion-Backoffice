@@ -29,6 +29,7 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 
 const SHOPS_FILTER = { page: 1, limit: 100, isActive: true } as const
 const EDITABLE_SOURCE_FIELDS = ['shopId', 'sourceUrl', 'price', 'currency'] as const satisfies readonly (keyof ItemSourceInput)[]
+const PENDING_ROW_KEY = '__pending_new_source__'
 
 function omitKey<T>(previous: Record<string, T>, key: string): Record<string, T> {
   if (!(key in previous)) return previous
@@ -37,26 +38,20 @@ function omitKey<T>(previous: Record<string, T>, key: string): Record<string, T>
 
 interface ItemSourcesManagerProps {
   item: ApiAdminItem
-  enabled?: boolean
-}
-
-interface PendingNewRow {
-  key: string
 }
 
 export function ItemSourcesManager({
   item,
-  enabled = true,
 }: ItemSourcesManagerProps): React.JSX.Element {
   const t = useTranslate()
-  const itemQuery = useAdminItem(enabled ? item.id : null)
+  const itemQuery = useAdminItem(item.id)
   const sources = itemQuery.data?.sources ?? item.sources
 
   const shopsQuery = useAdminShops(SHOPS_FILTER)
   const shops = shopsQuery.data?.items ?? []
 
   const [editingSourceIds, setEditingSourceIds] = useState<Set<string>>(() => new Set())
-  const [pendingNewRows, setPendingNewRows] = useState<PendingNewRow[]>([])
+  const [isAddingNewRow, setIsAddingNewRow] = useState<boolean>(false)
   const [editorErrors, setEditorErrors] = useState<Record<string, string>>({})
   const [deleteTarget, setDeleteTarget] = useState<ApiItemSource | null>(null)
 
@@ -94,25 +89,25 @@ export function ItemSourcesManager({
   }
 
   function handleAddNewRow(): void {
-    setPendingNewRows((previous) => [...previous, { key: crypto.randomUUID() }])
+    setIsAddingNewRow(true)
   }
 
-  function handleRemoveNewRow(key: string): void {
-    setPendingNewRows((previous) => previous.filter((row) => row.key !== key))
-    setEditorErrors((previous) => omitKey(previous, key))
+  function handleCancelNewRow(): void {
+    setIsAddingNewRow(false)
+    setEditorErrors((previous) => omitKey(previous, PENDING_ROW_KEY))
   }
 
-  function handleValidateNew(key: string, values: ItemSourceInput): void {
+  function handleValidateNew(values: ItemSourceInput): void {
     const payload: CreateItemSourceInput = values
     createMutation.mutate(
       { itemId: item.id, input: payload },
       {
         onSuccess: () => {
           notifySuccess({ title: translate('items.sources.mutation.created_toast') })
-          handleRemoveNewRow(key)
+          handleCancelNewRow()
         },
         onError: (error) => {
-          setEditorErrors((previous) => ({ ...previous, [key]: error.message }))
+          setEditorErrors((previous) => ({ ...previous, [PENDING_ROW_KEY]: error.message }))
         },
       },
     )
@@ -147,8 +142,9 @@ export function ItemSourcesManager({
     )
   }
 
-  const addDisabled = createMutation.isPending || updateMutation.isPending
-  const isEmpty = sources.length === 0 && pendingNewRows.length === 0
+  const isMutating = createMutation.isPending || updateMutation.isPending
+  const isEmpty = sources.length === 0 && !isAddingNewRow
+  const showAddButton = !isAddingNewRow
 
   return (
     <>
@@ -218,12 +214,9 @@ export function ItemSourcesManager({
               )
             })}
 
-            {pendingNewRows.map((row, index) => (
+            {isAddingNewRow ? (
               <ItemSourceEditorRow
-                key={row.key}
-                title={t('items.form.source_row_title', {
-                  index: sources.length + index + 1,
-                })}
+                title={t('items.form.source_row_title', { index: sources.length + 1 })}
                 defaultValues={EMPTY_ITEM_SOURCE_INPUT}
                 shops={shops}
                 isShopsLoading={shopsQuery.isLoading}
@@ -231,11 +224,11 @@ export function ItemSourcesManager({
                 isPending={createMutation.isPending}
                 canRemove
                 removeLabel={t('items.form.sources_remove_tooltip')}
-                rootError={editorErrors[row.key] ?? null}
-                onValidate={(values) => { handleValidateNew(row.key, values) }}
-                onRemove={() => { handleRemoveNewRow(row.key) }}
+                rootError={editorErrors[PENDING_ROW_KEY] ?? null}
+                onValidate={handleValidateNew}
+                onRemove={handleCancelNewRow}
               />
-            ))}
+            ) : null}
 
             {isEmpty ? (
               <div className="rounded-md border border-border bg-background p-6 text-center text-sm text-muted-foreground">
@@ -245,17 +238,19 @@ export function ItemSourcesManager({
           </div>
         )}
 
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="self-start"
-          onClick={handleAddNewRow}
-          disabled={addDisabled}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t('items.sources.add_button')}
-        </Button>
+        {showAddButton ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="self-start"
+            onClick={handleAddNewRow}
+            disabled={isMutating}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t('items.sources.add_button')}
+          </Button>
+        ) : null}
       </section>
 
       {deleteTarget !== null ? (

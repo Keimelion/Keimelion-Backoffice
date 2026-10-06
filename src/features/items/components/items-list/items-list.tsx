@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import {
   ClearFiltersButton,
@@ -40,8 +40,11 @@ export function ItemsList(): React.JSX.Element {
   function toggleExpanded(itemId: string): void {
     setExpandedItemIds((previous) => {
       const next = new Set(previous)
-      if (next.has(itemId)) next.delete(itemId)
-      else next.add(itemId)
+      if (next.has(itemId)) {
+        next.delete(itemId)
+        return next
+      }
+      next.add(itemId)
       return next
     })
   }
@@ -49,6 +52,23 @@ export function ItemsList(): React.JSX.Element {
   const itemsQuery = useAdminItems(filters)
   const items = itemsQuery.data?.items ?? []
   const total = itemsQuery.data?.pagination.total ?? 0
+
+  const visibleItemIds = useMemo(() => new Set(items.map((item) => item.id)), [items])
+
+  useEffect(() => {
+    setExpandedItemIds((previous) => {
+      let changed = false
+      const next = new Set<string>()
+      for (const id of previous) {
+        if (visibleItemIds.has(id)) {
+          next.add(id)
+          continue
+        }
+        changed = true
+      }
+      return changed ? next : previous
+    })
+  }, [visibleItemIds])
 
   const itemsFilters: FilterDefinition[] = [
     {
@@ -59,69 +79,82 @@ export function ItemsList(): React.JSX.Element {
     },
   ]
 
-  const columns: DataTableColumn<ApiAdminItem>[] = [
-    {
-      key: 'image',
-      header: t('items.table.column.image'),
-      className: 'w-14',
-      cell: (item) => <ItemThumbnail imageUrl={item.imageUrl} alt={item.name} />,
-    },
-    {
-      key: 'name',
-      header: t('items.table.column.name'),
-      sortable: true,
-      cell: (item) => (
-        <div className="flex flex-col gap-0.5">
-          <span className="font-medium">{item.name}</span>
-          {item.description !== null ? (
-            <span className="line-clamp-1 text-xs text-muted-foreground">
-              {item.description}
-            </span>
-          ) : null}
-        </div>
-      ),
-    },
-    {
-      key: 'sources',
-      header: t('items.table.column.sources'),
-      className: 'w-20',
-      cell: (item) => <Badge variant="secondary">{item.sources.length}</Badge>,
-    },
-    {
-      key: 'createdAt',
-      header: t('items.table.column.created_at'),
-      sortable: true,
-      cell: (item) => formatDate(item.createdAt),
-    },
-    {
-      key: 'updatedAt',
-      header: t('items.table.column.updated_at'),
-      sortable: true,
-      cell: (item) => formatDate(item.updatedAt),
-    },
-    {
-      key: 'actions',
-      header: t('items.table.column.actions'),
-      className: 'w-28 text-right',
-      cell: (item) => (
-        <div className="flex justify-end gap-1">
-          <IconButton
-            label={t('common.actions.update', { name: item.name })}
-            onClick={() => { setEditTarget(item) }}
-          >
-            <Pencil />
-          </IconButton>
-          <IconButton
-            label={t('common.actions.delete', { name: item.name })}
-            tone="destructive"
-            onClick={() => { setDeleteTarget(item) }}
-          >
-            <Trash2 />
-          </IconButton>
-        </div>
-      ),
-    },
-  ]
+  const columns = useMemo<DataTableColumn<ApiAdminItem>[]>(
+    () => [
+      {
+        key: 'image',
+        header: t('items.table.column.image'),
+        className: 'w-14',
+        cell: (item) => <ItemThumbnail imageUrl={item.imageUrl} alt={item.name} />,
+      },
+      {
+        key: 'name',
+        header: t('items.table.column.name'),
+        sortable: true,
+        cell: (item) => (
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium">{item.name}</span>
+            {item.description !== null ? (
+              <span className="line-clamp-1 text-xs text-muted-foreground">
+                {item.description}
+              </span>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        key: 'sources',
+        header: t('items.table.column.sources'),
+        className: 'w-20',
+        cell: (item) => <Badge variant="secondary">{item.sources.length}</Badge>,
+      },
+      {
+        key: 'createdAt',
+        header: t('items.table.column.created_at'),
+        sortable: true,
+        cell: (item) => formatDate(item.createdAt),
+      },
+      {
+        key: 'updatedAt',
+        header: t('items.table.column.updated_at'),
+        sortable: true,
+        cell: (item) => formatDate(item.updatedAt),
+      },
+      {
+        key: 'actions',
+        header: t('items.table.column.actions'),
+        className: 'w-28 text-right',
+        cell: (item) => (
+          <div className="flex justify-end gap-1">
+            <IconButton
+              label={t('common.actions.update', { name: item.name })}
+              onClick={() => { setEditTarget(item) }}
+            >
+              <Pencil />
+            </IconButton>
+            <IconButton
+              label={t('common.actions.delete', { name: item.name })}
+              tone="destructive"
+              onClick={() => { setDeleteTarget(item) }}
+            >
+              <Trash2 />
+            </IconButton>
+          </div>
+        ),
+      },
+    ],
+    [t],
+  )
+
+  const renderExpandedRow = useMemo(
+    () => (item: ApiAdminItem) => <ItemSourcesManager item={item} />,
+    [],
+  )
+
+  const isRowExpanded = useMemo(
+    () => (item: ApiAdminItem) => expandedItemIds.has(item.id),
+    [expandedItemIds],
+  )
 
   return (
     <>
@@ -134,10 +167,8 @@ export function ItemsList(): React.JSX.Element {
         skeletonRowCount={filters.limit}
         onRetry={() => { void itemsQuery.refetch() }}
         getRowLabel={(item) => item.name}
-        renderExpandedRow={(item) => (
-          <ItemSourcesManager item={item} enabled={expandedItemIds.has(item.id)} />
-        )}
-        isRowExpanded={(item) => expandedItemIds.has(item.id)}
+        renderExpandedRow={renderExpandedRow}
+        isRowExpanded={isRowExpanded}
         onRowClick={(item) => { toggleExpanded(item.id) }}
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
