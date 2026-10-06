@@ -116,7 +116,7 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
           name="slug"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('shops.form.slug_label')}</FormLabel>
+              <FormLabel required>{t('shops.form.slug_label')}</FormLabel>
               <FormControl>
                 <Input
                   placeholder={t('shops.form.slug_placeholder')}
@@ -139,7 +139,7 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('shops.form.name_label')}</FormLabel>
+              <FormLabel required>{t('shops.form.name_label')}</FormLabel>
               <FormControl>
                 <Input
                   placeholder={t('shops.form.name_placeholder')}

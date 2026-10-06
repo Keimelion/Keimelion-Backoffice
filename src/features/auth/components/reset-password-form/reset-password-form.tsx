@@ -67,7 +67,7 @@ export function ResetPasswordForm(): React.JSX.Element {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.reset_password.new_password_label')}</FormLabel>
+                <FormLabel required>{t('auth.reset_password.new_password_label')}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"
@@ -85,7 +85,7 @@ export function ResetPasswordForm(): React.JSX.Element {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.reset_password.confirm_password_label')}</FormLabel>
+                <FormLabel required>{t('auth.reset_password.confirm_password_label')}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     placeholder="••••••••"

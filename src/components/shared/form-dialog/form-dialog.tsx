@@ -47,11 +47,11 @@ export function FormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="flex max-h-[calc(100vh-2rem)] max-w-xl flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          {children}
+          <div className="-mx-6 overflow-y-auto px-6">{children}</div>
         </DialogContent>
       </Dialog>
 

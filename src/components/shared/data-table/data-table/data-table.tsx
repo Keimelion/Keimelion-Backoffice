@@ -57,6 +57,9 @@ interface DataTableProps<TRow extends DataTableBaseRow> {
   getRowLabel?: (row: TRow) => string
   isReorderMode?: boolean
   onReorder?: (nextItems: TRow[]) => void
+  renderExpandedRow?: (row: TRow) => ReactNode
+  isRowExpanded?: (row: TRow) => boolean
+  onRowClick?: (row: TRow) => void
   toolbar?: ReactNode
   footer?: ReactNode
 }
@@ -76,6 +79,9 @@ export function DataTable<TRow extends DataTableBaseRow>({
   getRowLabel,
   isReorderMode = false,
   onReorder,
+  renderExpandedRow,
+  isRowExpanded,
+  onRowClick,
   toolbar,
   footer,
 }: DataTableProps<TRow>): React.JSX.Element {
@@ -170,6 +176,9 @@ export function DataTable<TRow extends DataTableBaseRow>({
                 getRowClassName,
                 getRowLabel,
                 isDraggable,
+                renderExpandedRow,
+                isRowExpanded,
+                onRowClick,
                 sortableIds,
                 t,
               })
@@ -214,6 +223,9 @@ interface RenderDataRowsArgs<TRow extends DataTableBaseRow> {
   getRowClassName: ((row: TRow) => string | undefined) | undefined
   getRowLabel: ((row: TRow) => string) | undefined
   isDraggable: boolean
+  renderExpandedRow: ((row: TRow) => ReactNode) | undefined
+  isRowExpanded: ((row: TRow) => boolean) | undefined
+  onRowClick: ((row: TRow) => void) | undefined
   sortableIds: string[]
   t: TranslateFn
 }
@@ -225,6 +237,9 @@ function renderDataRows<TRow extends DataTableBaseRow>({
   getRowClassName,
   getRowLabel,
   isDraggable,
+  renderExpandedRow,
+  isRowExpanded,
+  onRowClick,
   sortableIds,
   t,
 }: RenderDataRowsArgs<TRow>): ReactNode {
@@ -238,17 +253,24 @@ function renderDataRows<TRow extends DataTableBaseRow>({
     )
   }
 
-  const rows = data.map((row) => (
-    <DataTableRow
-      key={row.id}
-      row={row}
-      columns={columns}
-      className={getRowClassName?.(row)}
-      label={getRowLabel?.(row) ?? row.id}
-      isDraggable={isDraggable}
-      t={t}
-    />
-  ))
+  const rows = data.map((row) => {
+    const expandedContent = renderExpandedRow?.(row) ?? null
+    const isExpanded = expandedContent === null ? false : (isRowExpanded?.(row) ?? false)
+    return (
+      <DataTableRow
+        key={row.id}
+        row={row}
+        columns={columns}
+        className={getRowClassName?.(row)}
+        label={getRowLabel?.(row) ?? row.id}
+        isDraggable={isDraggable}
+        expandedContent={expandedContent}
+        isExpanded={isExpanded}
+        onClick={onRowClick}
+        t={t}
+      />
+    )
+  })
 
   if (!isDraggable) return rows
 
@@ -265,8 +287,14 @@ interface DataTableRowProps<TRow extends DataTableBaseRow> {
   className: string | undefined
   label: string
   isDraggable: boolean
+  expandedContent: ReactNode | null
+  isExpanded: boolean
+  onClick: ((row: TRow) => void) | undefined
   t: TranslateFn
 }
+
+const INTERACTIVE_TARGET_SELECTOR =
+  'button, a, input, select, textarea, label, [role="button"], [role="link"], [role="menuitem"], [role="option"]'
 
 function DataTableRow<TRow extends DataTableBaseRow>({
   row,
@@ -274,6 +302,9 @@ function DataTableRow<TRow extends DataTableBaseRow>({
   className,
   label,
   isDraggable,
+  expandedContent,
+  isExpanded,
+  onClick,
   t,
 }: DataTableRowProps<TRow>): React.JSX.Element {
   const {
@@ -292,35 +323,62 @@ function DataTableRow<TRow extends DataTableBaseRow>({
   }
 
   return (
-    <TableRow
-      ref={setNodeRef}
-      style={style}
-      className={cn('hover:bg-primary/10', className)}
-    >
-      {columns.map((column) => {
-        if (column.key === DRAG_HANDLE_KEY) {
+    <>
+      <TableRow
+        ref={setNodeRef}
+        style={style}
+        className={cn('hover:bg-primary/10', onClick !== undefined && 'cursor-pointer', className)}
+        onClick={
+          onClick !== undefined
+            ? (event) => {
+                if ((event.target as HTMLElement).closest(INTERACTIVE_TARGET_SELECTOR)) return
+                onClick(row)
+              }
+            : undefined
+        }
+      >
+        {columns.map((column) => {
+          if (column.key === DRAG_HANDLE_KEY) {
+            return (
+              <TableCell key={DRAG_HANDLE_KEY} className={column.className}>
+                {isDraggable ? (
+                  <button
+                    type="button"
+                    aria-label={t('common.reorder.drag_handle_label', { name: label })}
+                    className="flex h-8 w-6 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing"
+                    {...attributes}
+                    {...listeners}
+                  >
+                    <GripVertical className="h-4 w-4" />
+                  </button>
+                ) : null}
+              </TableCell>
+            )
+          }
           return (
-            <TableCell key={DRAG_HANDLE_KEY} className={column.className}>
-              {isDraggable ? (
-                <button
-                  type="button"
-                  aria-label={t('common.reorder.drag_handle_label', { name: label })}
-                  className="flex h-8 w-6 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing"
-                  {...attributes}
-                  {...listeners}
-                >
-                  <GripVertical className="h-4 w-4" />
-                </button>
-              ) : null}
+            <TableCell key={column.key} className={column.className}>
+              {column.cell(row)}
             </TableCell>
           )
-        }
-        return (
-          <TableCell key={column.key} className={column.className}>
-            {column.cell(row)}
+        })}
+      </TableRow>
+      {expandedContent !== null ? (
+        <TableRow
+          data-state={isExpanded ? 'open' : 'closed'}
+          className="hover:bg-transparent data-[state=closed]:border-b-0 data-[state=open]:hover:bg-transparent"
+        >
+          <TableCell colSpan={columns.length} className="p-0">
+            <div
+              data-state={isExpanded ? 'open' : 'closed'}
+              className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out data-[state=open]:grid-rows-[1fr]"
+            >
+              <div className="overflow-hidden">
+                {isExpanded ? <div className="px-4 py-3">{expandedContent}</div> : null}
+              </div>
+            </div>
           </TableCell>
-        )
-      })}
-    </TableRow>
+        </TableRow>
+      ) : null}
+    </>
   )
 }
