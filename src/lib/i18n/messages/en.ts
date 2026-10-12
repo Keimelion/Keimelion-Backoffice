@@ -1,4 +1,5 @@
 import auth from './en/auth.json'
+import categories from './en/categories.json'
 import common from './en/common.json'
 import dashboard from './en/dashboard.json'
 import errorMessages from './en/error.json'
@@ -19,6 +20,7 @@ export const enMessages = {
   ...occasionTypes,
   ...lists,
   ...shops,
+  ...categories,
   ...sidebar,
   ...errorMessages,
   ...query,
