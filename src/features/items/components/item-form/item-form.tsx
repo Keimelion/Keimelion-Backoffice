@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   createItemInputSchema,
+  ITEM_CATEGORIES_MAX,
   updateItemInputSchema,
   type ApiAdminItem,
   type CreateItemInput,
@@ -30,6 +31,7 @@ import {
   type ItemSourceInput,
 } from '@/data-access/items/item-sources.schemas'
 import { useAdminShops } from '@/features/shops/hooks/use-admin-shops'
+import { CategoriesPicker } from '@/features/items/components/item-form/categories-picker'
 import { ItemSourceEditorRowShell } from '@/features/items/components/item-source-editor-row'
 import { ItemSourceFields } from '@/features/items/components/item-source-fields'
 import {
@@ -76,6 +78,7 @@ function buildDefaultValues(props: ItemFormProps): ItemFormCreateValues {
       description: props.item.description,
       imageUrl: props.item.imageUrl,
       sources: props.item.sources.map(toItemSourceInput),
+      categories: props.item.categories.map((category) => category.id),
     }
   }
   return {
@@ -83,6 +86,7 @@ function buildDefaultValues(props: ItemFormProps): ItemFormCreateValues {
     description: null,
     imageUrl: null,
     sources: [EMPTY_ITEM_SOURCE_INPUT],
+    categories: [],
   }
 }
 
@@ -109,6 +113,7 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
         name: values.name,
         description: values.description,
         imageUrl: values.imageUrl,
+        categories: values.categories,
       }).success
     : createItemInputSchema.safeParse(values).success
   const { isDirty } = form.formState
@@ -171,6 +176,7 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
                 name: submittedValues.name,
                 description: submittedValues.description,
                 imageUrl: submittedValues.imageUrl,
+                categories: submittedValues.categories,
               }
               props.onSubmit(editValues, form.setError)
               return
@@ -261,6 +267,28 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
                   referrerPolicy="no-referrer"
                 />
               ) : null}
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="categories"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('items.form.categories_label')}</FormLabel>
+              <FormControl>
+                <CategoriesPicker
+                  value={field.value ?? []}
+                  onChange={(nextIds) => { field.onChange(nextIds) }}
+                  disabled={isPending}
+                  max={ITEM_CATEGORIES_MAX}
+                />
+              </FormControl>
+              <FormDescription>
+                {t('items.form.categories_help', { max: ITEM_CATEGORIES_MAX })}
+              </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />

@@ -15,6 +15,7 @@ import type {
   CreateCategoryInput,
   UpdateCategoryInput,
 } from '@/data-access/categories/categories.schemas'
+import { ITEMS_QUERY_KEY } from '@/data-access/items/items.api'
 
 const ADMIN_CATEGORIES_LIST_KEY = [...CATEGORIES_QUERY_KEY, 'list'] as const
 
@@ -78,7 +79,10 @@ export function useDeleteCategory(): UseMutationResult<void, Error, string> {
   return useMutation({
     mutationFn: deleteCategory,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: ITEMS_QUERY_KEY }),
+      ])
     },
   })
 }

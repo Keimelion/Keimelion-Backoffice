@@ -23,6 +23,35 @@ vi.mock('@/features/shops/hooks/use-admin-shops', () => ({
   useAdminShops: () => ({ data: { items: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } }, isLoading: false }),
 }))
 
+const CATEGORY_FOOD_ID = '11111111-1111-4111-8111-111111111111'
+const CATEGORY_FOOD = {
+  id: CATEGORY_FOOD_ID,
+  parentId: null,
+  name: 'Food',
+  slug: 'food',
+  depth: 0,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+}
+const CATEGORY_FASHION_ID = '22222222-2222-4222-8222-222222222222'
+const CATEGORY_FASHION = {
+  id: CATEGORY_FASHION_ID,
+  parentId: null,
+  name: 'Fashion',
+  slug: 'fashion',
+  depth: 0,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+}
+
+vi.mock('@/features/categories/hooks/use-admin-categories', () => ({
+  useAdminCategories: () => ({
+    data: [CATEGORY_FOOD, CATEGORY_FASHION],
+    isLoading: false,
+    isError: false,
+  }),
+}))
+
 const MOCK_ITEM = {
   id: 'item-1',
   name: 'Blanket',
@@ -32,6 +61,7 @@ const MOCK_ITEM = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   sources: [],
+  categories: [],
 }
 
 beforeEach(() => {
@@ -158,5 +188,55 @@ describe('ItemForm (edit mode)', () => {
     await waitFor(() => {
       expect(onDirtyChange).toHaveBeenLastCalledWith(true)
     })
+  })
+
+  it('prefills category chips from the item', () => {
+    render(
+      <ItemForm
+        mode="edit"
+        item={{ ...MOCK_ITEM, categories: [CATEGORY_FOOD] }}
+        onSubmit={vi.fn()}
+        onDirtyChange={vi.fn()}
+        isPending={false}
+      />,
+    )
+    expect(screen.getByText('Food')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /remove category food/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('removes a chip and submits an empty categories array', async () => {
+    const onSubmit = vi.fn()
+    const MOCK_SOURCE = {
+      id: 'src-1',
+      itemId: 'item-1',
+      shopId: null,
+      shop: null,
+      sourceUrl: 'https://example.com/p',
+      price: '19.99',
+      currency: 'EUR',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    }
+    render(
+      <ItemForm
+        mode="edit"
+        item={{ ...MOCK_ITEM, sources: [MOCK_SOURCE], categories: [CATEGORY_FOOD] }}
+        onSubmit={onSubmit}
+        onDirtyChange={vi.fn()}
+        isPending={false}
+      />,
+    )
+    await userEvent.click(
+      screen.getByRole('button', { name: /remove category food/i }),
+    )
+    expect(screen.queryByText('Food')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalled()
+    })
+    const payload = onSubmit.mock.calls[0]?.[0] as { categories?: string[] }
+    expect(payload.categories).toEqual([])
   })
 })

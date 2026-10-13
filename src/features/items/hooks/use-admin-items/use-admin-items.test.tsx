@@ -38,6 +38,7 @@ const MOCK_ITEM = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   sources: [],
+  categories: [],
 }
 
 const MOCK_RESPONSE = {

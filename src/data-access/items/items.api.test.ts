@@ -30,6 +30,14 @@ const MOCK_SOURCE = {
   updatedAt: '2024-01-01T00:00:00.000Z',
 }
 
+const MOCK_CATEGORY = {
+  id: '11111111-1111-4111-8111-111111111111',
+  parentId: null,
+  name: 'Food',
+  slug: 'food',
+  depth: 0,
+}
+
 const MOCK_ITEM = {
   id: 'item-1',
   name: 'Blanket',
@@ -39,17 +47,30 @@ const MOCK_ITEM = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   sources: [MOCK_SOURCE],
+  categories: [MOCK_CATEGORY],
 }
 
 describe('apiAdminItemSchema', () => {
-  it('parses a full item with sources', () => {
+  it('parses a full item with sources and categories', () => {
     const result = apiAdminItemSchema.safeParse(MOCK_ITEM)
     expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.categories).toHaveLength(1)
+    expect(result.data.categories[0]?.slug).toBe('food')
   })
 
   it('fails when sources is missing', () => {
     const result = apiAdminItemSchema.safeParse({ ...MOCK_ITEM, sources: undefined })
     expect(result.success).toBe(false)
+  })
+
+  it('defaults categories to an empty array when the API omits it', () => {
+    const partialItem: Record<string, unknown> = { ...MOCK_ITEM }
+    delete partialItem.categories
+    const result = apiAdminItemSchema.safeParse(partialItem)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.categories).toEqual([])
   })
 })
 
@@ -126,6 +147,42 @@ describe('createItemInputSchema', () => {
     const result = createItemInputSchema.safeParse({ ...VALID_INPUT, unknown: 'x' })
     expect(result.success).toBe(false)
   })
+
+  it('accepts up to two valid UUID categories', () => {
+    const result = createItemInputSchema.safeParse({
+      ...VALID_INPUT,
+      categories: [
+        '11111111-1111-4111-8111-111111111111',
+        '22222222-2222-4222-8222-222222222222',
+      ],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects more than two categories', () => {
+    const result = createItemInputSchema.safeParse({
+      ...VALID_INPUT,
+      categories: [
+        '11111111-1111-4111-8111-111111111111',
+        '22222222-2222-4222-8222-222222222222',
+        '33333333-3333-4333-8333-333333333333',
+      ],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects non-UUID category ids', () => {
+    const result = createItemInputSchema.safeParse({
+      ...VALID_INPUT,
+      categories: ['not-a-uuid'],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts an empty categories array', () => {
+    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, categories: [] })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe('updateItemInputSchema', () => {
@@ -137,6 +194,24 @@ describe('updateItemInputSchema', () => {
   it('rejects a sources field', () => {
     const result = updateItemInputSchema.safeParse({
       sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts a categories-only patch', () => {
+    const result = updateItemInputSchema.safeParse({
+      categories: ['11111111-1111-4111-8111-111111111111'],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects more than two categories', () => {
+    const result = updateItemInputSchema.safeParse({
+      categories: [
+        '11111111-1111-4111-8111-111111111111',
+        '22222222-2222-4222-8222-222222222222',
+        '33333333-3333-4333-8333-333333333333',
+      ],
     })
     expect(result.success).toBe(false)
   })
@@ -225,6 +300,23 @@ describe('createItem', () => {
     expect(item.name).toBe('Blanket')
   })
 
+  it('forwards selected categories in the request body', async () => {
+    const CATEGORY_ONE = '11111111-1111-4111-8111-111111111111'
+    const CATEGORY_TWO = '22222222-2222-4222-8222-222222222222'
+    mock.onPost('/admin/items').reply((config) => {
+      const parsed = JSON.parse(config.data as string) as { categories?: string[] }
+      expect(parsed.categories).toEqual([CATEGORY_ONE, CATEGORY_TWO])
+      return [HttpStatus.CREATED, { item: MOCK_ITEM }]
+    })
+    await createItem({
+      name: 'Blanket',
+      description: null,
+      imageUrl: null,
+      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+      categories: [CATEGORY_ONE, CATEGORY_TWO],
+    })
+  })
+
   it('throws ApiRequestError on 422', async () => {
     mock.onPost('/admin/items').reply(HttpStatus.UNPROCESSABLE_ENTITY, {
       code: 'UNPROCESSABLE_ENTITY',
@@ -262,6 +354,15 @@ describe('updateItem', () => {
       message: 'Not found',
     })
     await expect(updateItem('missing', { name: 'x' })).rejects.toBeInstanceOf(ApiRequestError)
+  })
+
+  it('forwards an empty categories array for "remove all"', async () => {
+    mock.onPatch('/admin/items/item-1').reply((config) => {
+      const parsed = JSON.parse(config.data as string) as { categories?: string[] }
+      expect(parsed.categories).toEqual([])
+      return [HttpStatus.OK, { item: MOCK_ITEM }]
+    })
+    await updateItem('item-1', { categories: [] })
   })
 })
 
