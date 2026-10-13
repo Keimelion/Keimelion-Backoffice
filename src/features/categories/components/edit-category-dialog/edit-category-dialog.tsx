@@ -7,21 +7,31 @@ import { FormDialog } from '@/components/shared/form-dialog'
 import { CategoryForm } from '@/features/categories/components/category-form'
 import type { CategoryFormValues } from '@/features/categories/components/category-form'
 import { useUpdateCategory } from '@/features/categories/hooks/use-admin-categories'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
+import {
+  resolveCategoryName,
+  type ApiCategory,
+  type UpdateCategoryInput,
+} from '@/data-access/categories/categories.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
-import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
+import { LOCALES } from '@/lib/i18n/locale'
 
 const CODE_MAX_DEPTH = 'CATEGORY_MAX_DEPTH_EXCEEDED'
 const CODE_CYCLE = 'CATEGORY_CYCLE_DETECTED'
 
-const EDITABLE_CATEGORY_FIELDS = [
-  'name',
-  'slug',
-  'parentId',
-] as const satisfies readonly (keyof CategoryFormValues)[]
+function buildPatch(category: ApiCategory, values: CategoryFormValues): UpdateCategoryInput {
+  const patch: UpdateCategoryInput = {}
+  const nameChanged = LOCALES.some(
+    (locale) => (category.translations[locale] ?? '') !== values.name[locale],
+  )
+  if (nameChanged) patch.name = values.name
+  if (category.slug !== values.slug) patch.slug = values.slug
+  if (category.parentId !== values.parentId) patch.parentId = values.parentId
+  return patch
+}
 
 interface EditCategoryDialogProps {
   open: boolean
@@ -42,12 +52,13 @@ export function EditCategoryDialog({
     values: CategoryFormValues,
     setError: UseFormSetError<CategoryFormValues>,
   ): void {
-    const patch = pickChangedFields(category, values, EDITABLE_CATEGORY_FIELDS)
+    const patch = buildPatch(category, values)
     mutation.mutate(
       { id: category.id, input: patch },
       {
         onSuccess: () => {
-          notifySuccess({ title: translate('categories.mutation.updated_toast', { name: values.name }) })
+          const displayName = resolveCategoryName(values.name, useLocaleStore.getState().locale)
+          notifySuccess({ title: translate('categories.mutation.updated_toast', { name: displayName }) })
           onOpenChange(false)
         },
         onError: (error) => {

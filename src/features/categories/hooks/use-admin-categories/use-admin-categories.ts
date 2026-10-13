@@ -15,29 +15,41 @@ import type {
   CreateCategoryInput,
   UpdateCategoryInput,
 } from '@/data-access/categories/categories.schemas'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
+import type { Locale } from '@/lib/i18n/locale'
 
-const ADMIN_CATEGORIES_LIST_KEY = [...CATEGORIES_QUERY_KEY, 'list'] as const
-
-export function buildAdminCategoriesKey(): typeof ADMIN_CATEGORIES_LIST_KEY {
-  return ADMIN_CATEGORIES_LIST_KEY
+export function buildAdminCategoriesKey(
+  locale: Locale,
+): readonly ['categories', 'list', Locale] {
+  return [...CATEGORIES_QUERY_KEY, 'list', locale] as const
 }
 
-export function buildAdminCategoryKey(id: string): readonly ['categories', 'detail', string] {
-  return [...CATEGORIES_QUERY_KEY, 'detail', id] as const
+export function buildAdminCategoryKey(
+  id: string,
+  locale: Locale,
+): readonly ['categories', 'detail', string, Locale] {
+  return [...CATEGORIES_QUERY_KEY, 'detail', id, locale] as const
 }
 
-const DISABLED_ADMIN_CATEGORY_KEY = [...CATEGORIES_QUERY_KEY, 'detail', null] as const
+function buildDisabledAdminCategoryKey(
+  locale: Locale,
+): readonly ['categories', 'detail', null, Locale] {
+  return [...CATEGORIES_QUERY_KEY, 'detail', null, locale] as const
+}
 
 export function useAdminCategories(): UseQueryResult<ApiCategory[]> {
+  const locale = useLocaleStore((state) => state.locale)
   return useQuery({
-    queryKey: ADMIN_CATEGORIES_LIST_KEY,
+    queryKey: buildAdminCategoriesKey(locale),
     queryFn: listAdminCategories,
   })
 }
 
 export function useAdminCategory(id: string | null): UseQueryResult<ApiCategory> {
+  const locale = useLocaleStore((state) => state.locale)
   return useQuery({
-    queryKey: id === null ? DISABLED_ADMIN_CATEGORY_KEY : buildAdminCategoryKey(id),
+    queryKey:
+      id === null ? buildDisabledAdminCategoryKey(locale) : buildAdminCategoryKey(id, locale),
     queryFn: () => fetchAdminCategory(id ?? ''),
     enabled: id !== null,
   })
@@ -64,11 +76,8 @@ export function useUpdateCategory(): UseMutationResult<ApiCategory, Error, Updat
   return useMutation({
     mutationFn: ({ id, input }) => updateCategory(id, input),
     meta: { silent: true },
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY }),
-        queryClient.invalidateQueries({ queryKey: buildAdminCategoryKey(variables.id) }),
-      ])
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY })
     },
   })
 }

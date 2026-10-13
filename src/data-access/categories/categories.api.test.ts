@@ -23,9 +23,9 @@ const MOCK_OTHER_ID = '22222222-2222-4222-8222-222222222222'
 const MOCK_CATEGORY = {
   id: MOCK_PARENT_ID,
   parentId: null,
-  name: 'Electronics',
   slug: 'electronics',
   depth: 0,
+  translations: { en: 'Electronics', fr: 'Électronique' },
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 }
@@ -67,7 +67,7 @@ describe('adminCategoryListResponseSchema', () => {
 
 describe('createCategoryInputSchema', () => {
   const VALID_INPUT = {
-    name: 'Electronics',
+    name: { en: 'Electronics', fr: 'Électronique' },
     slug: 'electronics',
     parentId: null,
   }
@@ -90,8 +90,19 @@ describe('createCategoryInputSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('rejects an empty name', () => {
-    const result = createCategoryInputSchema.safeParse({ ...VALID_INPUT, name: '   ' })
+  it('rejects an empty name translation', () => {
+    const result = createCategoryInputSchema.safeParse({
+      ...VALID_INPUT,
+      name: { en: '   ', fr: 'Électronique' },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects a missing name translation', () => {
+    const result = createCategoryInputSchema.safeParse({
+      ...VALID_INPUT,
+      name: { en: 'Electronics' },
+    })
     expect(result.success).toBe(false)
   })
 
@@ -103,7 +114,9 @@ describe('createCategoryInputSchema', () => {
 
 describe('updateCategoryInputSchema', () => {
   it('accepts partial updates', () => {
-    const result = updateCategoryInputSchema.safeParse({ name: 'Renamed' })
+    const result = updateCategoryInputSchema.safeParse({
+      name: { en: 'Renamed', fr: 'Renommé' },
+    })
     expect(result.success).toBe(true)
   })
 
@@ -130,14 +143,21 @@ describe('listAdminCategories', () => {
     mock.onGet('/admin/categories').reply(HttpStatus.OK, {
       items: [
         MOCK_CATEGORY,
-        { ...MOCK_CATEGORY, id: MOCK_OTHER_ID, slug: 'phones', name: 'Phones' },
+        {
+          ...MOCK_CATEGORY,
+          id: MOCK_OTHER_ID,
+          slug: 'phones',
+          translations: { en: 'Phones', fr: 'Téléphones' },
+        },
       ],
     })
 
     const items = await listAdminCategories()
     expect(items).toHaveLength(2)
     expect(items[0]?.slug).toBe('electronics')
+    expect(items[0]?.name).toBe('Electronics')
     expect(items[1]?.slug).toBe('phones')
+    expect(items[1]?.name).toBe('Phones')
   })
 
   it('sends no query params', async () => {
@@ -184,13 +204,26 @@ describe('createCategory', () => {
   it('posts the input body and returns the created category', async () => {
     mock.onPost('/admin/categories').reply((config) => {
       expect(JSON.parse(config.data as string)).toEqual({
-        name: 'Phones',
+        name: { en: 'Phones', fr: 'Téléphones' },
         slug: 'phones',
         parentId: null,
       })
-      return [HttpStatus.CREATED, { category: { ...MOCK_CATEGORY, name: 'Phones', slug: 'phones' } }]
+      return [
+        HttpStatus.CREATED,
+        {
+          category: {
+            ...MOCK_CATEGORY,
+            slug: 'phones',
+            translations: { en: 'Phones', fr: 'Téléphones' },
+          },
+        },
+      ]
     })
-    const category = await createCategory({ name: 'Phones', slug: 'phones', parentId: null })
+    const category = await createCategory({
+      name: { en: 'Phones', fr: 'Téléphones' },
+      slug: 'phones',
+      parentId: null,
+    })
     expect(category.slug).toBe('phones')
   })
 
@@ -200,7 +233,11 @@ describe('createCategory', () => {
       message: 'Slug already in use',
     })
     await expect(
-      createCategory({ name: 'Electronics', slug: 'electronics', parentId: null }),
+      createCategory({
+        name: { en: 'Electronics', fr: 'Électronique' },
+        slug: 'electronics',
+        parentId: null,
+      }),
     ).rejects.toBeInstanceOf(ApiRequestError)
   })
 })
@@ -214,10 +251,17 @@ describe('updateCategory', () => {
 
   it('patches the given id and returns the updated category', async () => {
     mock.onPatch(`/admin/categories/${MOCK_CATEGORY.id}`).reply((config) => {
-      expect(JSON.parse(config.data as string)).toEqual({ name: 'Renamed' })
-      return [HttpStatus.OK, { category: { ...MOCK_CATEGORY, name: 'Renamed' } }]
+      expect(JSON.parse(config.data as string)).toEqual({
+        name: { en: 'Renamed', fr: 'Renommé' },
+      })
+      return [
+        HttpStatus.OK,
+        { category: { ...MOCK_CATEGORY, translations: { en: 'Renamed', fr: 'Renommé' } } },
+      ]
     })
-    const category = await updateCategory(MOCK_CATEGORY.id, { name: 'Renamed' })
+    const category = await updateCategory(MOCK_CATEGORY.id, {
+      name: { en: 'Renamed', fr: 'Renommé' },
+    })
     expect(category.name).toBe('Renamed')
   })
 

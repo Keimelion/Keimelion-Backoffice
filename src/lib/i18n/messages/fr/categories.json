@@ -29,6 +29,7 @@
   "categories.admin.delete_dialog.confirm": "Oui, supprimer la catégorie",
   "categories.admin.delete_dialog.cancel": "Non, conserver la catégorie",
   "categories.form.name_label": "Nom",
+  "categories.form.name_label_for_locale": "Nom ({locale})",
   "categories.form.name_placeholder": "Électronique",
   "categories.form.slug_label": "Slug",
   "categories.form.slug_placeholder": "electronique",

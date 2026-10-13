@@ -11,6 +11,8 @@ import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { resolveCategoryName } from '@/data-access/categories/categories.schemas'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 
 const CODE_MAX_DEPTH = 'CATEGORY_MAX_DEPTH_EXCEEDED'
 
@@ -37,7 +39,8 @@ export function CreateCategoryDialog({
   ): void {
     mutation.mutate(values, {
       onSuccess: (created) => {
-        notifySuccess({ title: translate('categories.mutation.created_toast', { name: values.name }) })
+        const displayName = resolveCategoryName(values.name, useLocaleStore.getState().locale)
+        notifySuccess({ title: translate('categories.mutation.created_toast', { name: displayName }) })
         onCreated?.(created.parentId)
         onOpenChange(false)
       },

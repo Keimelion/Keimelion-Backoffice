@@ -35,9 +35,10 @@ import {
 const MOCK_CATEGORY = {
   id: '11111111-1111-1111-1111-111111111111',
   parentId: null,
-  name: 'Electronics',
   slug: 'electronics',
   depth: 0,
+  translations: { en: 'Electronics', fr: 'Électronique' },
+  name: 'Electronics',
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 }
@@ -48,8 +49,8 @@ beforeEach(() => {
 
 describe('buildAdminCategoriesKey', () => {
   it('produces the expected list key', () => {
-    const key = buildAdminCategoriesKey()
-    expect(key).toEqual(['categories', 'list'])
+    const key = buildAdminCategoriesKey('en')
+    expect(key).toEqual(['categories', 'list', 'en'])
   })
 })
 
@@ -106,13 +107,17 @@ describe('useCreateCategory', () => {
     const { result } = renderHook(() => useCreateCategory(), {
       wrapper: createQueryClientWrapper(),
     })
-    result.current.mutate({ name: 'Phones', slug: 'phones', parentId: null })
+    result.current.mutate({
+      name: { en: 'Phones', fr: 'Téléphones' },
+      slug: 'phones',
+      parentId: null,
+    })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
     expect(createCategory).toHaveBeenCalled()
     expect(vi.mocked(createCategory).mock.calls[0]?.[0]).toEqual({
-      name: 'Phones',
+      name: { en: 'Phones', fr: 'Téléphones' },
       slug: 'phones',
       parentId: null,
     })
@@ -121,17 +126,26 @@ describe('useCreateCategory', () => {
 
 describe('useUpdateCategory', () => {
   it('calls updateCategory with the given id and input', async () => {
-    vi.mocked(updateCategory).mockResolvedValue({ ...MOCK_CATEGORY, name: 'New' })
+    vi.mocked(updateCategory).mockResolvedValue({
+      ...MOCK_CATEGORY,
+      name: 'New',
+      translations: { en: 'New', fr: 'Nouveau' },
+    })
     const { result } = renderHook(() => useUpdateCategory(), {
       wrapper: createQueryClientWrapper(),
     })
-    result.current.mutate({ id: MOCK_CATEGORY.id, input: { name: 'New' } })
+    result.current.mutate({
+      id: MOCK_CATEGORY.id,
+      input: { name: { en: 'New', fr: 'Nouveau' } },
+    })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
     expect(updateCategory).toHaveBeenCalled()
     expect(vi.mocked(updateCategory).mock.calls[0]?.[0]).toBe(MOCK_CATEGORY.id)
-    expect(vi.mocked(updateCategory).mock.calls[0]?.[1]).toEqual({ name: 'New' })
+    expect(vi.mocked(updateCategory).mock.calls[0]?.[1]).toEqual({
+      name: { en: 'New', fr: 'Nouveau' },
+    })
   })
 })
 
@@ -152,7 +166,7 @@ describe('useDeleteCategory', () => {
 
 describe('buildAdminCategoryKey', () => {
   it('produces the expected detail key', () => {
-    const key = buildAdminCategoryKey('abc')
-    expect(key).toEqual(['categories', 'detail', 'abc'])
+    const key = buildAdminCategoryKey('abc', 'en')
+    expect(key).toEqual(['categories', 'detail', 'abc', 'en'])
   })
 })

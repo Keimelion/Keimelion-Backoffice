@@ -19,6 +19,7 @@ function makeCategory(id: string, parentId: string | null, name: string, depth: 
     name,
     slug: name.toLowerCase(),
     depth,
+    translations: { en: name },
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   }

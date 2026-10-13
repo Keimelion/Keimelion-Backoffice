@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import {
   createCategoryInputSchema,
   type ApiCategory,
+  type CategoryNameInput,
   type CreateCategoryInput,
 } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
@@ -25,6 +26,12 @@ import { ParentCategorySelect } from '@/features/categories/components/parent-ca
 import { collectDescendantIds } from '@/features/categories/lib/category-tree'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useAutoSlug } from '@/lib/use-auto-slug'
+import { DEFAULT_LOCALE, LOCALES, LOCALE_NATIVE_NAMES } from '@/lib/i18n/locale'
+
+const ORDERED_LOCALES = [
+  DEFAULT_LOCALE,
+  ...LOCALES.filter((locale) => locale !== DEFAULT_LOCALE),
+] as const
 
 export type CategoryFormValues = CreateCategoryInput
 
@@ -44,16 +51,22 @@ type CategoryFormProps =
       isPending: boolean
     }
 
+function buildDefaultName(category?: ApiCategory): CategoryNameInput {
+  return Object.fromEntries(
+    LOCALES.map((locale) => [locale, category?.translations[locale] ?? '']),
+  ) as CategoryNameInput
+}
+
 function buildDefaultValues(props: CategoryFormProps): CategoryFormValues {
   if (props.mode === 'edit') {
     return {
-      name: props.category.name,
+      name: buildDefaultName(props.category),
       slug: props.category.slug,
       parentId: props.category.parentId,
     }
   }
   return {
-    name: '',
+    name: buildDefaultName(),
     slug: '',
     parentId: props.defaultParentId ?? null,
   }
@@ -74,7 +87,12 @@ export function CategoryForm(props: CategoryFormProps): React.JSX.Element {
     defaultValues: buildDefaultValues(props),
   })
 
-  useAutoSlug({ form, nameField: 'name', slugField: 'slug', enabled: !isEdit })
+  useAutoSlug({
+    form,
+    nameField: `name.${DEFAULT_LOCALE}`,
+    slugField: 'slug',
+    enabled: !isEdit,
+  })
 
   const values = form.watch()
   const isFormValid = createCategoryInputSchema.safeParse(values).success
@@ -109,23 +127,28 @@ export function CategoryForm(props: CategoryFormProps): React.JSX.Element {
         }}
         noValidate
       >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel required>{t('categories.form.name_label')}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t('categories.form.name_placeholder')}
-                  disabled={isPending}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {ORDERED_LOCALES.map((locale) => (
+            <FormField
+              key={locale}
+              control={form.control}
+              name={`name.${locale}`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>
+                    {t('categories.form.name_label_for_locale', {
+                      locale: LOCALE_NATIVE_NAMES[locale],
+                    })}
+                  </FormLabel>
+                  <FormControl>
+                    <Input disabled={isPending} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
+        </div>
 
         <FormField
           control={form.control}

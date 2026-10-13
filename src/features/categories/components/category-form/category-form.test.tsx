@@ -39,6 +39,7 @@ function makeCategory(
     name,
     slug: name.toLowerCase().replace(/\s+/g, '-'),
     depth,
+    translations: { en: name, fr: name },
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   }
@@ -57,7 +58,7 @@ beforeEach(() => {
 })
 
 describe('CategoryForm (create mode)', () => {
-  it('renders name, slug, and parent fields', () => {
+  it('renders a name field per locale plus slug and parent', () => {
     renderWithQueryClient(
       <CategoryForm
         mode="create"
@@ -66,7 +67,8 @@ describe('CategoryForm (create mode)', () => {
         isPending={false}
       />,
     )
-    expect(screen.getByText('Name')).toBeInTheDocument()
+    expect(screen.getByLabelText(/name \(english\)/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/name \(français\)/i)).toBeInTheDocument()
     expect(screen.getByText('Slug')).toBeInTheDocument()
     expect(screen.getByText('Parent category')).toBeInTheDocument()
   })
@@ -83,7 +85,7 @@ describe('CategoryForm (create mode)', () => {
     expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
   })
 
-  it('enables submit once name and slug are set', async () => {
+  it('enables submit once both locale names and slug are set', async () => {
     renderWithQueryClient(
       <CategoryForm
         mode="create"
@@ -92,7 +94,8 @@ describe('CategoryForm (create mode)', () => {
         isPending={false}
       />,
     )
-    await userEvent.type(screen.getByPlaceholderText('Electronics'), 'Phones')
+    await userEvent.type(screen.getByLabelText(/name \(english\)/i), 'Phones')
+    await userEvent.type(screen.getByLabelText(/name \(français\)/i), 'Téléphones')
     await userEvent.type(screen.getByPlaceholderText('electronics'), 'phones')
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /create/i })).toBeEnabled()
@@ -130,7 +133,7 @@ describe('CategoryForm (create mode)', () => {
       />,
     )
     expect(onDirtyChange).toHaveBeenLastCalledWith(false)
-    await userEvent.type(screen.getByPlaceholderText('Electronics'), 'E')
+    await userEvent.type(screen.getByLabelText(/name \(english\)/i), 'E')
     await waitFor(() => {
       expect(onDirtyChange).toHaveBeenLastCalledWith(true)
     })
@@ -150,7 +153,8 @@ describe('CategoryForm (create mode)', () => {
         isPending={false}
       />,
     )
-    await userEvent.type(screen.getByPlaceholderText('Electronics'), 'Phones')
+    await userEvent.type(screen.getByLabelText(/name \(english\)/i), 'Phones')
+    await userEvent.type(screen.getByLabelText(/name \(français\)/i), 'Téléphones')
     await userEvent.type(screen.getByPlaceholderText('electronics'), 'phones')
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
@@ -170,7 +174,8 @@ describe('CategoryForm (edit mode)', () => {
         isPending={false}
       />,
     )
-    expect(screen.getByDisplayValue('Phones')).toBeInTheDocument()
+    expect(screen.getByLabelText(/name \(english\)/i)).toHaveValue('Phones')
+    expect(screen.getByLabelText(/name \(français\)/i)).toHaveValue('Phones')
     expect(screen.getByDisplayValue('phones')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument()
   })
