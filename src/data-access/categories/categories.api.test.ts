@@ -7,7 +7,6 @@ import {
   apiCategorySchema,
   adminCategoryListResponseSchema,
   createCategoryInputSchema,
-  listCategoriesQuerySchema,
   updateCategoryInputSchema,
 } from './categories.schemas'
 import {
@@ -20,7 +19,6 @@ import {
 
 const MOCK_PARENT_ID = '11111111-1111-4111-8111-111111111111'
 const MOCK_OTHER_ID = '22222222-2222-4222-8222-222222222222'
-const MOCK_FILTER_PARENT_ID = '33333333-3333-4333-8333-333333333333'
 
 const MOCK_CATEGORY = {
   id: MOCK_PARENT_ID,
@@ -55,52 +53,15 @@ describe('apiCategorySchema', () => {
 
 describe('adminCategoryListResponseSchema', () => {
   it('parses a valid list response', () => {
-    const raw = {
-      items: [MOCK_CATEGORY],
-      pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
-    }
+    const raw = { items: [MOCK_CATEGORY] }
     const result = adminCategoryListResponseSchema.safeParse(raw)
     expect(result.success).toBe(true)
   })
 
   it('parses an empty list', () => {
-    const raw = { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } }
+    const raw = { items: [] }
     const result = adminCategoryListResponseSchema.safeParse(raw)
     expect(result.success).toBe(true)
-  })
-})
-
-describe('listCategoriesQuerySchema', () => {
-  it('applies defaults for page and limit', () => {
-    const result = listCategoriesQuerySchema.safeParse({})
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.page).toBe(1)
-    expect(result.data.limit).toBe(20)
-  })
-
-  it('coerces depth filter to a number', () => {
-    const result = listCategoriesQuerySchema.safeParse({ depth: '1' })
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.depth).toBe(1)
-  })
-
-  it('rejects a depth outside the 0..2 range', () => {
-    const result = listCategoriesQuerySchema.safeParse({ depth: '3' })
-    expect(result.success).toBe(false)
-  })
-
-  it('accepts a valid sort value', () => {
-    const result = listCategoriesQuerySchema.safeParse({ sort: 'name:asc' })
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.sort).toBe('name:asc')
-  })
-
-  it('rejects sort with an unknown field', () => {
-    const result = listCategoriesQuerySchema.safeParse({ sort: 'depth:asc' })
-    expect(result.success).toBe(false)
   })
 })
 
@@ -165,50 +126,27 @@ describe('listAdminCategories', () => {
     vi.clearAllMocks()
   })
 
-  it('sends pagination, filters and sort in the request', async () => {
-    mock.onGet('/admin/categories').reply((config) => {
-      expect(config.params).toEqual({
-        page: '2',
-        limit: '10',
-        'name[ilike]': 'elec',
-        'depth[eq]': '1',
-        'parentId[eq]': MOCK_FILTER_PARENT_ID,
-        sort: 'name:asc',
-      })
-      return [
-        HttpStatus.OK,
-        {
-          items: [MOCK_CATEGORY],
-          pagination: { page: 2, limit: 10, total: 1, totalPages: 1 },
-        },
-      ]
+  it('returns every category in a flat array', async () => {
+    mock.onGet('/admin/categories').reply(HttpStatus.OK, {
+      items: [
+        MOCK_CATEGORY,
+        { ...MOCK_CATEGORY, id: MOCK_OTHER_ID, slug: 'phones', name: 'Phones' },
+      ],
     })
 
-    const response = await listAdminCategories({
-      page: 2,
-      limit: 10,
-      search: 'elec',
-      depth: 1,
-      parentId: MOCK_FILTER_PARENT_ID,
-      sort: 'name:asc',
-    })
-
-    expect(response.items).toHaveLength(1)
+    const items = await listAdminCategories()
+    expect(items).toHaveLength(2)
+    expect(items[0]?.slug).toBe('electronics')
+    expect(items[1]?.slug).toBe('phones')
   })
 
-  it('omits filters when not set', async () => {
+  it('sends no query params', async () => {
     mock.onGet('/admin/categories').reply((config) => {
-      expect(config.params).toEqual({ page: '1', limit: '20' })
-      return [
-        HttpStatus.OK,
-        {
-          items: [],
-          pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
-        },
-      ]
+      expect(config.params).toBeUndefined()
+      return [HttpStatus.OK, { items: [] }]
     })
 
-    await listAdminCategories({ page: 1, limit: 20 })
+    await listAdminCategories()
   })
 })
 

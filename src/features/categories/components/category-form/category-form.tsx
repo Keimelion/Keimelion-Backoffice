@@ -25,14 +25,12 @@ import { ParentCategorySelect } from '@/features/categories/components/parent-ca
 import { collectDescendantIds } from '@/features/categories/lib/category-tree'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
-const CATEGORIES_SELECT_FILTER = { page: 1, limit: 100 } as const
-
 export type CategoryFormValues = CreateCategoryInput
 
 type CategoryFormProps =
   | {
       mode: 'create'
-      initialValues?: never
+      defaultParentId?: string | null
       onSubmit: (values: CategoryFormValues, setError: UseFormSetError<CategoryFormValues>) => void
       onDirtyChange: (isDirty: boolean) => void
       isPending: boolean
@@ -56,7 +54,7 @@ function buildDefaultValues(props: CategoryFormProps): CategoryFormValues {
   return {
     name: '',
     slug: '',
-    parentId: null,
+    parentId: props.defaultParentId ?? null,
   }
 }
 
@@ -65,8 +63,8 @@ export function CategoryForm(props: CategoryFormProps): React.JSX.Element {
   const t = useTranslate()
   const isEdit = mode === 'edit'
 
-  const categoriesQuery = useAdminCategories(CATEGORIES_SELECT_FILTER)
-  const categories = categoriesQuery.data?.items ?? []
+  const categoriesQuery = useAdminCategories()
+  const categories = categoriesQuery.data ?? []
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(createCategoryInputSchema),

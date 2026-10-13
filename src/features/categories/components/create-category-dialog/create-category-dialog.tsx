@@ -17,11 +17,15 @@ const CODE_MAX_DEPTH = 'CATEGORY_MAX_DEPTH_EXCEEDED'
 interface CreateCategoryDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  defaultParentId?: string | null
+  onCreated?: (createdParentId: string | null) => void
 }
 
 export function CreateCategoryDialog({
   open,
   onOpenChange,
+  defaultParentId,
+  onCreated,
 }: CreateCategoryDialogProps): React.JSX.Element {
   const t = useTranslate()
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
@@ -32,8 +36,9 @@ export function CreateCategoryDialog({
     setError: UseFormSetError<CategoryFormValues>,
   ): void {
     mutation.mutate(values, {
-      onSuccess: () => {
+      onSuccess: (created) => {
         notifySuccess({ title: translate('categories.mutation.created_toast', { name: values.name }) })
+        onCreated?.(created.parentId)
         onOpenChange(false)
       },
       onError: (error) => {
@@ -63,6 +68,7 @@ export function CreateCategoryDialog({
     >
       <CategoryForm
         mode="create"
+        defaultParentId={defaultParentId ?? null}
         onSubmit={handleSubmit}
         onDirtyChange={setIsFormDirty}
         isPending={mutation.isPending}

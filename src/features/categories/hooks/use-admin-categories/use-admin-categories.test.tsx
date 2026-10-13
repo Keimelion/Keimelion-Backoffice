@@ -42,50 +42,32 @@ const MOCK_CATEGORY = {
   updatedAt: '2024-01-01T00:00:00.000Z',
 }
 
-const MOCK_RESPONSE = {
-  items: [MOCK_CATEGORY],
-  pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
-}
-
 beforeEach(() => {
   vi.clearAllMocks()
 })
 
 describe('buildAdminCategoriesKey', () => {
-  it('produces the expected key shape', () => {
-    const key = buildAdminCategoriesKey({ page: 1, limit: 20 })
-    expect(key[0]).toBe('categories')
-    expect(key[1]).toBe('list')
-    expect(key[2]).toMatchObject({ page: 1, limit: 20 })
-  })
-
-  it('strips undefined values', () => {
-    const key = buildAdminCategoriesKey({ page: 1, search: undefined })
-    expect('search' in key[2]).toBe(false)
-  })
-
-  it('sorts filter keys for cache stability', () => {
-    const keyA = buildAdminCategoriesKey({ page: 1, search: 'a', limit: 20 })
-    const keyB = buildAdminCategoriesKey({ limit: 20, search: 'a', page: 1 })
-    expect(JSON.stringify(keyA[2])).toBe(JSON.stringify(keyB[2]))
+  it('produces the expected list key', () => {
+    const key = buildAdminCategoriesKey()
+    expect(key).toEqual(['categories', 'list'])
   })
 })
 
 describe('useAdminCategories', () => {
-  it('returns data on successful fetch', async () => {
-    vi.mocked(listAdminCategories).mockResolvedValue(MOCK_RESPONSE)
-    const { result } = renderHook(() => useAdminCategories({ page: 1, limit: 20 }), {
+  it('returns the flat category array on success', async () => {
+    vi.mocked(listAdminCategories).mockResolvedValue([MOCK_CATEGORY])
+    const { result } = renderHook(() => useAdminCategories(), {
       wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
-    expect(result.current.data?.items[0]?.slug).toBe('electronics')
+    expect(result.current.data?.[0]?.slug).toBe('electronics')
   })
 
   it('exposes isError on failure', async () => {
     vi.mocked(listAdminCategories).mockRejectedValue(new Error('Boom'))
-    const { result } = renderHook(() => useAdminCategories({ page: 1 }), {
+    const { result } = renderHook(() => useAdminCategories(), {
       wrapper: createQueryClientWrapper(),
     })
     await waitFor(() => {

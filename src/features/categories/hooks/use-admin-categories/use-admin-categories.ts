@@ -2,8 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { normalizeFilters } from '@/data-access/_shared/normalize-filters'
 import {
   CATEGORIES_QUERY_KEY,
   createCategory,
@@ -15,17 +13,13 @@ import {
 import type {
   ApiCategory,
   CreateCategoryInput,
-  ListCategoriesQuery,
   UpdateCategoryInput,
 } from '@/data-access/categories/categories.schemas'
 
-type CategoriesListFilters = Partial<ListCategoriesQuery>
+const ADMIN_CATEGORIES_LIST_KEY = [...CATEGORIES_QUERY_KEY, 'list'] as const
 
-export function buildAdminCategoriesKey(
-  filters: CategoriesListFilters,
-): readonly ['categories', 'list', CategoriesListFilters] {
-  const normalized = normalizeFilters(filters)
-  return [...CATEGORIES_QUERY_KEY, 'list', normalized] as const
+export function buildAdminCategoriesKey(): typeof ADMIN_CATEGORIES_LIST_KEY {
+  return ADMIN_CATEGORIES_LIST_KEY
 }
 
 export function buildAdminCategoryKey(id: string): readonly ['categories', 'detail', string] {
@@ -34,12 +28,10 @@ export function buildAdminCategoryKey(id: string): readonly ['categories', 'deta
 
 const DISABLED_ADMIN_CATEGORY_KEY = [...CATEGORIES_QUERY_KEY, 'detail', null] as const
 
-export function useAdminCategories(
-  filters: CategoriesListFilters,
-): UseQueryResult<PaginatedResponse<ApiCategory>> {
+export function useAdminCategories(): UseQueryResult<ApiCategory[]> {
   return useQuery({
-    queryKey: buildAdminCategoriesKey(filters),
-    queryFn: () => listAdminCategories(filters),
+    queryKey: ADMIN_CATEGORIES_LIST_KEY,
+    queryFn: listAdminCategories,
   })
 }
 

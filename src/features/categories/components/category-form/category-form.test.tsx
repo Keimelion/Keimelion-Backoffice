@@ -49,10 +49,7 @@ const CHILD = makeCategory('22222222-2222-2222-2222-222222222222', ROOT.id, 'Pho
 const DEEP = makeCategory('33333333-3333-3333-3333-333333333333', CHILD.id, 'Smartphones', 2)
 const OTHER_ROOT = makeCategory('44444444-4444-4444-4444-444444444444', null, 'Books', 0)
 
-const DEFAULT_LIST = {
-  items: [ROOT, CHILD, DEEP, OTHER_ROOT],
-  pagination: { page: 1, limit: 100, total: 4, totalPages: 1 },
-}
+const DEFAULT_LIST = [ROOT, CHILD, DEEP, OTHER_ROOT]
 
 beforeEach(() => {
   vi.clearAllMocks()
