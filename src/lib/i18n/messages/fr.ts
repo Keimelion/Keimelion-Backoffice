@@ -1,5 +1,6 @@
 import type { MessageId } from './en'
 import auth from './fr/auth.json'
+import categories from './fr/categories.json'
 import common from './fr/common.json'
 import dashboard from './fr/dashboard.json'
 import errorMessages from './fr/error.json'
@@ -20,6 +21,7 @@ export const frMessages = {
   ...occasionTypes,
   ...lists,
   ...shops,
+  ...categories,
   ...sidebar,
   ...errorMessages,
   ...query,
