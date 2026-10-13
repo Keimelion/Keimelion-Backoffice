@@ -22,6 +22,7 @@ import {
   type CreateShopInput,
 } from '@/data-access/shops/admin-shops.schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { useAutoSlug } from '@/lib/use-auto-slug'
 
 const DEFAULT_SORT_ORDER = 0
 const SORT_ORDER_MAX = 32767
@@ -79,6 +80,8 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
     reValidateMode: 'onChange',
     defaultValues: buildDefaultValues(props),
   })
+
+  useAutoSlug({ form, nameField: 'name', slugField: 'slug', enabled: !isEdit })
 
   const values = form.watch()
   const isFormValid = createShopInputSchema.safeParse(values).success
