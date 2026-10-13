@@ -22,6 +22,7 @@ import {
 } from '@/data-access/occasion-types/admin-occasion-types.schemas'
 import { LOCALES, DEFAULT_LOCALE, LOCALE_NATIVE_NAMES } from '@/lib/i18n/locale'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { useAutoSlug } from '@/lib/use-auto-slug'
 
 const DEFAULT_SORT_ORDER = 0
 
@@ -69,6 +70,13 @@ export function OccasionTypeForm(props: OccasionTypeFormProps): React.JSX.Elemen
     mode: 'onTouched',
     reValidateMode: 'onChange',
     defaultValues: buildDefaultValues(props),
+  })
+
+  useAutoSlug({
+    form,
+    nameField: `translations.${DEFAULT_LOCALE}`,
+    slugField: 'slug',
+    enabled: mode === 'create',
   })
 
   const values = form.watch()

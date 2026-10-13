@@ -24,6 +24,7 @@ import { useAdminCategories } from '@/features/categories/hooks/use-admin-catego
 import { ParentCategorySelect } from '@/features/categories/components/parent-category-select'
 import { collectDescendantIds } from '@/features/categories/lib/category-tree'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { useAutoSlug } from '@/lib/use-auto-slug'
 
 export type CategoryFormValues = CreateCategoryInput
 
@@ -72,6 +73,8 @@ export function CategoryForm(props: CategoryFormProps): React.JSX.Element {
     reValidateMode: 'onChange',
     defaultValues: buildDefaultValues(props),
   })
+
+  useAutoSlug({ form, nameField: 'name', slugField: 'slug', enabled: !isEdit })
 
   const values = form.watch()
   const isFormValid = createCategoryInputSchema.safeParse(values).success
