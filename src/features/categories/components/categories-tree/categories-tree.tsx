@@ -486,7 +486,9 @@ function TreeNode({
               >
                 <Plus />
               </IconButton>
-            ) : null}
+            ) : (
+              <span className="h-8 w-8" aria-hidden="true" />
+            )}
             <IconButton
               label={t('common.actions.update', { name: category.name })}
               onClick={() => { onEditCategory(category) }}
