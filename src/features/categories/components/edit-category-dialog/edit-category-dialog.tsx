@@ -7,26 +7,41 @@ import { FormDialog } from '@/components/shared/form-dialog'
 import { CategoryForm } from '@/features/categories/components/category-form'
 import type { CategoryFormValues } from '@/features/categories/components/category-form'
 import { useUpdateCategory } from '@/features/categories/hooks/use-admin-categories'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
+import { pickTranslation } from '@/features/categories/lib/resolve-category-name'
+import type { ApiCategory, UpdateCategoryInput } from '@/data-access/categories/categories.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
-import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 const CODE_MAX_DEPTH = 'CATEGORY_MAX_DEPTH_EXCEEDED'
 const CODE_CYCLE = 'CATEGORY_CYCLE_DETECTED'
 
-const EDITABLE_CATEGORY_FIELDS = [
-  'name',
-  'slug',
-  'parentId',
-] as const satisfies readonly (keyof CategoryFormValues)[]
-
 interface EditCategoryDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   category: ApiCategory
+}
+
+function buildCategoryPatch(
+  category: ApiCategory,
+  values: CategoryFormValues,
+): UpdateCategoryInput {
+  const patch: UpdateCategoryInput = {}
+  const changedTranslations: { fr?: string; en?: string } = {}
+  if (values.name.fr !== (category.translations.fr ?? '')) {
+    changedTranslations.fr = values.name.fr
+  }
+  if (values.name.en !== (category.translations.en ?? '')) {
+    changedTranslations.en = values.name.en
+  }
+  if (changedTranslations.fr !== undefined || changedTranslations.en !== undefined) {
+    patch.name = changedTranslations
+  }
+  if (values.slug !== category.slug) patch.slug = values.slug
+  if (values.parentId !== category.parentId) patch.parentId = values.parentId
+  return patch
 }
 
 export function EditCategoryDialog({
@@ -35,6 +50,7 @@ export function EditCategoryDialog({
   category,
 }: EditCategoryDialogProps): React.JSX.Element {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
   const mutation = useUpdateCategory()
 
@@ -42,12 +58,15 @@ export function EditCategoryDialog({
     values: CategoryFormValues,
     setError: UseFormSetError<CategoryFormValues>,
   ): void {
-    const patch = pickChangedFields(category, values, EDITABLE_CATEGORY_FIELDS)
+    const patch = buildCategoryPatch(category, values)
     mutation.mutate(
       { id: category.id, input: patch },
       {
         onSuccess: () => {
-          notifySuccess({ title: translate('categories.mutation.updated_toast', { name: values.name }) })
+          const updatedName = pickTranslation(values.name, locale)
+          notifySuccess({
+            title: translate('categories.mutation.updated_toast', { name: updatedName }),
+          })
           onOpenChange(false)
         },
         onError: (error) => {

@@ -23,7 +23,7 @@ const MOCK_OTHER_ID = '22222222-2222-4222-8222-222222222222'
 const MOCK_CATEGORY = {
   id: MOCK_PARENT_ID,
   parentId: null,
-  name: 'Electronics',
+  translations: { fr: 'Électronique', en: 'Electronics' },
   slug: 'electronics',
   depth: 0,
   createdAt: '2024-01-01T00:00:00.000Z',
@@ -67,7 +67,7 @@ describe('adminCategoryListResponseSchema', () => {
 
 describe('createCategoryInputSchema', () => {
   const VALID_INPUT = {
-    name: 'Electronics',
+    name: { fr: 'Électronique', en: 'Electronics' },
     slug: 'electronics',
     parentId: null,
   }
@@ -90,8 +90,19 @@ describe('createCategoryInputSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('rejects an empty name', () => {
-    const result = createCategoryInputSchema.safeParse({ ...VALID_INPUT, name: '   ' })
+  it('rejects when a locale is missing', () => {
+    const result = createCategoryInputSchema.safeParse({
+      ...VALID_INPUT,
+      name: { en: 'Electronics' },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects when a locale value is blank', () => {
+    const result = createCategoryInputSchema.safeParse({
+      ...VALID_INPUT,
+      name: { fr: '   ', en: 'Electronics' },
+    })
     expect(result.success).toBe(false)
   })
 
@@ -102,9 +113,14 @@ describe('createCategoryInputSchema', () => {
 })
 
 describe('updateCategoryInputSchema', () => {
-  it('accepts partial updates', () => {
-    const result = updateCategoryInputSchema.safeParse({ name: 'Renamed' })
+  it('accepts a single-locale name patch', () => {
+    const result = updateCategoryInputSchema.safeParse({ name: { en: 'Renamed' } })
     expect(result.success).toBe(true)
+  })
+
+  it('rejects a name patch with no locales', () => {
+    const result = updateCategoryInputSchema.safeParse({ name: {} })
+    expect(result.success).toBe(false)
   })
 
   it('accepts an empty object', () => {
@@ -130,7 +146,12 @@ describe('listAdminCategories', () => {
     mock.onGet('/admin/categories').reply(HttpStatus.OK, {
       items: [
         MOCK_CATEGORY,
-        { ...MOCK_CATEGORY, id: MOCK_OTHER_ID, slug: 'phones', name: 'Phones' },
+        {
+          ...MOCK_CATEGORY,
+          id: MOCK_OTHER_ID,
+          slug: 'phones',
+          translations: { fr: 'Téléphones', en: 'Phones' },
+        },
       ],
     })
 
@@ -184,13 +205,26 @@ describe('createCategory', () => {
   it('posts the input body and returns the created category', async () => {
     mock.onPost('/admin/categories').reply((config) => {
       expect(JSON.parse(config.data as string)).toEqual({
-        name: 'Phones',
+        name: { fr: 'Téléphones', en: 'Phones' },
         slug: 'phones',
         parentId: null,
       })
-      return [HttpStatus.CREATED, { category: { ...MOCK_CATEGORY, name: 'Phones', slug: 'phones' } }]
+      return [
+        HttpStatus.CREATED,
+        {
+          category: {
+            ...MOCK_CATEGORY,
+            slug: 'phones',
+            translations: { fr: 'Téléphones', en: 'Phones' },
+          },
+        },
+      ]
     })
-    const category = await createCategory({ name: 'Phones', slug: 'phones', parentId: null })
+    const category = await createCategory({
+      name: { fr: 'Téléphones', en: 'Phones' },
+      slug: 'phones',
+      parentId: null,
+    })
     expect(category.slug).toBe('phones')
   })
 
@@ -200,7 +234,11 @@ describe('createCategory', () => {
       message: 'Slug already in use',
     })
     await expect(
-      createCategory({ name: 'Electronics', slug: 'electronics', parentId: null }),
+      createCategory({
+        name: { fr: 'Électronique', en: 'Electronics' },
+        slug: 'electronics',
+        parentId: null,
+      }),
     ).rejects.toBeInstanceOf(ApiRequestError)
   })
 })
@@ -214,11 +252,19 @@ describe('updateCategory', () => {
 
   it('patches the given id and returns the updated category', async () => {
     mock.onPatch(`/admin/categories/${MOCK_CATEGORY.id}`).reply((config) => {
-      expect(JSON.parse(config.data as string)).toEqual({ name: 'Renamed' })
-      return [HttpStatus.OK, { category: { ...MOCK_CATEGORY, name: 'Renamed' } }]
+      expect(JSON.parse(config.data as string)).toEqual({ name: { en: 'Renamed' } })
+      return [
+        HttpStatus.OK,
+        {
+          category: {
+            ...MOCK_CATEGORY,
+            translations: { fr: 'Électronique', en: 'Renamed' },
+          },
+        },
+      ]
     })
-    const category = await updateCategory(MOCK_CATEGORY.id, { name: 'Renamed' })
-    expect(category.name).toBe('Renamed')
+    const category = await updateCategory(MOCK_CATEGORY.id, { name: { en: 'Renamed' } })
+    expect(category.translations.en).toBe('Renamed')
   })
 
   it('throws ApiRequestError on 422 max depth exceeded', async () => {

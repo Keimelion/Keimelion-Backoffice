@@ -12,6 +12,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
+import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface MoveCategoryDialogProps {
@@ -32,10 +34,12 @@ export function MoveCategoryDialog({
   onConfirm,
 }: MoveCategoryDialogProps): React.JSX.Element {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
   const [isPending, setIsPending] = useState<boolean>(false)
 
   const currentLocationLabel = currentParentName ?? t('categories.move_dialog.root_label')
   const newLocationLabel = newParentName ?? t('categories.move_dialog.root_label')
+  const categoryName = resolveCategoryName(category, locale)
 
   async function handleConfirm(event: React.MouseEvent<HTMLButtonElement>): Promise<void> {
     event.preventDefault()
@@ -57,7 +61,7 @@ export function MoveCategoryDialog({
           <AlertDialogTitle>{t('categories.move_dialog.title')}</AlertDialogTitle>
           <AlertDialogDescription>
             {t('categories.move_dialog.description', {
-              name: category.name,
+              name: categoryName,
               from: currentLocationLabel,
               to: newLocationLabel,
             })}

@@ -16,7 +16,7 @@ function makeCategory(id: string, parentId: string | null, name: string, depth: 
   return {
     id,
     parentId,
-    name,
+    translations: { en: name },
     slug: name.toLowerCase(),
     depth,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -66,7 +66,7 @@ describe('countDescendants', () => {
 
 describe('buildCategoryForest', () => {
   it('groups categories under their parent and sorts siblings alphabetically', () => {
-    const forest = buildCategoryForest(CATEGORIES)
+    const forest = buildCategoryForest(CATEGORIES, 'en')
     expect(forest.map((node) => node.category.id)).toEqual(['unrelated', 'root'])
     const rootNode = forest.find((node) => node.category.id === 'root')
     expect(rootNode?.children.map((node) => node.category.id)).toEqual(['child-b', 'child-a'])
@@ -75,14 +75,14 @@ describe('buildCategoryForest', () => {
   })
 
   it('promotes orphan categories to roots when their parent is missing', () => {
-    const forest = buildCategoryForest([CHILD_A])
+    const forest = buildCategoryForest([CHILD_A], 'en')
     expect(forest.map((node) => node.category.id)).toEqual(['child-a'])
   })
 })
 
 describe('getSubtreeMaxDepth', () => {
   it('returns the category depth for a leaf', () => {
-    const forest = buildCategoryForest(CATEGORIES)
+    const forest = buildCategoryForest(CATEGORIES, 'en')
     const grandchildNode = forest
       .find((node) => node.category.id === 'root')
       ?.children.find((node) => node.category.id === 'child-a')
@@ -92,7 +92,7 @@ describe('getSubtreeMaxDepth', () => {
   })
 
   it('returns the deepest descendant depth for a subtree root', () => {
-    const forest = buildCategoryForest(CATEGORIES)
+    const forest = buildCategoryForest(CATEGORIES, 'en')
     const rootNode = forest.find((node) => node.category.id === 'root')
     if (rootNode === undefined) throw new Error('root missing from forest')
     expect(getSubtreeMaxDepth(rootNode)).toBe(2)
@@ -101,15 +101,15 @@ describe('getSubtreeMaxDepth', () => {
 
 describe('buildParentPathLabel', () => {
   it('returns just the name for a root category', () => {
-    expect(buildParentPathLabel(ROOT, CATEGORIES)).toBe('Electronics')
+    expect(buildParentPathLabel(ROOT, CATEGORIES, 'en')).toBe('Electronics')
   })
 
   it('prefixes with the parent name', () => {
-    expect(buildParentPathLabel(CHILD_A, CATEGORIES)).toBe('Electronics / Phones')
+    expect(buildParentPathLabel(CHILD_A, CATEGORIES, 'en')).toBe('Electronics / Phones')
   })
 
   it('builds the full path for a nested category', () => {
-    expect(buildParentPathLabel(GRANDCHILD, CATEGORIES)).toBe('Electronics / Phones / Smartphones')
+    expect(buildParentPathLabel(GRANDCHILD, CATEGORIES, 'en')).toBe('Electronics / Phones / Smartphones')
   })
 })
 
@@ -178,7 +178,7 @@ describe('computeDropDisabledReason', () => {
 })
 
 describe('evaluateDrop', () => {
-  const forest = buildCategoryForest(CATEGORIES)
+  const forest = buildCategoryForest(CATEGORIES, 'en')
   const nodeById = new Map<string, CategoryNode>()
   const stack: CategoryNode[] = [...forest]
   while (stack.length > 0) {

@@ -47,13 +47,16 @@ type CategoryFormProps =
 function buildDefaultValues(props: CategoryFormProps): CategoryFormValues {
   if (props.mode === 'edit') {
     return {
-      name: props.category.name,
+      name: {
+        fr: props.category.translations.fr ?? '',
+        en: props.category.translations.en ?? '',
+      },
       slug: props.category.slug,
       parentId: props.category.parentId,
     }
   }
   return {
-    name: '',
+    name: { fr: '', en: '' },
     slug: '',
     parentId: props.defaultParentId ?? null,
   }
@@ -74,7 +77,7 @@ export function CategoryForm(props: CategoryFormProps): React.JSX.Element {
     defaultValues: buildDefaultValues(props),
   })
 
-  useAutoSlug({ form, nameField: 'name', slugField: 'slug', enabled: !isEdit })
+  useAutoSlug({ form, nameField: 'name.en', slugField: 'slug', enabled: !isEdit })
 
   const values = form.watch()
   const isFormValid = createCategoryInputSchema.safeParse(values).success
@@ -109,23 +112,43 @@ export function CategoryForm(props: CategoryFormProps): React.JSX.Element {
         }}
         noValidate
       >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel required>{t('categories.form.name_label')}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t('categories.form.name_placeholder')}
-                  disabled={isPending}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="name.en"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required>{t('categories.form.name_en_label')}</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={t('categories.form.name_en_placeholder')}
+                    disabled={isPending}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="name.fr"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required>{t('categories.form.name_fr_label')}</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={t('categories.form.name_fr_placeholder')}
+                    disabled={isPending}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
