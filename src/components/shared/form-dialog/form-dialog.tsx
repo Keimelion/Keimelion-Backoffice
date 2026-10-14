@@ -50,7 +50,8 @@ export function FormDialog({
         <DialogContent
           className="flex max-h-[calc(100vh-2rem)] max-w-xl flex-col overflow-hidden"
           onInteractOutside={(event) => {
-            const target = event.target as HTMLElement | null
+            const originalEvent = event.detail.originalEvent
+            const target = originalEvent.target as HTMLElement | null
             if (target !== null && target.closest('[data-radix-popper-content-wrapper]') !== null) {
               event.preventDefault()
             }
