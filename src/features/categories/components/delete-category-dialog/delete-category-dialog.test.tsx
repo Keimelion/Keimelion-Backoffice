@@ -22,7 +22,7 @@ vi.mock('sonner', () => ({
 const MOCK_CATEGORY = {
   id: '11111111-1111-1111-1111-111111111111',
   parentId: null,
-  name: 'Electronics',
+  translations: { fr: 'Électronique', en: 'Electronics' },
   slug: 'electronics',
   depth: 0,
   createdAt: '2024-01-01T00:00:00.000Z',

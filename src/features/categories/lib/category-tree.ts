@@ -2,6 +2,8 @@ import {
   CATEGORY_MAX_ALLOWED_DEPTH,
   type ApiCategory,
 } from '@/data-access/categories/categories.schemas'
+import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
+import type { Locale } from '@/lib/i18n/locale'
 
 export interface CategoryNode {
   category: ApiCategory
@@ -113,20 +115,24 @@ export function collectAncestorIds(
 export function buildParentPathLabel(
   category: ApiCategory,
   categories: readonly ApiCategory[],
+  locale: Locale,
 ): string {
   const byId = new Map(categories.map((candidate) => [candidate.id, candidate]))
-  const segments: string[] = [category.name]
+  const segments: string[] = [resolveCategoryName(category, locale)]
   let currentParentId = category.parentId
   while (currentParentId !== null) {
     const parent = byId.get(currentParentId)
     if (parent === undefined) break
-    segments.unshift(parent.name)
+    segments.unshift(resolveCategoryName(parent, locale))
     currentParentId = parent.parentId
   }
   return segments.join(' / ')
 }
 
-export function buildCategoryForest(categories: readonly ApiCategory[]): CategoryNode[] {
+export function buildCategoryForest(
+  categories: readonly ApiCategory[],
+  locale: Locale,
+): CategoryNode[] {
   const nodeById = new Map<string, CategoryNode>()
   for (const category of categories) {
     nodeById.set(category.id, { category, children: [] })
@@ -146,14 +152,16 @@ export function buildCategoryForest(categories: readonly ApiCategory[]): Categor
     }
     parentNode.children.push(node)
   }
-  sortForestAlphabetically(roots)
+  sortForestAlphabetically(roots, locale)
   return roots
 }
 
-function sortForestAlphabetically(nodes: CategoryNode[]): void {
-  nodes.sort((a, b) => a.category.name.localeCompare(b.category.name))
+function sortForestAlphabetically(nodes: CategoryNode[], locale: Locale): void {
+  nodes.sort((a, b) =>
+    resolveCategoryName(a.category, locale).localeCompare(resolveCategoryName(b.category, locale)),
+  )
   for (const node of nodes) {
-    sortForestAlphabetically(node.children)
+    sortForestAlphabetically(node.children, locale)
   }
 }
 

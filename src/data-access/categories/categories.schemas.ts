@@ -11,15 +11,23 @@ const SLUG_INVALID_MESSAGE =
   'Slug must be lowercase letters and digits separated by hyphens (e.g. electronics).'
 const NAME_REQUIRED_MESSAGE = 'Name is required.'
 const NAME_TOO_LONG_MESSAGE = 'Name must be 120 characters or fewer.'
+const NAME_AT_LEAST_ONE_LOCALE_MESSAGE = 'At least one translation must be provided.'
 
 export const CATEGORY_MAX_ALLOWED_DEPTH = CATEGORY_MAX_DEPTH
+
+export const categoryTranslationsSchema = z.object({
+  fr: z.string().optional(),
+  en: z.string().optional(),
+})
+
+export type CategoryTranslations = z.infer<typeof categoryTranslationsSchema>
 
 export const apiCategorySchema = z.object({
   id: z.string(),
   parentId: z.string().nullable(),
-  name: z.string(),
   slug: z.string(),
   depth: z.number().int().min(0).max(CATEGORY_MAX_DEPTH),
+  translations: categoryTranslationsSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
 })
@@ -45,7 +53,7 @@ const slugSchema = z
   .max(SLUG_MAX_LENGTH, { message: SLUG_INVALID_MESSAGE })
   .regex(SLUG_REGEX, { message: SLUG_INVALID_MESSAGE })
 
-const nameSchema = z
+const nameValueSchema = z
   .string()
   .trim()
   .min(NAME_MIN_LENGTH, { message: NAME_REQUIRED_MESSAGE })
@@ -53,9 +61,26 @@ const nameSchema = z
 
 const parentIdSchema = z.uuid().nullable()
 
+const createNameSchema = z
+  .object({
+    fr: nameValueSchema,
+    en: nameValueSchema,
+  })
+  .strict()
+
+const updateNameSchema = z
+  .object({
+    fr: nameValueSchema.optional(),
+    en: nameValueSchema.optional(),
+  })
+  .strict()
+  .refine((value) => value.fr !== undefined || value.en !== undefined, {
+    message: NAME_AT_LEAST_ONE_LOCALE_MESSAGE,
+  })
+
 export const createCategoryInputSchema = z
   .object({
-    name: nameSchema,
+    name: createNameSchema,
     slug: slugSchema,
     parentId: parentIdSchema,
   })
@@ -65,7 +90,7 @@ export type CreateCategoryInput = z.infer<typeof createCategoryInputSchema>
 
 export const updateCategoryInputSchema = z
   .object({
-    name: nameSchema.optional(),
+    name: updateNameSchema.optional(),
     slug: slugSchema.optional(),
     parentId: parentIdSchema.optional(),
   })

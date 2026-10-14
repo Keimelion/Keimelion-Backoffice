@@ -41,9 +41,12 @@ import {
   type CategoryNode,
   type DropInvalidReason,
 } from '@/features/categories/lib/category-tree'
+import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
 import { useUpdateCategory } from '@/features/categories/hooks/use-admin-categories'
 import { MoveCategoryDialog } from '@/features/categories/components/move-category-dialog'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { translate } from '@/lib/i18n/translate'
+import type { Locale } from '@/lib/i18n/locale'
 import { notifyError, notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
@@ -78,6 +81,7 @@ export function CategoriesTree({
   onDeleteCategory,
 }: CategoriesTreeProps): React.JSX.Element {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE_PX } }),
   )
@@ -89,7 +93,7 @@ export function CategoriesTree({
   const [activeDragId, setActiveDragId] = useState<string | null>(null)
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null)
 
-  const forest = useMemo(() => buildCategoryForest(categories), [categories])
+  const forest = useMemo(() => buildCategoryForest(categories, locale), [categories, locale])
   const nodeById = useMemo(() => indexForest(forest), [forest])
 
   useEffect(() => {
@@ -117,8 +121,8 @@ export function CategoriesTree({
 
   const matchVisibleIds = useMemo(() => {
     if (!isSearching) return null
-    return computeMatchVisibleIds(forest, trimmedQuery)
-  }, [forest, trimmedQuery, isSearching])
+    return computeMatchVisibleIds(forest, trimmedQuery, locale)
+  }, [forest, trimmedQuery, isSearching, locale])
 
   const effectiveExpandedIds = useMemo(() => {
     if (matchVisibleIds === null) return expandedIds
@@ -176,11 +180,15 @@ export function CategoriesTree({
       return
     }
 
-    const currentParentName =
+    const currentParentCategory =
       dragged.category.parentId === null
         ? null
-        : (nodeById.get(dragged.category.parentId)?.category.name ?? null)
-    const newParentName = newParentId === null ? null : (nodeById.get(newParentId)?.category.name ?? null)
+        : (nodeById.get(dragged.category.parentId)?.category ?? null)
+    const newParentCategory = newParentId === null ? null : (nodeById.get(newParentId)?.category ?? null)
+    const currentParentName =
+      currentParentCategory === null ? null : resolveCategoryName(currentParentCategory, locale)
+    const newParentName =
+      newParentCategory === null ? null : resolveCategoryName(newParentCategory, locale)
     setPendingMove({
       category: dragged.category,
       newParentId,
@@ -191,6 +199,7 @@ export function CategoriesTree({
 
   async function confirmPendingMove(): Promise<void> {
     if (pendingMove === null) return
+    const movedName = resolveCategoryName(pendingMove.category, locale)
     try {
       await updateMutation.mutateAsync({
         id: pendingMove.category.id,
@@ -198,14 +207,12 @@ export function CategoriesTree({
       })
     } catch (error) {
       notifyError({
-        title: translate('categories.mutation.move_error_toast', {
-          name: pendingMove.category.name,
-        }),
+        title: translate('categories.mutation.move_error_toast', { name: movedName }),
       })
       throw error
     }
     notifySuccess({
-      title: translate('categories.mutation.moved_toast', { name: pendingMove.category.name }),
+      title: translate('categories.mutation.moved_toast', { name: movedName }),
     })
     if (pendingMove.newParentId !== null) {
       const newParentId = pendingMove.newParentId
@@ -329,11 +336,14 @@ function collectBranchIds(forest: readonly CategoryNode[]): Set<string> {
 function computeMatchVisibleIds(
   forest: readonly CategoryNode[],
   normalizedQuery: string,
+  locale: Locale,
 ): Set<string> {
   const visibleIds = new Set<string>()
 
   function visit(node: CategoryNode, ancestors: string[]): boolean {
-    const nameMatches = node.category.name.toLowerCase().includes(normalizedQuery)
+    const nameMatches = resolveCategoryName(node.category, locale)
+      .toLowerCase()
+      .includes(normalizedQuery)
     const slugMatches = node.category.slug.toLowerCase().includes(normalizedQuery)
     const selfMatches = nameMatches || slugMatches
 
@@ -389,10 +399,12 @@ function TreeNode({
   isMutating,
 }: TreeNodeProps): React.JSX.Element | null {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
   const { category } = node
 
   if (matchVisibleIds !== null && !matchVisibleIds.has(category.id)) return null
 
+  const resolvedName = resolveCategoryName(category, locale)
   const isExpanded = expandedIds.has(category.id)
   const hasChildren = node.children.length > 0
   const canAddChild = category.depth < CATEGORY_MAX_ALLOWED_DEPTH
@@ -448,7 +460,7 @@ function TreeNode({
         >
           <button
             type="button"
-            aria-label={t('categories.tree.drag_handle_label', { name: category.name })}
+            aria-label={t('categories.tree.drag_handle_label', { name: resolvedName })}
             className="cursor-grab touch-none rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
             {...attributes}
             {...listeners}
@@ -462,8 +474,8 @@ function TreeNode({
               onClick={() => { onToggleExpand(category.id) }}
               aria-label={
                 isExpanded
-                  ? t('categories.tree.collapse_label', { name: category.name })
-                  : t('categories.tree.expand_label', { name: category.name })
+                  ? t('categories.tree.collapse_label', { name: resolvedName })
+                  : t('categories.tree.expand_label', { name: resolvedName })
               }
               aria-expanded={isExpanded}
               className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -474,13 +486,13 @@ function TreeNode({
             <span className="w-6" aria-hidden="true" />
           )}
 
-          <span className="flex-1 truncate text-sm font-medium">{category.name}</span>
+          <span className="flex-1 truncate text-sm font-medium">{resolvedName}</span>
           <span className="truncate font-mono text-xs text-muted-foreground">{category.slug}</span>
 
           <div className="ml-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
             {canAddChild ? (
               <IconButton
-                label={t('categories.tree.add_child_label', { name: category.name })}
+                label={t('categories.tree.add_child_label', { name: resolvedName })}
                 onClick={() => { onAddChild(category.id) }}
                 disabled={isMutating}
               >
@@ -490,14 +502,14 @@ function TreeNode({
               <span className="h-8 w-8" aria-hidden="true" />
             )}
             <IconButton
-              label={t('common.actions.update', { name: category.name })}
+              label={t('common.actions.update', { name: resolvedName })}
               onClick={() => { onEditCategory(category) }}
               disabled={isMutating}
             >
               <Pencil />
             </IconButton>
             <IconButton
-              label={t('common.actions.delete', { name: category.name })}
+              label={t('common.actions.delete', { name: resolvedName })}
               tone="destructive"
               onClick={() => { onDeleteCategory(category) }}
               disabled={isMutating}
@@ -536,10 +548,11 @@ function TreeNode({
 }
 
 function DragGhost({ category }: { category: ApiCategory }): React.JSX.Element {
+  const locale = useLocaleStore((state) => state.locale)
   return (
     <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-background px-3 py-1.5 shadow-lg">
       <GripVertical className="h-4 w-4 text-muted-foreground" />
-      <span className="text-sm font-medium">{category.name}</span>
+      <span className="text-sm font-medium">{resolveCategoryName(category, locale)}</span>
       <span className="font-mono text-xs text-muted-foreground">{category.slug}</span>
     </div>
   )

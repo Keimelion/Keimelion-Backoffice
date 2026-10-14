@@ -36,7 +36,7 @@ function makeCategory(
   return {
     id,
     parentId,
-    name,
+    translations: { en: name, fr: name },
     slug: name.toLowerCase().replace(/\s+/g, '-'),
     depth,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -57,7 +57,7 @@ beforeEach(() => {
 })
 
 describe('CategoryForm (create mode)', () => {
-  it('renders name, slug, and parent fields', () => {
+  it('renders name (both locales), slug, and parent fields', () => {
     renderWithQueryClient(
       <CategoryForm
         mode="create"
@@ -66,7 +66,8 @@ describe('CategoryForm (create mode)', () => {
         isPending={false}
       />,
     )
-    expect(screen.getByText('Name')).toBeInTheDocument()
+    expect(screen.getByText('Name (English)')).toBeInTheDocument()
+    expect(screen.getByText('Name (French)')).toBeInTheDocument()
     expect(screen.getByText('Slug')).toBeInTheDocument()
     expect(screen.getByText('Parent category')).toBeInTheDocument()
   })
@@ -83,7 +84,7 @@ describe('CategoryForm (create mode)', () => {
     expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
   })
 
-  it('enables submit once name and slug are set', async () => {
+  it('enables submit once names (both locales) and slug are set', async () => {
     renderWithQueryClient(
       <CategoryForm
         mode="create"
@@ -93,6 +94,7 @@ describe('CategoryForm (create mode)', () => {
       />,
     )
     await userEvent.type(screen.getByPlaceholderText('Electronics'), 'Phones')
+    await userEvent.type(screen.getByPlaceholderText('Électronique'), 'Téléphones')
     await userEvent.type(screen.getByPlaceholderText('electronics'), 'phones')
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /create/i })).toBeEnabled()
@@ -151,6 +153,7 @@ describe('CategoryForm (create mode)', () => {
       />,
     )
     await userEvent.type(screen.getByPlaceholderText('Electronics'), 'Phones')
+    await userEvent.type(screen.getByPlaceholderText('Électronique'), 'Téléphones')
     await userEvent.type(screen.getByPlaceholderText('electronics'), 'phones')
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
@@ -170,7 +173,7 @@ describe('CategoryForm (edit mode)', () => {
         isPending={false}
       />,
     )
-    expect(screen.getByDisplayValue('Phones')).toBeInTheDocument()
+    expect(screen.getAllByDisplayValue('Phones')).toHaveLength(2)
     expect(screen.getByDisplayValue('phones')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument()
   })
