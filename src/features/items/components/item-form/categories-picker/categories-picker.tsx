@@ -93,32 +93,28 @@ export function CategoriesPicker({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {selectedCategories.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {selectedCategories.map((category) => {
-            const label = buildParentPathLabel(category, categories, locale)
-            return (
-              <Badge
-                key={category.id}
-                variant="outline"
-                className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
-              >
-                <span>{label}</span>
-                <button
-                  type="button"
-                  aria-label={t('items.form.categories_remove_chip_label', { name: label })}
-                  disabled={disabled}
-                  onClick={() => { handleRemoveChip(category.id) }}
-                  className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </Badge>
-            )
-          })}
-        </div>
-      ) : null}
+    <div className="flex flex-wrap items-center gap-2">
+      {selectedCategories.map((category) => {
+        const label = buildParentPathLabel(category, categories, locale)
+        return (
+          <Badge
+            key={category.id}
+            variant="outline"
+            className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
+          >
+            <span>{label}</span>
+            <button
+              type="button"
+              aria-label={t('items.form.categories_remove_chip_label', { name: label })}
+              disabled={disabled}
+              onClick={() => { handleRemoveChip(category.id) }}
+              className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </Badge>
+        )
+      })}
 
       {atMax ? null : (
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal>
@@ -128,7 +124,6 @@ export function CategoriesPicker({
               variant="outline"
               size="sm"
               disabled={disabled}
-              className="self-start"
             >
               <Plus className="mr-1.5 h-4 w-4" />
               {t('items.form.categories_add_button')}
