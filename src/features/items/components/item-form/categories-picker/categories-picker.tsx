@@ -15,6 +15,7 @@ import {
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
 import { buildParentPathLabel } from '@/features/categories/lib/category-tree'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 interface CategoriesPickerProps {
@@ -36,6 +37,7 @@ export function CategoriesPicker({
   max,
 }: CategoriesPickerProps): React.JSX.Element {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
   const categoriesQuery = useAdminCategories()
   const categories = categoriesQuery.data ?? []
 
@@ -49,11 +51,11 @@ export function CategoriesPicker({
   const sortedOptions = useMemo<CategoryOption[]>(() => {
     const options = categories.map((category) => ({
       category,
-      label: buildParentPathLabel(category, categories),
+      label: buildParentPathLabel(category, categories, locale),
     }))
     options.sort((left, right) => left.label.localeCompare(right.label))
     return options
-  }, [categories])
+  }, [categories, locale])
 
   const atMax = value.length >= max
 
@@ -96,7 +98,7 @@ export function CategoriesPicker({
       {selectedCategories.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {selectedCategories.map((category) => {
-            const label = buildParentPathLabel(category, categories)
+            const label = buildParentPathLabel(category, categories, locale)
             return (
               <Badge
                 key={category.id}

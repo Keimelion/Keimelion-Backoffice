@@ -27,7 +27,7 @@ const CATEGORY_FOOD_ID = '11111111-1111-4111-8111-111111111111'
 const CATEGORY_FOOD = {
   id: CATEGORY_FOOD_ID,
   parentId: null,
-  name: 'Food',
+  translations: { en: 'Food', fr: 'Alimentation' },
   slug: 'food',
   depth: 0,
   createdAt: '2024-01-01T00:00:00.000Z',
@@ -37,7 +37,7 @@ const CATEGORY_FASHION_ID = '22222222-2222-4222-8222-222222222222'
 const CATEGORY_FASHION = {
   id: CATEGORY_FASHION_ID,
   parentId: null,
-  name: 'Fashion',
+  translations: { en: 'Fashion', fr: 'Mode' },
   slug: 'fashion',
   depth: 0,
   createdAt: '2024-01-01T00:00:00.000Z',
@@ -51,6 +51,14 @@ vi.mock('@/features/categories/hooks/use-admin-categories', () => ({
     isError: false,
   }),
 }))
+
+const ITEM_CATEGORY_FOOD = {
+  id: CATEGORY_FOOD_ID,
+  parentId: null,
+  name: 'Food',
+  slug: 'food',
+  depth: 0,
+}
 
 const MOCK_ITEM = {
   id: 'item-1',
@@ -194,7 +202,7 @@ describe('ItemForm (edit mode)', () => {
     render(
       <ItemForm
         mode="edit"
-        item={{ ...MOCK_ITEM, categories: [CATEGORY_FOOD] }}
+        item={{ ...MOCK_ITEM, categories: [ITEM_CATEGORY_FOOD] }}
         onSubmit={vi.fn()}
         onDirtyChange={vi.fn()}
         isPending={false}
@@ -222,7 +230,7 @@ describe('ItemForm (edit mode)', () => {
     render(
       <ItemForm
         mode="edit"
-        item={{ ...MOCK_ITEM, sources: [MOCK_SOURCE], categories: [CATEGORY_FOOD] }}
+        item={{ ...MOCK_ITEM, sources: [MOCK_SOURCE], categories: [ITEM_CATEGORY_FOOD] }}
         onSubmit={onSubmit}
         onDirtyChange={vi.fn()}
         isPending={false}

@@ -8,7 +8,7 @@ import { CategoriesPicker } from './categories-picker'
 const CATEGORY_FOOD = {
   id: '11111111-1111-4111-8111-111111111111',
   parentId: null,
-  name: 'Food',
+  translations: { en: 'Food', fr: 'Alimentation' },
   slug: 'food',
   depth: 0,
   createdAt: '2024-01-01T00:00:00.000Z',
@@ -18,7 +18,7 @@ const DESSERTS_PARENT_ID = CATEGORY_FOOD.id
 const CATEGORY_DESSERTS = {
   id: '22222222-2222-4222-8222-222222222222',
   parentId: DESSERTS_PARENT_ID,
-  name: 'Desserts',
+  translations: { en: 'Desserts', fr: 'Desserts' },
   slug: 'desserts',
   depth: 1,
   createdAt: '2024-01-01T00:00:00.000Z',
@@ -27,7 +27,7 @@ const CATEGORY_DESSERTS = {
 const CATEGORY_FASHION = {
   id: '33333333-3333-4333-8333-333333333333',
   parentId: null,
-  name: 'Fashion',
+  translations: { en: 'Fashion', fr: 'Mode' },
   slug: 'fashion',
   depth: 0,
   createdAt: '2024-01-01T00:00:00.000Z',
