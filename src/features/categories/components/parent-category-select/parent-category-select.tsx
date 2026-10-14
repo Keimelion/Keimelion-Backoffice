@@ -11,6 +11,9 @@ import {
   CATEGORY_MAX_ALLOWED_DEPTH,
   type ApiCategory,
 } from '@/data-access/categories/categories.schemas'
+import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
+import type { Locale } from '@/lib/i18n/locale'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 export const PARENT_CATEGORY_NONE_VALUE = '__none__'
@@ -33,6 +36,7 @@ function buildIndent(depth: number): string {
 
 function sortCategoriesForDropdown(
   categories: readonly ApiCategory[],
+  locale: Locale,
 ): readonly ApiCategory[] {
   const byParent = new Map<string | null, ApiCategory[]>()
   for (const category of categories) {
@@ -41,7 +45,9 @@ function sortCategoriesForDropdown(
     byParent.set(category.parentId, bucket)
   }
   for (const bucket of byParent.values()) {
-    bucket.sort((a, b) => a.name.localeCompare(b.name))
+    bucket.sort((a, b) =>
+      resolveCategoryName(a, locale).localeCompare(resolveCategoryName(b, locale)),
+    )
   }
 
   const ordered: ApiCategory[] = []
@@ -67,8 +73,9 @@ export function ParentCategorySelect({
   showNoneOption = true,
 }: ParentCategorySelectProps): React.JSX.Element {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
 
-  const options = sortCategoriesForDropdown(categories).filter((category) => {
+  const options = sortCategoriesForDropdown(categories, locale).filter((category) => {
     if (category.depth >= CATEGORY_MAX_ALLOWED_DEPTH) return false
     if (excludedIds?.has(category.id) === true) return false
     return true
@@ -107,7 +114,7 @@ export function ParentCategorySelect({
           <SelectItem key={category.id} value={category.id}>
             <span className="whitespace-pre">
               {buildIndent(category.depth)}
-              {category.name}
+              {resolveCategoryName(category, locale)}
             </span>
           </SelectItem>
         ))}

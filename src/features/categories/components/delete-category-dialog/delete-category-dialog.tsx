@@ -14,7 +14,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useDeleteCategory } from '@/features/categories/hooks/use-admin-categories'
+import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -34,8 +36,10 @@ export function DeleteCategoryDialog({
   descendantCount,
 }: DeleteCategoryDialogProps): React.JSX.Element {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
   const [isPending, setIsPending] = useState<boolean>(false)
   const mutation = useDeleteCategory()
+  const resolvedName = resolveCategoryName(category, locale)
 
   async function handleConfirm(event: React.MouseEvent<HTMLButtonElement>): Promise<void> {
     event.preventDefault()
@@ -43,7 +47,7 @@ export function DeleteCategoryDialog({
     try {
       await mutation.mutateAsync(category.id)
       notifySuccess({
-        title: translate('categories.mutation.deleted_toast', { name: category.name }),
+        title: translate('categories.mutation.deleted_toast', { name: resolvedName }),
       })
       onOpenChange(false)
     } finally {
@@ -57,7 +61,7 @@ export function DeleteCategoryDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>{t('categories.admin.delete_dialog.title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t('categories.admin.delete_dialog.description', { name: category.name })}
+            {t('categories.admin.delete_dialog.description', { name: resolvedName })}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -69,7 +73,7 @@ export function DeleteCategoryDialog({
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <p>
               {t('categories.admin.delete_dialog.cascade_warning', {
-                name: category.name,
+                name: resolvedName,
                 count: descendantCount,
               })}
             </p>

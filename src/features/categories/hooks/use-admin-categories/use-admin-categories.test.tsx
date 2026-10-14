@@ -35,7 +35,7 @@ import {
 const MOCK_CATEGORY = {
   id: '11111111-1111-1111-1111-111111111111',
   parentId: null,
-  name: 'Electronics',
+  translations: { fr: 'Électronique', en: 'Electronics' },
   slug: 'electronics',
   depth: 0,
   createdAt: '2024-01-01T00:00:00.000Z',
@@ -106,13 +106,17 @@ describe('useCreateCategory', () => {
     const { result } = renderHook(() => useCreateCategory(), {
       wrapper: createQueryClientWrapper(),
     })
-    result.current.mutate({ name: 'Phones', slug: 'phones', parentId: null })
+    result.current.mutate({
+      name: { fr: 'Téléphones', en: 'Phones' },
+      slug: 'phones',
+      parentId: null,
+    })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
     expect(createCategory).toHaveBeenCalled()
     expect(vi.mocked(createCategory).mock.calls[0]?.[0]).toEqual({
-      name: 'Phones',
+      name: { fr: 'Téléphones', en: 'Phones' },
       slug: 'phones',
       parentId: null,
     })
@@ -121,17 +125,20 @@ describe('useCreateCategory', () => {
 
 describe('useUpdateCategory', () => {
   it('calls updateCategory with the given id and input', async () => {
-    vi.mocked(updateCategory).mockResolvedValue({ ...MOCK_CATEGORY, name: 'New' })
+    vi.mocked(updateCategory).mockResolvedValue({
+      ...MOCK_CATEGORY,
+      translations: { fr: 'Électronique', en: 'New' },
+    })
     const { result } = renderHook(() => useUpdateCategory(), {
       wrapper: createQueryClientWrapper(),
     })
-    result.current.mutate({ id: MOCK_CATEGORY.id, input: { name: 'New' } })
+    result.current.mutate({ id: MOCK_CATEGORY.id, input: { name: { en: 'New' } } })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
     expect(updateCategory).toHaveBeenCalled()
     expect(vi.mocked(updateCategory).mock.calls[0]?.[0]).toBe(MOCK_CATEGORY.id)
-    expect(vi.mocked(updateCategory).mock.calls[0]?.[1]).toEqual({ name: 'New' })
+    expect(vi.mocked(updateCategory).mock.calls[0]?.[1]).toEqual({ name: { en: 'New' } })
   })
 })
 

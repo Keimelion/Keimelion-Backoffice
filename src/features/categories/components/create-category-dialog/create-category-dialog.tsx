@@ -7,7 +7,9 @@ import { FormDialog } from '@/components/shared/form-dialog'
 import { CategoryForm } from '@/features/categories/components/category-form'
 import type { CategoryFormValues } from '@/features/categories/components/category-form'
 import { useCreateCategory } from '@/features/categories/hooks/use-admin-categories'
+import { pickTranslation } from '@/features/categories/lib/resolve-category-name'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
+import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -28,6 +30,7 @@ export function CreateCategoryDialog({
   onCreated,
 }: CreateCategoryDialogProps): React.JSX.Element {
   const t = useTranslate()
+  const locale = useLocaleStore((state) => state.locale)
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false)
   const mutation = useCreateCategory()
 
@@ -37,7 +40,10 @@ export function CreateCategoryDialog({
   ): void {
     mutation.mutate(values, {
       onSuccess: (created) => {
-        notifySuccess({ title: translate('categories.mutation.created_toast', { name: values.name }) })
+        const createdName = pickTranslation(values.name, locale)
+        notifySuccess({
+          title: translate('categories.mutation.created_toast', { name: createdName }),
+        })
         onCreated?.(created.parentId)
         onOpenChange(false)
       },
