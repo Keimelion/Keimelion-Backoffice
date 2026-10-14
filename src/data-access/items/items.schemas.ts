@@ -136,20 +136,15 @@ export const createItemInputSchema = z
 
 export type CreateItemInput = z.infer<typeof createItemInputSchema>
 
-export const updateItemInputSchema = z
-  .object({
-    name: nameSchema.optional(),
-    description: descriptionSchema.optional(),
-    imageUrl: imageUrlSchema.optional(),
-    categories: categoriesSchema.optional(),
-  })
-  .strict()
-
-export type UpdateItemInput = z.infer<typeof updateItemInputSchema>
-
-export const editItemFormResolverSchema = z.object({
+const editableItemFieldsShape = {
   name: nameSchema.optional(),
   description: descriptionSchema.optional(),
   imageUrl: imageUrlSchema.optional(),
   categories: categoriesSchema.optional(),
-})
+}
+
+export const updateItemInputSchema = z.object(editableItemFieldsShape).strict()
+
+export type UpdateItemInput = z.infer<typeof updateItemInputSchema>
+
+export const editItemFormResolverSchema = z.object(editableItemFieldsShape)
