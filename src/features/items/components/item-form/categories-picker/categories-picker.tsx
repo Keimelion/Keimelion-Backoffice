@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Check, ChevronRight, Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -49,6 +49,7 @@ export function CategoriesPicker({
   const categoriesQuery = useAdminCategories()
   const categories = categoriesQuery.data ?? []
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const selectedCategories = useMemo<ApiCategory[]>(() => {
     const byId = new Map(categories.map((category) => [category.id, category]))
@@ -129,9 +130,19 @@ export function CategoriesPicker({
               {t('items.form.categories_add_button')}
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="w-80 p-0">
+          <PopoverContent
+            align="start"
+            className="w-80 p-0"
+            onOpenAutoFocus={(event) => {
+              event.preventDefault()
+              searchInputRef.current?.focus()
+            }}
+          >
             <Command>
-              <CommandInput placeholder={t('items.form.categories_search_placeholder')} />
+              <CommandInput
+                ref={searchInputRef}
+                placeholder={t('items.form.categories_search_placeholder')}
+              />
               <CommandList>
                 {treeOrderedOptions.length === 0 ? (
                   <div className="px-3 py-6 text-center text-sm text-muted-foreground">
