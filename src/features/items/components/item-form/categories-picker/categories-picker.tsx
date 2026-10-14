@@ -1,22 +1,28 @@
 'use client'
 
-import { useMemo } from 'react'
-import { ChevronDown, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Check, ChevronRight, Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
 import { buildParentPathLabel } from '@/features/categories/lib/category-tree'
+import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
+import type { Locale } from '@/lib/i18n/locale'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { cn } from '@/lib/utils'
+
+const INDENT_PER_DEPTH_PX = 16
 
 interface CategoriesPickerProps {
   value: readonly string[]
@@ -27,7 +33,9 @@ interface CategoriesPickerProps {
 
 interface CategoryOption {
   category: ApiCategory
-  label: string
+  name: string
+  pathLabel: string
+  parentLabel: string | null
 }
 
 export function CategoriesPicker({
@@ -40,6 +48,7 @@ export function CategoriesPicker({
   const locale = useLocaleStore((state) => state.locale)
   const categoriesQuery = useAdminCategories()
   const categories = categoriesQuery.data ?? []
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   const selectedCategories = useMemo<ApiCategory[]>(() => {
     const byId = new Map(categories.map((category) => [category.id, category]))
@@ -48,14 +57,10 @@ export function CategoriesPicker({
       .filter((category): category is ApiCategory => category !== null)
   }, [value, categories])
 
-  const sortedOptions = useMemo<CategoryOption[]>(() => {
-    const options = categories.map((category) => ({
-      category,
-      label: buildParentPathLabel(category, categories, locale),
-    }))
-    options.sort((left, right) => left.label.localeCompare(right.label))
-    return options
-  }, [categories, locale])
+  const treeOrderedOptions = useMemo<CategoryOption[]>(
+    () => buildTreeOrderedOptions(categories, locale),
+    [categories, locale],
+  )
 
   const atMax = value.length >= max
 
@@ -84,14 +89,8 @@ export function CategoriesPicker({
   }
 
   if (categoriesQuery.isError) {
-    return (
-      <p className="text-sm text-destructive">{t('items.form.categories_error')}</p>
-    )
+    return <p className="text-sm text-destructive">{t('items.form.categories_error')}</p>
   }
-
-  const triggerLabel = atMax
-    ? t('items.form.categories_add_button_at_max', { max })
-    : t('items.form.categories_add_button')
 
   return (
     <div className="flex flex-col gap-2">
@@ -103,7 +102,7 @@ export function CategoriesPicker({
               <Badge
                 key={category.id}
                 variant="secondary"
-                className="gap-1 pl-2 pr-1 text-sm font-normal"
+                className="gap-1 pl-2.5 pr-1 py-1 text-sm font-normal"
               >
                 <span>{label}</span>
                 <button
@@ -121,43 +120,119 @@ export function CategoriesPicker({
         </div>
       ) : null}
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={disabled || (atMax && selectedCategories.length === 0)}
-            className="self-start"
-          >
-            <span>{triggerLabel}</span>
-            <ChevronDown className="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="max-h-72 w-72">
-          {sortedOptions.length === 0 ? (
-            <DropdownMenuLabel className="text-muted-foreground">
-              {t('items.form.categories_empty_options')}
-            </DropdownMenuLabel>
-          ) : (
-            sortedOptions.map((option) => {
-              const isSelected = value.includes(option.category.id)
-              const isDisabledOption = disabled || (!isSelected && atMax)
-              return (
-                <DropdownMenuCheckboxItem
-                  key={option.category.id}
-                  checked={isSelected}
-                  disabled={isDisabledOption}
-                  onCheckedChange={() => { handleToggle(option.category.id) }}
-                  onSelect={(event) => { event.preventDefault() }}
-                >
-                  {option.label}
-                </DropdownMenuCheckboxItem>
-              )
-            })
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {atMax ? null : (
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              className="self-start"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t('items.form.categories_add_button')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-80 p-0">
+            <Command>
+              <CommandInput placeholder={t('items.form.categories_search_placeholder')} />
+              <CommandList>
+                {treeOrderedOptions.length === 0 ? (
+                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                    {t('items.form.categories_empty_options')}
+                  </div>
+                ) : (
+                  <>
+                    <CommandEmpty>{t('items.form.categories_empty_search')}</CommandEmpty>
+                    {treeOrderedOptions.map((option) => (
+                      <CategoryOptionRow
+                        key={option.category.id}
+                        option={option}
+                        isSelected={value.includes(option.category.id)}
+                        onToggle={handleToggle}
+                      />
+                    ))}
+                  </>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   )
+}
+
+interface CategoryOptionRowProps {
+  option: CategoryOption
+  isSelected: boolean
+  onToggle: (categoryId: string) => void
+}
+
+function CategoryOptionRow({
+  option,
+  isSelected,
+  onToggle,
+}: CategoryOptionRowProps): React.JSX.Element {
+  const { category, name, pathLabel, parentLabel } = option
+  return (
+    <CommandItem
+      value={category.id}
+      keywords={[name, category.slug, pathLabel]}
+      onSelect={() => { onToggle(category.id) }}
+      className="flex items-center gap-2"
+    >
+      <span
+        aria-hidden="true"
+        style={{ width: `${String(category.depth * INDENT_PER_DEPTH_PX)}px` }}
+      />
+      {category.depth > 0 ? (
+        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" aria-hidden="true" />
+      ) : null}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate">{name}</span>
+        {parentLabel !== null ? (
+          <span className="truncate text-xs text-muted-foreground">{parentLabel}</span>
+        ) : null}
+      </div>
+      <Check className={cn('h-4 w-4 shrink-0', isSelected ? 'opacity-100' : 'opacity-0')} />
+    </CommandItem>
+  )
+}
+
+function buildTreeOrderedOptions(
+  categories: readonly ApiCategory[],
+  locale: Locale,
+): CategoryOption[] {
+  const byParent = new Map<string | null, ApiCategory[]>()
+  for (const category of categories) {
+    const bucket = byParent.get(category.parentId) ?? []
+    bucket.push(category)
+    byParent.set(category.parentId, bucket)
+  }
+  for (const bucket of byParent.values()) {
+    bucket.sort((a, b) => resolveCategoryName(a, locale).localeCompare(resolveCategoryName(b, locale)))
+  }
+
+  const ordered: CategoryOption[] = []
+  const walk = (parentId: string | null): void => {
+    const bucket = byParent.get(parentId) ?? []
+    for (const category of bucket) {
+      const pathLabel = buildParentPathLabel(category, categories, locale)
+      const name = resolveCategoryName(category, locale)
+      const parentLabel = category.depth === 0 ? null : trimTrailingSegment(pathLabel, name)
+      ordered.push({ category, name, pathLabel, parentLabel })
+      walk(category.id)
+    }
+  }
+  walk(null)
+  return ordered
+}
+
+function trimTrailingSegment(pathLabel: string, trailing: string): string | null {
+  const suffix = ` / ${trailing}`
+  if (!pathLabel.endsWith(suffix)) return pathLabel
+  const trimmed = pathLabel.slice(0, pathLabel.length - suffix.length)
+  return trimmed.length === 0 ? null : trimmed
 }

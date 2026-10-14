@@ -108,26 +108,21 @@ describe('CategoriesPicker', () => {
     expect(onChange).toHaveBeenCalledWith([CATEGORY_FASHION.id])
   })
 
-  it('disables unselected options when the max is reached', async () => {
+  it('hides the add button when the max is reached', () => {
     useAdminCategoriesMock.mockReturnValue({
       data: [CATEGORY_FOOD, CATEGORY_DESSERTS, CATEGORY_FASHION],
       isLoading: false,
       isError: false,
     })
-    const onChange = vi.fn()
     render(
       <CategoriesPicker
         value={[CATEGORY_FOOD.id, CATEGORY_DESSERTS.id]}
-        onChange={onChange}
+        onChange={vi.fn()}
         disabled={false}
         max={2}
       />,
     )
-    await userEvent.click(
-      screen.getByRole('button', { name: /at most 2 categories/i }),
-    )
-    const option = await screen.findByRole('menuitemcheckbox', { name: 'Fashion' })
-    expect(option).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.queryByRole('button', { name: /add category/i })).not.toBeInTheDocument()
   })
 
   it('appends a selection when the user picks an unselected option', async () => {
@@ -141,8 +136,23 @@ describe('CategoriesPicker', () => {
       <CategoriesPicker value={[]} onChange={onChange} disabled={false} max={2} />,
     )
     await userEvent.click(screen.getByRole('button', { name: /add category/i }))
-    const option = await screen.findByRole('menuitemcheckbox', { name: 'Food' })
+    const option = await screen.findByRole('option', { name: /food/i })
     await userEvent.click(option)
     expect(onChange).toHaveBeenCalledWith([CATEGORY_FOOD.id])
+  })
+
+  it('filters options when the user types a search query', async () => {
+    useAdminCategoriesMock.mockReturnValue({
+      data: [CATEGORY_FOOD, CATEGORY_DESSERTS, CATEGORY_FASHION],
+      isLoading: false,
+      isError: false,
+    })
+    render(
+      <CategoriesPicker value={[]} onChange={vi.fn()} disabled={false} max={2} />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: /add category/i }))
+    await userEvent.type(screen.getByPlaceholderText(/search categories/i), 'fash')
+    expect(screen.getByRole('option', { name: /fashion/i })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: /desserts/i })).not.toBeInTheDocument()
   })
 })
