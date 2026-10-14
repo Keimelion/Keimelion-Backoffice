@@ -102,7 +102,7 @@ export function CategoriesPicker({
               <Badge
                 key={category.id}
                 variant="outline"
-                className="gap-1 border-primary/40 bg-primary/10 pl-2.5 pr-1 py-1 text-sm font-normal text-foreground"
+                className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
               >
                 <span>{label}</span>
                 <button
@@ -110,9 +110,9 @@ export function CategoriesPicker({
                   aria-label={t('items.form.categories_remove_chip_label', { name: label })}
                   disabled={disabled}
                   onClick={() => { handleRemoveChip(category.id) }}
-                  className="rounded-sm p-0.5 hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </button>
               </Badge>
             )
@@ -182,7 +182,7 @@ function CategoryOptionRow({
       keywords={[name, category.slug, pathLabel]}
       onSelect={() => { onToggle(category.id) }}
       className={cn(
-        'flex items-center gap-2',
+        'flex cursor-pointer items-center gap-2',
         'data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground',
         isSelected && 'bg-primary/10 text-foreground',
       )}
