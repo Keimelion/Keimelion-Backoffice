@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
+import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
 import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { ItemForm } from '@/features/items/components/item-form'
@@ -37,6 +38,13 @@ export function CreateItemDialog({
       onError: (error) => {
         if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
           setError('name', { message: t('items.form.error.conflict') })
+          return
+        }
+        if (
+          error instanceof ApiRequestError
+          && error.code === ErrorCode.CATEGORY_NOT_FOUND
+        ) {
+          setError('categories', { message: t('items.form.error.category_not_found') })
           return
         }
         setError('root', { message: error.message })

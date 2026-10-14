@@ -9,6 +9,7 @@ const NAME_MIN_LENGTH = 1
 const NAME_MAX_LENGTH = 300
 const DESCRIPTION_MAX_LENGTH = 5000
 const IMAGE_URL_MAX_LENGTH = 2048
+export const ITEM_CATEGORIES_MAX = 2
 
 const NAME_REQUIRED_MESSAGE = 'Name is required.'
 const NAME_TOO_LONG_MESSAGE = 'Name must be 300 characters or fewer.'
@@ -18,6 +19,18 @@ const IMAGE_URL_HTTPS_MESSAGE = 'Image URL must use HTTPS.'
 const IMAGE_URL_TOO_LONG_MESSAGE = 'Image URL must be 2048 characters or fewer.'
 const SOURCES_MIN_MESSAGE = 'At least one source is required.'
 const SOURCES_SHOP_DUPLICATE_MESSAGE = 'This shop is already used by another source.'
+const CATEGORIES_MAX_MESSAGE = `An item can have at most ${String(ITEM_CATEGORIES_MAX)} categories.`
+const CATEGORY_ID_INVALID_MESSAGE = 'Category id must be a UUID.'
+
+export const apiItemCategorySchema = z.object({
+  id: z.string(),
+  parentId: z.string().nullable(),
+  name: z.string(),
+  slug: z.string(),
+  depth: z.number().int(),
+})
+
+export type ApiItemCategory = z.infer<typeof apiItemCategorySchema>
 
 export const apiAdminItemSchema = z.object({
   id: z.string(),
@@ -28,6 +41,7 @@ export const apiAdminItemSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   sources: z.array(apiItemSourceSchema),
+  categories: z.array(apiItemCategorySchema).default([]),
 })
 
 export type ApiAdminItem = z.infer<typeof apiAdminItemSchema>
@@ -90,12 +104,17 @@ const imageUrlSchema = z
   .refine((value) => value.startsWith('https://'), { message: IMAGE_URL_HTTPS_MESSAGE })
   .nullable()
 
+const categoriesSchema = z
+  .array(z.uuid({ message: CATEGORY_ID_INVALID_MESSAGE }))
+  .max(ITEM_CATEGORIES_MAX, { message: CATEGORIES_MAX_MESSAGE })
+
 export const createItemInputSchema = z
   .object({
     name: nameSchema,
     description: descriptionSchema,
     imageUrl: imageUrlSchema,
     sources: z.array(itemSourceInputSchema).min(1, { message: SOURCES_MIN_MESSAGE }),
+    categories: categoriesSchema.optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -117,12 +136,15 @@ export const createItemInputSchema = z
 
 export type CreateItemInput = z.infer<typeof createItemInputSchema>
 
-export const updateItemInputSchema = z
-  .object({
-    name: nameSchema.optional(),
-    description: descriptionSchema.optional(),
-    imageUrl: imageUrlSchema.optional(),
-  })
-  .strict()
+const editableItemFieldsShape = {
+  name: nameSchema.optional(),
+  description: descriptionSchema.optional(),
+  imageUrl: imageUrlSchema.optional(),
+  categories: categoriesSchema.optional(),
+}
+
+export const updateItemInputSchema = z.object(editableItemFieldsShape).strict()
 
 export type UpdateItemInput = z.infer<typeof updateItemInputSchema>
+
+export const editItemFormResolverSchema = z.object(editableItemFieldsShape)

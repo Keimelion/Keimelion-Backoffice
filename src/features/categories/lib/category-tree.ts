@@ -129,6 +129,33 @@ export function buildParentPathLabel(
   return segments.join(' / ')
 }
 
+export function orderCategoriesTree(
+  categories: readonly ApiCategory[],
+  locale: Locale,
+): ApiCategory[] {
+  const byParent = new Map<string | null, ApiCategory[]>()
+  for (const category of categories) {
+    const bucket = byParent.get(category.parentId) ?? []
+    bucket.push(category)
+    byParent.set(category.parentId, bucket)
+  }
+  for (const bucket of byParent.values()) {
+    bucket.sort((a, b) =>
+      resolveCategoryName(a, locale).localeCompare(resolveCategoryName(b, locale)),
+    )
+  }
+  const ordered: ApiCategory[] = []
+  const walk = (parentId: string | null): void => {
+    const bucket = byParent.get(parentId) ?? []
+    for (const category of bucket) {
+      ordered.push(category)
+      walk(category.id)
+    }
+  }
+  walk(null)
+  return ordered
+}
+
 export function buildCategoryForest(
   categories: readonly ApiCategory[],
   locale: Locale,

@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
+import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
 import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { ItemForm } from '@/features/items/components/item-form'
 import type { ItemFormEditValues } from '@/features/items/components/item-form'
 import { ItemSourcesManager } from '@/features/items/components/item-sources-manager'
 import { useUpdateItem } from '@/features/items/hooks/use-admin-items'
-import type { ApiAdminItem } from '@/data-access/items/items.schemas'
+import type { ApiAdminItem, UpdateItemInput } from '@/data-access/items/items.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
@@ -23,6 +24,16 @@ interface EditItemDialogProps {
 
 const EDITABLE_ITEM_FIELDS = ['name', 'description', 'imageUrl'] as const satisfies readonly (keyof ItemFormEditValues)[]
 
+function haveSameCategoryIds(
+  before: readonly string[],
+  after: readonly string[],
+): boolean {
+  if (before.length !== after.length) return false
+  const sortedBefore = [...before].sort()
+  const sortedAfter = [...after].sort()
+  return sortedBefore.every((id, index) => id === sortedAfter[index])
+}
+
 export function EditItemDialog({
   open,
   onOpenChange,
@@ -36,8 +47,24 @@ export function EditItemDialog({
     values: ItemFormEditValues,
     setError: UseFormSetError<ItemFormEditValues>,
   ): void {
+    const originalScalarFields: Pick<ItemFormEditValues, 'name' | 'description' | 'imageUrl'> = {
+      name: item.name,
+      description: item.description,
+      imageUrl: item.imageUrl,
+    }
+    const patch: UpdateItemInput = pickChangedFields(
+      originalScalarFields,
+      values,
+      EDITABLE_ITEM_FIELDS,
+    )
+    const originalCategoryIds = item.categories.map((category) => category.id)
+    const submittedCategoryIds = values.categories ?? []
+    if (!haveSameCategoryIds(originalCategoryIds, submittedCategoryIds)) {
+      patch.categories = submittedCategoryIds
+    }
+
     mutation.mutate(
-      { id: item.id, input: pickChangedFields(item, values, EDITABLE_ITEM_FIELDS) },
+      { id: item.id, input: patch },
       {
         onSuccess: (updated) => {
           notifySuccess({ title: translate('items.mutation.updated_toast', { name: updated.name }) })
@@ -46,6 +73,13 @@ export function EditItemDialog({
         onError: (error) => {
           if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
             setError('name', { message: t('items.form.error.conflict') })
+            return
+          }
+          if (
+            error instanceof ApiRequestError
+            && error.code === ErrorCode.CATEGORY_NOT_FOUND
+          ) {
+            setError('categories', { message: t('items.form.error.category_not_found') })
             return
           }
           setError('root', { message: error.message })
