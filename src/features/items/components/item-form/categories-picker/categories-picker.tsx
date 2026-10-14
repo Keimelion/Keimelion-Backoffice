@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { Check, ChevronRight, Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +12,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { Popover, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
@@ -50,7 +50,6 @@ export function CategoriesPicker({
   const categoriesQuery = useAdminCategories()
   const categories = categoriesQuery.data ?? []
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const selectedCategories = useMemo<ApiCategory[]>(() => {
     const byId = new Map(categories.map((category) => [category.id, category]))
@@ -138,7 +137,6 @@ export function CategoriesPicker({
           >
             <Command>
               <CommandInput
-                ref={searchInputRef}
                 autoFocus
                 placeholder={t('items.form.categories_search_placeholder')}
               />
