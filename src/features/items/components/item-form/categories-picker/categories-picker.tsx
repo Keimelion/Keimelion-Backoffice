@@ -121,7 +121,7 @@ export function CategoriesPicker({
       ) : null}
 
       {atMax ? null : (
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal>
           <PopoverTrigger asChild>
             <Button
               type="button"
