@@ -11,7 +11,8 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
+import { Popover, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
@@ -118,7 +119,7 @@ export function CategoriesPicker({
       })}
 
       {atMax ? null : (
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
             <Button
               type="button"
@@ -130,17 +131,15 @@ export function CategoriesPicker({
               {t('items.form.categories_add_button')}
             </Button>
           </PopoverTrigger>
-          <PopoverContent
+          <PopoverPrimitive.Content
             align="start"
-            className="w-80 p-0"
-            onOpenAutoFocus={(event) => {
-              event.preventDefault()
-              searchInputRef.current?.focus()
-            }}
+            sideOffset={4}
+            className="z-50 w-80 rounded-md border bg-popover p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
           >
             <Command>
               <CommandInput
                 ref={searchInputRef}
+                autoFocus
                 placeholder={t('items.form.categories_search_placeholder')}
               />
               <CommandList>
@@ -163,7 +162,7 @@ export function CategoriesPicker({
                 )}
               </CommandList>
             </Command>
-          </PopoverContent>
+          </PopoverPrimitive.Content>
         </Popover>
       )}
     </div>
