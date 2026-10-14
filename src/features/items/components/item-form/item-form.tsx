@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
-import type { UseFormSetError } from 'react-hook-form'
+import type { Resolver, UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   createItemInputSchema,
+  editItemFormResolverSchema,
   ITEM_CATEGORIES_MAX,
   updateItemInputSchema,
   type ApiAdminItem,
@@ -98,8 +99,16 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
   const shopsQuery = useAdminShops(SHOPS_FILTER)
   const shops = shopsQuery.data?.items ?? []
 
+  const resolver = useMemo<Resolver<ItemFormCreateValues>>(
+    () =>
+      (isEdit
+        ? zodResolver(editItemFormResolverSchema)
+        : zodResolver(createItemInputSchema)) as Resolver<ItemFormCreateValues>,
+    [isEdit],
+  )
+
   const form = useForm<ItemFormCreateValues>({
-    resolver: zodResolver(createItemInputSchema),
+    resolver,
     mode: 'onTouched',
     reValidateMode: 'onChange',
     defaultValues: buildDefaultValues(props),

@@ -146,3 +146,10 @@ export const updateItemInputSchema = z
   .strict()
 
 export type UpdateItemInput = z.infer<typeof updateItemInputSchema>
+
+export const editItemFormResolverSchema = z.object({
+  name: nameSchema.optional(),
+  description: descriptionSchema.optional(),
+  imageUrl: imageUrlSchema.optional(),
+  categories: categoriesSchema.optional(),
+})
