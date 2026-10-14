@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { Check, ChevronRight, Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,11 +11,14 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { Popover, PopoverTrigger } from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
-import { buildParentPathLabel } from '@/features/categories/lib/category-tree'
+import {
+  buildParentPathLabel,
+  orderCategoriesTree,
+} from '@/features/categories/lib/category-tree'
 import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 import type { Locale } from '@/lib/i18n/locale'
@@ -130,11 +132,7 @@ export function CategoriesPicker({
               {t('items.form.categories_add_button')}
             </Button>
           </PopoverTrigger>
-          <PopoverPrimitive.Content
-            align="start"
-            sideOffset={4}
-            className="z-50 w-80 rounded-md border bg-popover p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
-          >
+          <PopoverContent withoutPortal align="start" className="w-80 p-0">
             <Command>
               <CommandInput
                 autoFocus
@@ -160,7 +158,7 @@ export function CategoriesPicker({
                 )}
               </CommandList>
             </Command>
-          </PopoverPrimitive.Content>
+          </PopoverContent>
         </Popover>
       )}
     </div>
@@ -223,34 +221,12 @@ function buildTreeOrderedOptions(
   categories: readonly ApiCategory[],
   locale: Locale,
 ): CategoryOption[] {
-  const byParent = new Map<string | null, ApiCategory[]>()
-  for (const category of categories) {
-    const bucket = byParent.get(category.parentId) ?? []
-    bucket.push(category)
-    byParent.set(category.parentId, bucket)
-  }
-  for (const bucket of byParent.values()) {
-    bucket.sort((a, b) => resolveCategoryName(a, locale).localeCompare(resolveCategoryName(b, locale)))
-  }
-
-  const ordered: CategoryOption[] = []
-  const walk = (parentId: string | null): void => {
-    const bucket = byParent.get(parentId) ?? []
-    for (const category of bucket) {
-      const pathLabel = buildParentPathLabel(category, categories, locale)
-      const name = resolveCategoryName(category, locale)
-      const parentLabel = category.depth === 0 ? null : trimTrailingSegment(pathLabel, name)
-      ordered.push({ category, name, pathLabel, parentLabel })
-      walk(category.id)
-    }
-  }
-  walk(null)
-  return ordered
-}
-
-function trimTrailingSegment(pathLabel: string, trailing: string): string | null {
-  const suffix = ` / ${trailing}`
-  if (!pathLabel.endsWith(suffix)) return pathLabel
-  const trimmed = pathLabel.slice(0, pathLabel.length - suffix.length)
-  return trimmed.length === 0 ? null : trimmed
+  const byId = new Map(categories.map((category) => [category.id, category]))
+  return orderCategoriesTree(categories, locale).map((category) => {
+    const name = resolveCategoryName(category, locale)
+    const parent = category.parentId === null ? null : (byId.get(category.parentId) ?? null)
+    const parentLabel = parent === null ? null : buildParentPathLabel(parent, categories, locale)
+    const pathLabel = parentLabel === null ? name : `${parentLabel} / ${name}`
+    return { category, name, pathLabel, parentLabel }
+  })
 }
