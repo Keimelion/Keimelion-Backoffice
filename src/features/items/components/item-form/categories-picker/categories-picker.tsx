@@ -101,8 +101,8 @@ export function CategoriesPicker({
             return (
               <Badge
                 key={category.id}
-                variant="secondary"
-                className="gap-1 pl-2.5 pr-1 py-1 text-sm font-normal"
+                variant="outline"
+                className="gap-1 border-primary/40 bg-primary/10 pl-2.5 pr-1 py-1 text-sm font-normal text-foreground"
               >
                 <span>{label}</span>
                 <button
@@ -110,7 +110,7 @@ export function CategoriesPicker({
                   aria-label={t('items.form.categories_remove_chip_label', { name: label })}
                   disabled={disabled}
                   onClick={() => { handleRemoveChip(category.id) }}
-                  className="rounded-sm p-0.5 hover:bg-muted-foreground/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-sm p-0.5 hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -181,22 +181,37 @@ function CategoryOptionRow({
       value={category.id}
       keywords={[name, category.slug, pathLabel]}
       onSelect={() => { onToggle(category.id) }}
-      className="flex items-center gap-2"
+      className={cn(
+        'flex items-center gap-2',
+        'data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground',
+        isSelected && 'bg-primary/10 text-foreground',
+      )}
     >
       <span
         aria-hidden="true"
         style={{ width: `${String(category.depth * INDENT_PER_DEPTH_PX)}px` }}
       />
       {category.depth > 0 ? (
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" aria-hidden="true" />
+        <ChevronRight
+          className={cn(
+            'h-3.5 w-3.5 shrink-0',
+            isSelected ? 'text-primary' : 'text-muted-foreground/60',
+          )}
+          aria-hidden="true"
+        />
       ) : null}
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate">{name}</span>
+        <span className={cn('truncate', isSelected && 'font-medium')}>{name}</span>
         {parentLabel !== null ? (
           <span className="truncate text-xs text-muted-foreground">{parentLabel}</span>
         ) : null}
       </div>
-      <Check className={cn('h-4 w-4 shrink-0', isSelected ? 'opacity-100' : 'opacity-0')} />
+      <Check
+        className={cn(
+          'h-4 w-4 shrink-0 text-primary',
+          isSelected ? 'opacity-100' : 'opacity-0',
+        )}
+      />
     </CommandItem>
   )
 }
