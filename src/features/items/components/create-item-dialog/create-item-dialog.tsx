@@ -9,9 +9,17 @@ import { ItemForm } from '@/features/items/components/item-form'
 import type { ItemFormCreateValues } from '@/features/items/components/item-form'
 import { useCreateItem } from '@/features/items/hooks/use-admin-items'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
+import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+
+const CREATE_ITEM_ISSUE_PATHS = [
+  'name',
+  'description',
+  'imageUrl',
+  'categories',
+] as const
 
 interface CreateItemDialogProps {
   open: boolean
@@ -46,6 +54,18 @@ export function CreateItemDialog({
         ) {
           setError('categories', { message: t('items.form.error.category_not_found') })
           return
+        }
+        if (
+          error instanceof ApiRequestError
+          && error.code === ErrorCode.UNPROCESSABLE_ENTITY
+          && error.issues !== null
+        ) {
+          const appliedCount = applyApiValidationIssues(
+            error.issues,
+            setError as (path: string, errorValue: { message: string }) => void,
+            CREATE_ITEM_ISSUE_PATHS,
+          )
+          if (appliedCount > 0) return
         }
         setError('root', { message: error.message })
       },

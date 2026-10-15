@@ -129,6 +129,40 @@ describe('reactive 401 interception', () => {
     expect(caught).toMatchObject({ code: 'INVALID_RESPONSE', status: 500 })
   })
 
+  it('extracts validation issues from a 422 metadata.issues payload', async () => {
+    mock.onPost('/admin/items').replyOnce(422, {
+      code: 'UNPROCESSABLE_ENTITY',
+      message: 'Validation failed',
+      metadata: {
+        issues: [
+          { path: 'name', message: 'Name is required.', code: 'too_small' },
+          { path: 'imageUrl', message: 'Image URL must use HTTPS.', code: 'custom' },
+        ],
+      },
+    })
+
+    const caught = await axiosInstance.post('/admin/items', {}).catch((error: unknown) => error)
+
+    expect(caught).toBeInstanceOf(ApiRequestError)
+    expect(caught).toMatchObject({
+      code: 'UNPROCESSABLE_ENTITY',
+      status: 422,
+      issues: [
+        { path: 'name', message: 'Name is required.', code: 'too_small' },
+        { path: 'imageUrl', message: 'Image URL must use HTTPS.', code: 'custom' },
+      ],
+    })
+  })
+
+  it('leaves issues as null when the error body omits metadata', async () => {
+    mock.onGet('/users/1').replyOnce(409, { code: 'CONFLICT', message: 'Already exists' })
+
+    const caught = await axiosInstance.get('/users/1').catch((error: unknown) => error)
+
+    expect(caught).toBeInstanceOf(ApiRequestError)
+    expect(caught).toMatchObject({ code: 'CONFLICT', status: 409, issues: null })
+  })
+
   it('maps a network error (no response) to NETWORK_ERROR', async () => {
     mock.onGet('/users/1').networkErrorOnce()
 
