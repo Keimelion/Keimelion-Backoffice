@@ -10,6 +10,7 @@ import type { ItemFormCreateValues } from '@/features/items/components/item-form
 import { useCreateItem } from '@/features/items/hooks/use-admin-items'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
+import { collapseTagsIssuePaths } from '@/features/items/lib/collapse-tags-issue-paths'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -19,6 +20,7 @@ const CREATE_ITEM_ISSUE_PATHS = [
   'description',
   'imageUrl',
   'categories',
+  'tags',
 ] as const
 
 interface CreateItemDialogProps {
@@ -57,11 +59,18 @@ export function CreateItemDialog({
         }
         if (
           error instanceof ApiRequestError
+          && error.code === ErrorCode.TAG_INVALID_NAME
+        ) {
+          setError('tags', { message: t('items.form.error.tag_invalid_name') })
+          return
+        }
+        if (
+          error instanceof ApiRequestError
           && error.code === ErrorCode.UNPROCESSABLE_ENTITY
           && error.issues !== null
         ) {
           const appliedCount = applyApiValidationIssues(
-            error.issues,
+            collapseTagsIssuePaths(error.issues),
             setError as (path: string, errorValue: { message: string }) => void,
             CREATE_ITEM_ISSUE_PATHS,
           )

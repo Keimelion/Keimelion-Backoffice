@@ -21,6 +21,8 @@ import {
   createItemInputSchema,
   editItemFormResolverSchema,
   ITEM_CATEGORIES_MAX,
+  ITEM_TAG_NAME_MAX_LENGTH,
+  ITEM_TAGS_MAX,
   updateItemInputSchema,
   type ApiAdminItem,
   type CreateItemInput,
@@ -33,6 +35,7 @@ import {
 } from '@/data-access/items/item-sources.schemas'
 import { useAdminShops } from '@/features/shops/hooks/use-admin-shops'
 import { CategoriesPicker } from '@/features/items/components/item-form/categories-picker'
+import { TagsPicker } from '@/features/items/components/item-form/tags-picker'
 import { ItemSourceEditorRowShell } from '@/features/items/components/item-source-editor-row'
 import { ItemSourceFields } from '@/features/items/components/item-source-fields'
 import {
@@ -80,6 +83,7 @@ function buildDefaultValues(props: ItemFormProps): ItemFormCreateValues {
       imageUrl: props.item.imageUrl,
       sources: props.item.sources.map(toItemSourceInput),
       categories: props.item.categories.map((category) => category.id),
+      tags: props.item.tags.map((tag) => tag.name),
     }
   }
   return {
@@ -88,6 +92,7 @@ function buildDefaultValues(props: ItemFormProps): ItemFormCreateValues {
     imageUrl: null,
     sources: [EMPTY_ITEM_SOURCE_INPUT],
     categories: [],
+    tags: [],
   }
 }
 
@@ -123,6 +128,7 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
         description: values.description,
         imageUrl: values.imageUrl,
         categories: values.categories,
+        tags: values.tags,
       }).success
     : createItemInputSchema.safeParse(values).success
   const { isDirty } = form.formState
@@ -186,6 +192,7 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
                 description: submittedValues.description,
                 imageUrl: submittedValues.imageUrl,
                 categories: submittedValues.categories,
+                tags: submittedValues.tags,
               }
               props.onSubmit(editValues, form.setError)
               return
@@ -296,6 +303,29 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
               </FormControl>
               <FormDescription>
                 {t('items.form.categories_help', { max: ITEM_CATEGORIES_MAX })}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('items.form.tags_label')}</FormLabel>
+              <FormControl>
+                <TagsPicker
+                  value={field.value ?? []}
+                  onChange={(nextTags) => { field.onChange(nextTags) }}
+                  disabled={isPending}
+                  max={ITEM_TAGS_MAX}
+                  maxNameLength={ITEM_TAG_NAME_MAX_LENGTH}
+                />
+              </FormControl>
+              <FormDescription>
+                {t('items.form.tags_help', { max: ITEM_TAGS_MAX })}
               </FormDescription>
               <FormMessage />
             </FormItem>

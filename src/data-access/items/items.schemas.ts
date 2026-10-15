@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { apiTagSchema } from '@/data-access/tags/tags.schemas'
 import {
   apiItemSourceSchema,
   itemSourceInputSchema,
@@ -10,6 +11,8 @@ const NAME_MAX_LENGTH = 300
 const DESCRIPTION_MAX_LENGTH = 5000
 const IMAGE_URL_MAX_LENGTH = 2048
 export const ITEM_CATEGORIES_MAX = 2
+export const ITEM_TAGS_MAX = 20
+export const ITEM_TAG_NAME_MAX_LENGTH = 50
 
 const NAME_REQUIRED_MESSAGE = 'Name is required.'
 const NAME_TOO_LONG_MESSAGE = 'Name must be 300 characters or fewer.'
@@ -21,6 +24,9 @@ const SOURCES_MIN_MESSAGE = 'At least one source is required.'
 const SOURCES_SHOP_DUPLICATE_MESSAGE = 'This shop is already used by another source.'
 const CATEGORIES_MAX_MESSAGE = `An item can have at most ${String(ITEM_CATEGORIES_MAX)} categories.`
 const CATEGORY_ID_INVALID_MESSAGE = 'Category id must be a UUID.'
+const TAGS_MAX_MESSAGE = `An item can have at most ${String(ITEM_TAGS_MAX)} tags.`
+const TAG_NAME_REQUIRED_MESSAGE = 'Tag name is required.'
+const TAG_NAME_TOO_LONG_MESSAGE = `Tag name must be ${String(ITEM_TAG_NAME_MAX_LENGTH)} characters or fewer.`
 
 export const apiItemCategorySchema = z.object({
   id: z.string(),
@@ -42,6 +48,7 @@ export const apiAdminItemSchema = z.object({
   updatedAt: z.string(),
   sources: z.array(apiItemSourceSchema),
   categories: z.array(apiItemCategorySchema).default([]),
+  tags: z.array(apiTagSchema).default([]),
 })
 
 export type ApiAdminItem = z.infer<typeof apiAdminItemSchema>
@@ -108,6 +115,16 @@ const categoriesSchema = z
   .array(z.uuid({ message: CATEGORY_ID_INVALID_MESSAGE }))
   .max(ITEM_CATEGORIES_MAX, { message: CATEGORIES_MAX_MESSAGE })
 
+const tagNameSchema = z
+  .string()
+  .trim()
+  .min(1, { message: TAG_NAME_REQUIRED_MESSAGE })
+  .max(ITEM_TAG_NAME_MAX_LENGTH, { message: TAG_NAME_TOO_LONG_MESSAGE })
+
+const tagsSchema = z
+  .array(tagNameSchema)
+  .max(ITEM_TAGS_MAX, { message: TAGS_MAX_MESSAGE })
+
 export const createItemInputSchema = z
   .object({
     name: nameSchema,
@@ -115,6 +132,7 @@ export const createItemInputSchema = z
     imageUrl: imageUrlSchema,
     sources: z.array(itemSourceInputSchema).min(1, { message: SOURCES_MIN_MESSAGE }),
     categories: categoriesSchema.optional(),
+    tags: tagsSchema.optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -141,6 +159,7 @@ const editableItemFieldsShape = {
   description: descriptionSchema.optional(),
   imageUrl: imageUrlSchema.optional(),
   categories: categoriesSchema.optional(),
+  tags: tagsSchema.optional(),
 }
 
 export const updateItemInputSchema = z.object(editableItemFieldsShape).strict()
