@@ -141,7 +141,7 @@ export function TagsPicker({
               {t('items.form.tags_add_button')}
             </Button>
           </PopoverTrigger>
-          <PopoverContent withoutPortal align="start" className="w-80 p-0">
+          <PopoverContent align="start" className="w-80 p-0">
             <Command>
               <CommandInput
                 autoFocus
