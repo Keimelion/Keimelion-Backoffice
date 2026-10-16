@@ -54,7 +54,10 @@ vi.mock('@/features/categories/hooks/use-admin-categories', () => ({
 
 vi.mock('@/features/tags/hooks/use-admin-tags', () => ({
   useAdminTags: () => ({
-    data: [],
+    data: {
+      items: [],
+      pagination: { page: 1, limit: 100, total: 0, totalPages: 0 },
+    },
     isLoading: false,
     isError: false,
   }),

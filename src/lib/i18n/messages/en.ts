@@ -9,6 +9,7 @@ import occasionTypes from './en/occasion-types.json'
 import query from './en/query.json'
 import shops from './en/shops.json'
 import sidebar from './en/sidebar.json'
+import tags from './en/tags.json'
 import users from './en/users.json'
 
 export const enMessages = {
@@ -21,6 +22,7 @@ export const enMessages = {
   ...lists,
   ...shops,
   ...categories,
+  ...tags,
   ...sidebar,
   ...errorMessages,
   ...query,

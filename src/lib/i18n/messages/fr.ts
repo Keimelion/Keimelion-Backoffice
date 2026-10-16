@@ -10,6 +10,7 @@ import occasionTypes from './fr/occasion-types.json'
 import query from './fr/query.json'
 import shops from './fr/shops.json'
 import sidebar from './fr/sidebar.json'
+import tags from './fr/tags.json'
 import users from './fr/users.json'
 
 export const frMessages = {
@@ -22,6 +23,7 @@ export const frMessages = {
   ...lists,
   ...shops,
   ...categories,
+  ...tags,
   ...sidebar,
   ...errorMessages,
   ...query,
