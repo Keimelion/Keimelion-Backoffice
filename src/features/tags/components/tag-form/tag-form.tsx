@@ -20,6 +20,7 @@ import {
   type CreateTagInput,
 } from '@/data-access/tags/tags.schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { useAutoSlug } from '@/lib/use-auto-slug'
 
 export type TagFormValues = CreateTagInput
 
@@ -56,6 +57,8 @@ export function TagForm(props: TagFormProps): React.JSX.Element {
     reValidateMode: 'onChange',
     defaultValues: buildDefaultValues(props),
   })
+
+  useAutoSlug({ form, nameField: 'name', slugField: 'slug', enabled: !isEdit })
 
   const values = form.watch()
   const isFormValid = createTagInputSchema.safeParse(values).success

@@ -39,7 +39,7 @@ describe('TagForm (create mode)', () => {
     expect(screen.getByLabelText(/^slug$/i)).toBeInTheDocument()
   })
 
-  it('keeps the submit button disabled while either field is empty', async () => {
+  it('keeps the submit button disabled while the form is empty', () => {
     renderWithQueryClient(
       <TagForm
         mode="create"
@@ -48,12 +48,10 @@ describe('TagForm (create mode)', () => {
         isPending={false}
       />,
     )
-    expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
-    await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
     expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
   })
 
-  it('enables the submit button once both name and slug are valid', async () => {
+  it('auto-fills the slug from the name and enables the submit button', async () => {
     renderWithQueryClient(
       <TagForm
         mode="create"
@@ -62,10 +60,33 @@ describe('TagForm (create mode)', () => {
         isPending={false}
       />,
     )
-    await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
-    await userEvent.type(screen.getByLabelText(/^slug$/i), 'gaming')
+    await userEvent.type(screen.getByLabelText(/^name$/i), 'Video Games')
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /create/i })).toBeEnabled()
+      expect(screen.getByLabelText(/^slug$/i)).toHaveValue('video-games')
+    })
+    expect(screen.getByRole('button', { name: /create/i })).toBeEnabled()
+  })
+
+  it('stops auto-filling once the user edits the slug directly', async () => {
+    renderWithQueryClient(
+      <TagForm
+        mode="create"
+        onSubmit={vi.fn()}
+        onDirtyChange={vi.fn()}
+        isPending={false}
+      />,
+    )
+    const nameInput = screen.getByLabelText(/^name$/i)
+    const slugInput = screen.getByLabelText(/^slug$/i)
+    await userEvent.type(nameInput, 'Gaming')
+    await waitFor(() => {
+      expect(slugInput).toHaveValue('gaming')
+    })
+    await userEvent.clear(slugInput)
+    await userEvent.type(slugInput, 'custom-slug')
+    await userEvent.type(nameInput, 's')
+    await waitFor(() => {
+      expect(slugInput).toHaveValue('custom-slug')
     })
   })
 
@@ -80,6 +101,7 @@ describe('TagForm (create mode)', () => {
     )
     await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
     const slugInput = screen.getByLabelText(/^slug$/i)
+    await userEvent.clear(slugInput)
     await userEvent.type(slugInput, 'Not A Slug!')
     await userEvent.tab()
     await waitFor(() => {
@@ -119,7 +141,9 @@ describe('TagForm (create mode)', () => {
       />,
     )
     await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
-    await userEvent.type(screen.getByLabelText(/^slug$/i), 'gaming')
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^slug$/i)).toHaveValue('gaming')
+    })
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
       expect(screen.getByText('This slug is already taken.')).toBeInTheDocument()
