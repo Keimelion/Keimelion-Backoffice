@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, Tags, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -145,7 +145,7 @@ export function TagsPicker({
               disabled={disabled}
               className="w-full justify-start"
             >
-              <Plus className="mr-1.5 h-4 w-4" />
+              <Tags className="mr-1.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               {t('items.form.tags_add_button')}
             </Button>
           </PopoverTrigger>

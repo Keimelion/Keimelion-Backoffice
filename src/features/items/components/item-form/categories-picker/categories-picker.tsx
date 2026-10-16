@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Check, ChevronRight, Plus, X } from 'lucide-react'
+import { Check, ChevronRight, FolderTree, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -137,7 +137,7 @@ export function CategoriesPicker({
               disabled={disabled}
               className="w-full justify-start"
             >
-              <Plus className="mr-1.5 h-4 w-4" />
+              <FolderTree className="mr-1.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               {t('items.form.categories_add_button')}
             </Button>
           </PopoverTrigger>
