@@ -33,12 +33,16 @@ export function EditTagDialog({
     setError: UseFormSetError<TagFormValues>,
   ): void {
     const trimmedName = values.name.trim()
-    if (trimmedName === tag.name) {
+    const trimmedSlug = values.slug.trim()
+    const patch: { name?: string; slug?: string } = {}
+    if (trimmedName !== tag.name) patch.name = trimmedName
+    if (trimmedSlug !== tag.slug) patch.slug = trimmedSlug
+    if (Object.keys(patch).length === 0) {
       onOpenChange(false)
       return
     }
     mutation.mutate(
-      { id: tag.id, input: { name: trimmedName } },
+      { id: tag.id, input: patch },
       {
         onSuccess: (updated) => {
           notifySuccess({
@@ -48,7 +52,7 @@ export function EditTagDialog({
         },
         onError: (error) => {
           if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
-            setError('name', { message: t('tags.form.error.name_conflict') })
+            setError('slug', { message: t('tags.form.error.slug_conflict') })
             return
           }
           setError('root', { message: error.message })

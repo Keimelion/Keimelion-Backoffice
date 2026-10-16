@@ -98,36 +98,61 @@ describe('listTagsQuerySchema', () => {
 
 describe('createTagInputSchema', () => {
   it('parses a valid input', () => {
-    const result = createTagInputSchema.safeParse({ name: 'Gaming' })
+    const result = createTagInputSchema.safeParse({ name: 'Gaming', slug: 'gaming' })
     expect(result.success).toBe(true)
   })
 
-  it('trims surrounding whitespace', () => {
-    const result = createTagInputSchema.safeParse({ name: '  Gaming  ' })
+  it('trims surrounding whitespace on both fields', () => {
+    const result = createTagInputSchema.safeParse({ name: '  Gaming  ', slug: '  gaming  ' })
     expect(result.success).toBe(true)
     if (!result.success) return
     expect(result.data.name).toBe('Gaming')
+    expect(result.data.slug).toBe('gaming')
   })
 
   it('rejects an empty name', () => {
-    const result = createTagInputSchema.safeParse({ name: '   ' })
+    const result = createTagInputSchema.safeParse({ name: '   ', slug: 'gaming' })
     expect(result.success).toBe(false)
   })
 
   it('rejects a name longer than 50 characters', () => {
-    const result = createTagInputSchema.safeParse({ name: 'x'.repeat(51) })
+    const result = createTagInputSchema.safeParse({ name: 'x'.repeat(51), slug: 'gaming' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects a slug that is not kebab-case', () => {
+    const result = createTagInputSchema.safeParse({ name: 'Gaming', slug: 'Bad Slug!' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects a missing slug', () => {
+    const result = createTagInputSchema.safeParse({ name: 'Gaming' })
     expect(result.success).toBe(false)
   })
 
   it('rejects unknown fields (strict)', () => {
-    const result = createTagInputSchema.safeParse({ name: 'Gaming', slug: 'gaming' })
+    const result = createTagInputSchema.safeParse({
+      name: 'Gaming',
+      slug: 'gaming',
+      extra: 'nope',
+    })
     expect(result.success).toBe(false)
   })
 })
 
 describe('updateTagInputSchema', () => {
-  it('accepts a name patch', () => {
+  it('accepts a name-only patch', () => {
     const result = updateTagInputSchema.safeParse({ name: 'Renamed' })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts a slug-only patch', () => {
+    const result = updateTagInputSchema.safeParse({ slug: 'renamed' })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts both name and slug patch together', () => {
+    const result = updateTagInputSchema.safeParse({ name: 'Renamed', slug: 'renamed' })
     expect(result.success).toBe(true)
   })
 
@@ -136,8 +161,13 @@ describe('updateTagInputSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  it('rejects a slug that is not kebab-case', () => {
+    const result = updateTagInputSchema.safeParse({ slug: 'Bad Slug!' })
+    expect(result.success).toBe(false)
+  })
+
   it('rejects unknown fields (strict)', () => {
-    const result = updateTagInputSchema.safeParse({ slug: 'other' })
+    const result = updateTagInputSchema.safeParse({ unknown: 'value' })
     expect(result.success).toBe(false)
   })
 })
@@ -199,10 +229,10 @@ describe('createTag', () => {
 
   it('returns the created tag on success', async () => {
     mock.onPost('/admin/tags').reply((config) => {
-      expect(JSON.parse(config.data as string)).toEqual({ name: 'Gaming' })
+      expect(JSON.parse(config.data as string)).toEqual({ name: 'Gaming', slug: 'gaming' })
       return [HttpStatus.CREATED, { tag: MOCK_TAG }]
     })
-    const tag = await createTag({ name: 'Gaming' })
+    const tag = await createTag({ name: 'Gaming', slug: 'gaming' })
     expect(tag.slug).toBe('gaming')
   })
 
@@ -211,7 +241,9 @@ describe('createTag', () => {
       code: 'CONFLICT',
       message: 'Resource already exists',
     })
-    await expect(createTag({ name: 'Gaming' })).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(createTag({ name: 'Gaming', slug: 'gaming' })).rejects.toBeInstanceOf(
+      ApiRequestError,
+    )
   })
 })
 

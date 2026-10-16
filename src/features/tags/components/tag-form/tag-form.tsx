@@ -40,9 +40,9 @@ type TagFormProps =
 
 function buildDefaultValues(props: TagFormProps): TagFormValues {
   if (props.mode === 'edit') {
-    return { name: props.tag.name }
+    return { name: props.tag.name, slug: props.tag.slug }
   }
-  return { name: '' }
+  return { name: '', slug: '' }
 }
 
 export function TagForm(props: TagFormProps): React.JSX.Element {
@@ -102,25 +102,23 @@ export function TagForm(props: TagFormProps): React.JSX.Element {
           )}
         />
 
-        {isEdit ? (
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="tag-form-slug-readonly"
-              className="text-sm font-medium leading-none text-foreground"
-            >
-              {t('tags.form.slug_label')}
-            </label>
-            <Input
-              id="tag-form-slug-readonly"
-              value={props.tag.slug}
-              disabled
-              readOnly
-            />
-            <p className="text-xs text-muted-foreground">
-              {t('tags.form.slug_description_edit')}
-            </p>
-          </div>
-        ) : null}
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>{t('tags.form.slug_label')}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={t('tags.form.slug_placeholder')}
+                  disabled={isPending}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {form.formState.errors.root ? (
           <p className="text-sm font-medium text-destructive">

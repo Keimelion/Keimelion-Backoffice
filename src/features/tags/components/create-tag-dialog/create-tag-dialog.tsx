@@ -36,7 +36,7 @@ export function CreateTagDialog({
       },
       onError: (error) => {
         if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
-          setError('name', { message: t('tags.form.error.name_conflict') })
+          setError('slug', { message: t('tags.form.error.slug_conflict') })
           return
         }
         setError('root', { message: error.message })

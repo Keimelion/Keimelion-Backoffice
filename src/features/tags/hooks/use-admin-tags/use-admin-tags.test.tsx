@@ -128,12 +128,12 @@ describe('useCreateTag', () => {
     const { result } = renderHook(() => useCreateTag(), {
       wrapper: createQueryClientWrapper(),
     })
-    result.current.mutate({ name: 'Gaming' })
+    result.current.mutate({ name: 'Gaming', slug: 'gaming' })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
     expect(createTag).toHaveBeenCalled()
-    expect(vi.mocked(createTag).mock.calls[0]?.[0]).toEqual({ name: 'Gaming' })
+    expect(vi.mocked(createTag).mock.calls[0]?.[0]).toEqual({ name: 'Gaming', slug: 'gaming' })
   })
 })
 

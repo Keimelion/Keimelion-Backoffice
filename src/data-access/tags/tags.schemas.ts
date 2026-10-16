@@ -3,9 +3,14 @@ import { basePaginationShape } from '@/data-access/_shared/pagination'
 
 const TAG_NAME_MIN_LENGTH = 1
 const TAG_NAME_MAX_LENGTH = 50
+const TAG_SLUG_MIN_LENGTH = 1
+const TAG_SLUG_MAX_LENGTH = 50
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 const NAME_REQUIRED_MESSAGE = 'Name is required.'
 const NAME_TOO_LONG_MESSAGE = 'Name must be 50 characters or fewer.'
+const SLUG_INVALID_MESSAGE =
+  'Slug must be lowercase letters and digits separated by hyphens (e.g. gaming).'
 
 export const apiTagSchema = z.object({
   id: z.string(),
@@ -48,9 +53,17 @@ const nameSchema = z
   .min(TAG_NAME_MIN_LENGTH, { message: NAME_REQUIRED_MESSAGE })
   .max(TAG_NAME_MAX_LENGTH, { message: NAME_TOO_LONG_MESSAGE })
 
+const slugSchema = z
+  .string()
+  .trim()
+  .min(TAG_SLUG_MIN_LENGTH, { message: SLUG_INVALID_MESSAGE })
+  .max(TAG_SLUG_MAX_LENGTH, { message: SLUG_INVALID_MESSAGE })
+  .regex(SLUG_REGEX, { message: SLUG_INVALID_MESSAGE })
+
 export const createTagInputSchema = z
   .object({
     name: nameSchema,
+    slug: slugSchema,
   })
   .strict()
 
@@ -59,6 +72,7 @@ export type CreateTagInput = z.infer<typeof createTagInputSchema>
 export const updateTagInputSchema = z
   .object({
     name: nameSchema.optional(),
+    slug: slugSchema.optional(),
   })
   .strict()
 

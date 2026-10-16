@@ -17,7 +17,7 @@ vi.mock('sonner', () => ({
 
 const MOCK_TAG = {
   id: '11111111-1111-4111-8111-111111111111',
-  name: 'gaming',
+  name: 'Gaming',
   slug: 'gaming',
 }
 
@@ -26,7 +26,7 @@ beforeEach(() => {
 })
 
 describe('TagForm (create mode)', () => {
-  it('renders a single name field and no slug input', () => {
+  it('renders both name and slug fields', () => {
     renderWithQueryClient(
       <TagForm
         mode="create"
@@ -35,11 +35,11 @@ describe('TagForm (create mode)', () => {
         isPending={false}
       />,
     )
-    expect(screen.getByText('Name')).toBeInTheDocument()
-    expect(screen.queryByText('Slug')).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/^name$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^slug$/i)).toBeInTheDocument()
   })
 
-  it('keeps the submit button disabled while the name is empty', () => {
+  it('keeps the submit button disabled while either field is empty', async () => {
     renderWithQueryClient(
       <TagForm
         mode="create"
@@ -49,9 +49,11 @@ describe('TagForm (create mode)', () => {
       />,
     )
     expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
+    await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
+    expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
   })
 
-  it('enables the submit button once a non-empty name is typed', async () => {
+  it('enables the submit button once both name and slug are valid', async () => {
     renderWithQueryClient(
       <TagForm
         mode="create"
@@ -60,9 +62,28 @@ describe('TagForm (create mode)', () => {
         isPending={false}
       />,
     )
-    await userEvent.type(screen.getByLabelText(/name/i), 'gaming')
+    await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
+    await userEvent.type(screen.getByLabelText(/^slug$/i), 'gaming')
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /create/i })).toBeEnabled()
+    })
+  })
+
+  it('rejects a slug that is not kebab-case', async () => {
+    renderWithQueryClient(
+      <TagForm
+        mode="create"
+        onSubmit={vi.fn()}
+        onDirtyChange={vi.fn()}
+        isPending={false}
+      />,
+    )
+    await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
+    const slugInput = screen.getByLabelText(/^slug$/i)
+    await userEvent.type(slugInput, 'Not A Slug!')
+    await userEvent.tab()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create/i })).toBeDisabled()
     })
   })
 
@@ -77,16 +98,16 @@ describe('TagForm (create mode)', () => {
       />,
     )
     expect(onDirtyChange).toHaveBeenLastCalledWith(false)
-    await userEvent.type(screen.getByLabelText(/name/i), 'g')
+    await userEvent.type(screen.getByLabelText(/^name$/i), 'g')
     await waitFor(() => {
       expect(onDirtyChange).toHaveBeenLastCalledWith(true)
     })
   })
 
-  it('surfaces a field-level error on name via setError (409 pattern)', async () => {
+  it('surfaces a field-level error on slug via setError (409 pattern)', async () => {
     const onSubmit = vi.fn(
       (_values: TagFormValues, setError: UseFormSetError<TagFormValues>) => {
-        setError('name', { message: 'This tag already exists.' })
+        setError('slug', { message: 'This slug is already taken.' })
       },
     )
     renderWithQueryClient(
@@ -97,16 +118,17 @@ describe('TagForm (create mode)', () => {
         isPending={false}
       />,
     )
-    await userEvent.type(screen.getByLabelText(/name/i), 'gaming')
+    await userEvent.type(screen.getByLabelText(/^name$/i), 'Gaming')
+    await userEvent.type(screen.getByLabelText(/^slug$/i), 'gaming')
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
     await waitFor(() => {
-      expect(screen.getByText('This tag already exists.')).toBeInTheDocument()
+      expect(screen.getByText('This slug is already taken.')).toBeInTheDocument()
     })
   })
 })
 
 describe('TagForm (edit mode)', () => {
-  it('prefills the name and displays the slug read-only', () => {
+  it('prefills both name and slug, both editable', () => {
     renderWithQueryClient(
       <TagForm
         mode="edit"
@@ -116,21 +138,19 @@ describe('TagForm (edit mode)', () => {
         isPending={false}
       />,
     )
-    const inputsShowingGaming = screen.getAllByDisplayValue('gaming')
-    expect(inputsShowingGaming).toHaveLength(2)
     const nameInput = screen.getByLabelText(/^name$/i)
-    expect(nameInput).toHaveValue('gaming')
+    expect(nameInput).toHaveValue('Gaming')
     expect(nameInput).not.toHaveAttribute('readonly')
     const slugInput = screen.getByLabelText(/^slug$/i)
     expect(slugInput).toHaveValue('gaming')
-    expect(slugInput).toHaveAttribute('readonly')
+    expect(slugInput).not.toHaveAttribute('readonly')
     expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument()
   })
 
-  it('surfaces a field-level error on name via setError (409 pattern)', async () => {
+  it('surfaces a field-level error on slug via setError (409 pattern)', async () => {
     const onSubmit = vi.fn(
       (_values: TagFormValues, setError: UseFormSetError<TagFormValues>) => {
-        setError('name', { message: 'This tag already exists.' })
+        setError('slug', { message: 'This slug is already taken.' })
       },
     )
     renderWithQueryClient(
@@ -142,12 +162,12 @@ describe('TagForm (edit mode)', () => {
         isPending={false}
       />,
     )
-    const nameInput = screen.getByLabelText(/name/i)
-    await userEvent.clear(nameInput)
-    await userEvent.type(nameInput, 'conflict')
+    const slugInput = screen.getByLabelText(/^slug$/i)
+    await userEvent.clear(slugInput)
+    await userEvent.type(slugInput, 'conflict')
     await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
     await waitFor(() => {
-      expect(screen.getByText('This tag already exists.')).toBeInTheDocument()
+      expect(screen.getByText('This slug is already taken.')).toBeInTheDocument()
     })
   })
 })
