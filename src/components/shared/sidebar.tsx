@@ -20,13 +20,13 @@ interface NavItem {
 
 const NAV_ITEMS: readonly NavItem[] = [
   { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
+  { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
   { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo },
+  { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
   { labelId: 'sidebar.nav.items', href: '/items', icon: PackageOpen, adminOnly: true },
   { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
   { labelId: 'sidebar.nav.categories', href: '/categories', icon: FolderTree, adminOnly: true },
   { labelId: 'sidebar.nav.tags', href: '/tags', icon: Tag, adminOnly: true },
-  { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
-  { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
 ]
 
 const BRAND_INITIAL = 'K'
