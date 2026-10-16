@@ -14,9 +14,20 @@ const REFRESH_PATH = '/auth/refresh'
 const LOGIN_ROUTE = '/auth/login'
 const LOGIN_REDIRECT = '/login'
 
+const apiValidationIssueSchema = z.object({
+  path: z.string(),
+  message: z.string(),
+  code: z.string(),
+})
+
 const apiErrorBodySchema = z.object({
   code: z.string().min(1),
   message: z.string().min(1),
+  metadata: z
+    .object({
+      issues: z.array(apiValidationIssueSchema).optional(),
+    })
+    .optional(),
 })
 
 let refreshPromise: Promise<string> | null = null
@@ -66,7 +77,8 @@ function mapAxiosError(axiosError: AxiosError): ApiRequestError {
 
   const parsedBody = apiErrorBodySchema.safeParse(axiosError.response.data)
   if (parsedBody.success) {
-    return new ApiRequestError(parsedBody.data.code, parsedBody.data.message, status)
+    const issues = parsedBody.data.metadata?.issues ?? null
+    return new ApiRequestError(parsedBody.data.code, parsedBody.data.message, status, issues)
   }
 
   return new ApiRequestError(

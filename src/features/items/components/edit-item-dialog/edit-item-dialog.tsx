@@ -11,10 +11,20 @@ import { ItemSourcesManager } from '@/features/items/components/item-sources-man
 import { useUpdateItem } from '@/features/items/hooks/use-admin-items'
 import type { ApiAdminItem, UpdateItemInput } from '@/data-access/items/items.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
+import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
+import { collapseTagsIssuePaths } from '@/features/items/lib/collapse-tags-issue-paths'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { useTranslate } from '@/lib/i18n/use-translate'
+
+const UPDATE_ITEM_ISSUE_PATHS = [
+  'name',
+  'description',
+  'imageUrl',
+  'categories',
+  'tags',
+] as const
 
 interface EditItemDialogProps {
   open: boolean
@@ -24,14 +34,14 @@ interface EditItemDialogProps {
 
 const EDITABLE_ITEM_FIELDS = ['name', 'description', 'imageUrl'] as const satisfies readonly (keyof ItemFormEditValues)[]
 
-function haveSameCategoryIds(
+function haveSameUnorderedValues(
   before: readonly string[],
   after: readonly string[],
 ): boolean {
   if (before.length !== after.length) return false
   const sortedBefore = [...before].sort()
   const sortedAfter = [...after].sort()
-  return sortedBefore.every((id, index) => id === sortedAfter[index])
+  return sortedBefore.every((value, index) => value === sortedAfter[index])
 }
 
 export function EditItemDialog({
@@ -59,8 +69,13 @@ export function EditItemDialog({
     )
     const originalCategoryIds = item.categories.map((category) => category.id)
     const submittedCategoryIds = values.categories ?? []
-    if (!haveSameCategoryIds(originalCategoryIds, submittedCategoryIds)) {
+    if (!haveSameUnorderedValues(originalCategoryIds, submittedCategoryIds)) {
       patch.categories = submittedCategoryIds
+    }
+    const originalTagNames = item.tags.map((tag) => tag.name)
+    const submittedTagNames = values.tags ?? []
+    if (!haveSameUnorderedValues(originalTagNames, submittedTagNames)) {
+      patch.tags = submittedTagNames
     }
 
     mutation.mutate(
@@ -81,6 +96,25 @@ export function EditItemDialog({
           ) {
             setError('categories', { message: t('items.form.error.category_not_found') })
             return
+          }
+          if (
+            error instanceof ApiRequestError
+            && error.code === ErrorCode.TAG_INVALID_NAME
+          ) {
+            setError('tags', { message: t('items.form.error.tag_invalid_name') })
+            return
+          }
+          if (
+            error instanceof ApiRequestError
+            && error.code === ErrorCode.UNPROCESSABLE_ENTITY
+            && error.issues !== null
+          ) {
+            const appliedCount = applyApiValidationIssues(
+              collapseTagsIssuePaths(error.issues),
+              setError as (path: string, errorValue: { message: string }) => void,
+              UPDATE_ITEM_ISSUE_PATHS,
+            )
+            if (appliedCount > 0) return
           }
           setError('root', { message: error.message })
         },

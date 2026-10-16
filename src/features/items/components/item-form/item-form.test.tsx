@@ -52,6 +52,14 @@ vi.mock('@/features/categories/hooks/use-admin-categories', () => ({
   }),
 }))
 
+vi.mock('@/features/tags/hooks/use-admin-tags', () => ({
+  useAdminTags: () => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+  }),
+}))
+
 const ITEM_CATEGORY_FOOD = {
   id: CATEGORY_FOOD_ID,
   parentId: null,
@@ -70,6 +78,7 @@ const MOCK_ITEM = {
   updatedAt: '2024-01-01T00:00:00.000Z',
   sources: [],
   categories: [],
+  tags: [],
 }
 
 beforeEach(() => {

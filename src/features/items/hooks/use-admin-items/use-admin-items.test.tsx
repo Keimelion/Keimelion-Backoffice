@@ -39,6 +39,7 @@ const MOCK_ITEM = {
   updatedAt: '2024-01-01T00:00:00.000Z',
   sources: [],
   categories: [],
+  tags: [],
 }
 
 const MOCK_RESPONSE = {
