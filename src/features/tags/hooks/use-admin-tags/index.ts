@@ -1,1 +1,1 @@
-export { buildAdminTagsKey, useAdminTags } from './use-admin-tags'
+export { useAdminTags } from './use-admin-tags'

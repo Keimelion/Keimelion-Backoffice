@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Plus, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,7 +16,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiTag } from '@/data-access/tags/tags.schemas'
 import { useAdminTags } from '@/features/tags/hooks/use-admin-tags'
 import { useTranslate } from '@/lib/i18n/use-translate'
-import { cn } from '@/lib/utils'
 
 const CREATE_ITEM_PREFIX = '__create__:'
 
@@ -215,15 +214,9 @@ function TagOptionRow({ tag, onSelect }: TagOptionRowProps): React.JSX.Element {
       value={tag.name}
       keywords={[tag.slug]}
       onSelect={onSelect}
-      className={cn(
-        'flex cursor-pointer items-center gap-2',
-        'data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground',
-      )}
+      className="flex cursor-pointer items-center gap-2 data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground"
     >
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate">{tag.name}</span>
-      </div>
-      <Check className="h-4 w-4 shrink-0 text-primary opacity-0" />
+      <span className="truncate">{tag.name}</span>
     </CommandItem>
   )
 }

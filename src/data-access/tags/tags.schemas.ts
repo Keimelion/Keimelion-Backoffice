@@ -19,5 +19,3 @@ export const adminTagListResponseSchema = z.object({
   items: z.array(apiTagSchema),
   pagination: paginationSchema,
 })
-
-export type AdminTagListResponse = z.infer<typeof adminTagListResponseSchema>

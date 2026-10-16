@@ -7,10 +7,6 @@ import type { ApiTag } from '@/data-access/tags/tags.schemas'
 
 const ADMIN_TAGS_LIST_KEY = [...TAGS_QUERY_KEY, 'list'] as const
 
-export function buildAdminTagsKey(): typeof ADMIN_TAGS_LIST_KEY {
-  return ADMIN_TAGS_LIST_KEY
-}
-
 export function useAdminTags(): UseQueryResult<ApiTag[]> {
   return useQuery({
     queryKey: ADMIN_TAGS_LIST_KEY,
