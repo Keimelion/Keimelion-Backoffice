@@ -11,12 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiTag } from '@/data-access/tags/tags.schemas'
 import { useAdminTags } from '@/features/tags/hooks/use-admin-tags'
@@ -118,43 +113,50 @@ export function TagsPicker({
         if (!nextOpen) setSearchText('')
       }}
     >
-      <PopoverAnchor asChild>
-        <div className="flex flex-wrap items-center gap-2">
-          {value.map((name) => (
-            <Badge
-              key={name}
-              variant="outline"
-              className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
-            >
-              <span>{name}</span>
-              <button
-                type="button"
-                aria-label={t('items.form.tags_remove_chip_label', { name })}
-                disabled={disabled}
-                onClick={() => { handleRemoveChip(name) }}
-                className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </Badge>
-          ))}
-
-          {atMax ? null : (
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
+      <div className="flex flex-col gap-2">
+        {value.length === 0 ? null : (
+          <div className="flex flex-wrap items-center gap-2">
+            {value.map((name) => (
+              <Badge
+                key={name}
                 variant="outline"
-                size="sm"
-                disabled={disabled}
+                className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
               >
-                <Plus className="mr-1.5 h-4 w-4" />
-                {t('items.form.tags_add_button')}
-              </Button>
-            </PopoverTrigger>
-          )}
-        </div>
-      </PopoverAnchor>
-      <PopoverContent withoutPortal align="start" className="w-80 p-0">
+                <span>{name}</span>
+                <button
+                  type="button"
+                  aria-label={t('items.form.tags_remove_chip_label', { name })}
+                  disabled={disabled}
+                  onClick={() => { handleRemoveChip(name) }}
+                  className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {atMax ? null : (
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              className="w-full justify-start"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t('items.form.tags_add_button')}
+            </Button>
+          </PopoverTrigger>
+        )}
+      </div>
+      <PopoverContent
+        withoutPortal
+        align="start"
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+      >
         <Command>
           <CommandInput
             autoFocus

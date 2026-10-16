@@ -11,12 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
@@ -106,46 +101,53 @@ export function CategoriesPicker({
 
   return (
     <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-      <PopoverAnchor asChild>
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedCategories.map((category) => {
-            const label = buildParentPathLabel(category, categories, locale)
-            return (
-              <Badge
-                key={category.id}
-                variant="outline"
-                className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
-              >
-                <span>{label}</span>
-                <button
-                  type="button"
-                  aria-label={t('items.form.categories_remove_chip_label', { name: label })}
-                  disabled={disabled}
-                  onClick={() => { handleRemoveChip(category.id) }}
-                  className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+      <div className="flex flex-col gap-2">
+        {selectedCategories.length === 0 ? null : (
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedCategories.map((category) => {
+              const label = buildParentPathLabel(category, categories, locale)
+              return (
+                <Badge
+                  key={category.id}
+                  variant="outline"
+                  className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
                 >
-                  <X className="h-4 w-4" />
-                </button>
-              </Badge>
-            )
-          })}
+                  <span>{label}</span>
+                  <button
+                    type="button"
+                    aria-label={t('items.form.categories_remove_chip_label', { name: label })}
+                    disabled={disabled}
+                    onClick={() => { handleRemoveChip(category.id) }}
+                    className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </Badge>
+              )
+            })}
+          </div>
+        )}
 
-          {atMax ? null : (
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={disabled}
-              >
-                <Plus className="mr-1.5 h-4 w-4" />
-                {t('items.form.categories_add_button')}
-              </Button>
-            </PopoverTrigger>
-          )}
-        </div>
-      </PopoverAnchor>
-      <PopoverContent withoutPortal align="start" className="w-80 p-0">
+        {atMax ? null : (
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              className="w-full justify-start"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t('items.form.categories_add_button')}
+            </Button>
+          </PopoverTrigger>
+        )}
+      </div>
+      <PopoverContent
+        withoutPortal
+        align="start"
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+      >
         <Command>
           <CommandInput
             autoFocus
