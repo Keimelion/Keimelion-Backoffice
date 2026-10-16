@@ -27,6 +27,9 @@ interface TagsPickerProps {
   maxNameLength: number
 }
 
+const PICKER_PAGE = 1
+const PICKER_LIMIT = 100
+
 export function TagsPicker({
   value,
   onChange,
@@ -35,8 +38,8 @@ export function TagsPicker({
   maxNameLength,
 }: TagsPickerProps): React.JSX.Element {
   const t = useTranslate()
-  const tagsQuery = useAdminTags()
-  const existingTags = tagsQuery.data ?? []
+  const tagsQuery = useAdminTags({ page: PICKER_PAGE, limit: PICKER_LIMIT })
+  const existingTags = tagsQuery.data?.items ?? []
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [searchText, setSearchText] = useState('')
 

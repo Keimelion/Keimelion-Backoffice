@@ -1,1 +1,9 @@
-export { useAdminTags } from './use-admin-tags'
+export {
+  buildAdminTagKey,
+  buildAdminTagsKey,
+  useAdminTag,
+  useAdminTags,
+  useCreateTag,
+  useDeleteTag,
+  useUpdateTag,
+} from './use-admin-tags'

@@ -16,8 +16,13 @@ const TAG_EXCLUSIVE = {
   slug: 'exclusive',
 }
 
+interface MockPaginatedTagsData {
+  items: unknown
+  pagination: { page: number; limit: number; total: number; totalPages: number }
+}
+
 interface MockQueryResult {
-  data: unknown
+  data: MockPaginatedTagsData | undefined
   isLoading: boolean
   isError: boolean
 }
@@ -27,6 +32,13 @@ const useAdminTagsMock = vi.fn<() => MockQueryResult>()
 vi.mock('@/features/tags/hooks/use-admin-tags', () => ({
   useAdminTags: (): MockQueryResult => useAdminTagsMock(),
 }))
+
+function toPaginated(items: unknown[]): MockPaginatedTagsData {
+  return {
+    items,
+    pagination: { page: 1, limit: 100, total: items.length, totalPages: 1 },
+  }
+}
 
 function render(ui: ReactElement): void {
   renderWithQueryClient(ui)
@@ -48,14 +60,14 @@ describe('TagsPicker', () => {
   })
 
   it('shows the empty-options hint when there are no existing tags and no search', async () => {
-    useAdminTagsMock.mockReturnValue({ data: [], isLoading: false, isError: false })
+    useAdminTagsMock.mockReturnValue({ data: toPaginated([]), isLoading: false, isError: false })
     render(<TagsPicker value={[]} onChange={vi.fn()} {...DEFAULT_PROPS} />)
     await userEvent.click(screen.getByRole('button', { name: /add tag/i }))
     expect(screen.getByText(/type a name to create one/i)).toBeInTheDocument()
   })
 
   it('renders a chip per selected tag name', () => {
-    useAdminTagsMock.mockReturnValue({ data: [], isLoading: false, isError: false })
+    useAdminTagsMock.mockReturnValue({ data: toPaginated([]), isLoading: false, isError: false })
     render(
       <TagsPicker value={['gaming', 'board-game']} onChange={vi.fn()} {...DEFAULT_PROPS} />,
     )
@@ -64,7 +76,7 @@ describe('TagsPicker', () => {
   })
 
   it('calls onChange when the user clicks a chip remove button', async () => {
-    useAdminTagsMock.mockReturnValue({ data: [], isLoading: false, isError: false })
+    useAdminTagsMock.mockReturnValue({ data: toPaginated([]), isLoading: false, isError: false })
     const onChange = vi.fn()
     render(
       <TagsPicker value={['gaming', 'premium']} onChange={onChange} {...DEFAULT_PROPS} />,
@@ -75,7 +87,7 @@ describe('TagsPicker', () => {
 
   it('appends an existing tag when the user picks it from the list', async () => {
     useAdminTagsMock.mockReturnValue({
-      data: [TAG_PREMIUM, TAG_EXCLUSIVE],
+      data: toPaginated([TAG_PREMIUM, TAG_EXCLUSIVE]),
       isLoading: false,
       isError: false,
     })
@@ -88,7 +100,7 @@ describe('TagsPicker', () => {
   })
 
   it('creates a new tag from the typed search text', async () => {
-    useAdminTagsMock.mockReturnValue({ data: [], isLoading: false, isError: false })
+    useAdminTagsMock.mockReturnValue({ data: toPaginated([]), isLoading: false, isError: false })
     const onChange = vi.fn()
     render(<TagsPicker value={[]} onChange={onChange} {...DEFAULT_PROPS} />)
     await userEvent.click(screen.getByRole('button', { name: /add tag/i }))
@@ -99,7 +111,7 @@ describe('TagsPicker', () => {
   })
 
   it('hides the create option when the search matches a tag already selected', async () => {
-    useAdminTagsMock.mockReturnValue({ data: [], isLoading: false, isError: false })
+    useAdminTagsMock.mockReturnValue({ data: toPaginated([]), isLoading: false, isError: false })
     render(<TagsPicker value={['premium']} onChange={vi.fn()} {...DEFAULT_PROPS} />)
     await userEvent.click(screen.getByRole('button', { name: /add tag/i }))
     await userEvent.type(screen.getByPlaceholderText(/search or create a tag/i), 'premium')
@@ -107,7 +119,7 @@ describe('TagsPicker', () => {
   })
 
   it('hides the add button when the max is reached', () => {
-    useAdminTagsMock.mockReturnValue({ data: [], isLoading: false, isError: false })
+    useAdminTagsMock.mockReturnValue({ data: toPaginated([]), isLoading: false, isError: false })
     render(
       <TagsPicker
         value={['a', 'b']}
@@ -122,7 +134,7 @@ describe('TagsPicker', () => {
 
   it('excludes already-selected existing tags from the available options list', async () => {
     useAdminTagsMock.mockReturnValue({
-      data: [TAG_PREMIUM, TAG_EXCLUSIVE],
+      data: toPaginated([TAG_PREMIUM, TAG_EXCLUSIVE]),
       isLoading: false,
       isError: false,
     })
