@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiTag } from '@/data-access/tags/tags.schemas'
 import { useAdminTags } from '@/features/tags/hooks/use-admin-tags'
@@ -86,6 +91,10 @@ export function TagsPicker({
     addTag(selectValue)
   }
 
+  useEffect(() => {
+    if (atMax && isPopoverOpen) setIsPopoverOpen(false)
+  }, [atMax, isPopoverOpen])
+
   if (tagsQuery.isLoading) {
     return (
       <div className="flex flex-col gap-2">
@@ -102,92 +111,94 @@ export function TagsPicker({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {value.map((name) => (
-        <Badge
-          key={name}
-          variant="outline"
-          className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
-        >
-          <span>{name}</span>
-          <button
-            type="button"
-            aria-label={t('items.form.tags_remove_chip_label', { name })}
-            disabled={disabled}
-            onClick={() => { handleRemoveChip(name) }}
-            className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </Badge>
-      ))}
-
-      {atMax ? null : (
-        <Popover
-          open={isPopoverOpen}
-          onOpenChange={(nextOpen) => {
-            setIsPopoverOpen(nextOpen)
-            if (!nextOpen) setSearchText('')
-          }}
-        >
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
+    <Popover
+      open={isPopoverOpen}
+      onOpenChange={(nextOpen) => {
+        setIsPopoverOpen(nextOpen)
+        if (!nextOpen) setSearchText('')
+      }}
+    >
+      <PopoverAnchor asChild>
+        <div className="flex flex-wrap items-center gap-2">
+          {value.map((name) => (
+            <Badge
+              key={name}
               variant="outline"
-              size="sm"
-              disabled={disabled}
+              className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
             >
-              <Plus className="mr-1.5 h-4 w-4" />
-              {t('items.form.tags_add_button')}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-80 p-0">
-            <Command>
-              <CommandInput
-                autoFocus
-                value={searchText}
-                onValueChange={setSearchText}
-                placeholder={t('items.form.tags_search_placeholder')}
-                maxLength={maxNameLength}
-              />
-              <CommandList>
-                {availableTags.length === 0 && !canCreateFromSearch ? (
-                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-                    {trimmedSearch.length === 0
-                      ? t('items.form.tags_empty_options')
-                      : t('items.form.tags_empty_search')}
-                  </div>
-                ) : (
-                  <>
-                    <CommandEmpty>{t('items.form.tags_empty_search')}</CommandEmpty>
-                    {canCreateFromSearch ? (
-                      <CommandItem
-                        value={`${CREATE_ITEM_PREFIX}${trimmedSearch}`}
-                        keywords={[trimmedSearch]}
-                        onSelect={handleSelect}
-                        className="flex cursor-pointer items-center gap-2 data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground"
-                      >
-                        <Plus className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                        <span className="truncate">
-                          {t('items.form.tags_create_option', { name: trimmedSearch })}
-                        </span>
-                      </CommandItem>
-                    ) : null}
-                    {availableTags.map((tag) => (
-                      <TagOptionRow
-                        key={tag.id}
-                        tag={tag}
-                        onSelect={handleSelect}
-                      />
-                    ))}
-                  </>
-                )}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      )}
-    </div>
+              <span>{name}</span>
+              <button
+                type="button"
+                aria-label={t('items.form.tags_remove_chip_label', { name })}
+                disabled={disabled}
+                onClick={() => { handleRemoveChip(name) }}
+                className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </Badge>
+          ))}
+
+          {atMax ? null : (
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                {t('items.form.tags_add_button')}
+              </Button>
+            </PopoverTrigger>
+          )}
+        </div>
+      </PopoverAnchor>
+      <PopoverContent withoutPortal align="start" className="w-80 p-0">
+        <Command>
+          <CommandInput
+            autoFocus
+            value={searchText}
+            onValueChange={setSearchText}
+            placeholder={t('items.form.tags_search_placeholder')}
+            maxLength={maxNameLength}
+          />
+          <CommandList>
+            {availableTags.length === 0 && !canCreateFromSearch ? (
+              <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                {trimmedSearch.length === 0
+                  ? t('items.form.tags_empty_options')
+                  : t('items.form.tags_empty_search')}
+              </div>
+            ) : (
+              <>
+                <CommandEmpty>{t('items.form.tags_empty_search')}</CommandEmpty>
+                {canCreateFromSearch ? (
+                  <CommandItem
+                    value={`${CREATE_ITEM_PREFIX}${trimmedSearch}`}
+                    keywords={[trimmedSearch]}
+                    onSelect={handleSelect}
+                    className="flex cursor-pointer items-center gap-2 data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground"
+                  >
+                    <Plus className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                    <span className="truncate">
+                      {t('items.form.tags_create_option', { name: trimmedSearch })}
+                    </span>
+                  </CommandItem>
+                ) : null}
+                {availableTags.map((tag) => (
+                  <TagOptionRow
+                    key={tag.id}
+                    tag={tag}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   )
 }
 

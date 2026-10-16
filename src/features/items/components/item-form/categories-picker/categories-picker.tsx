@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, ChevronRight, Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
@@ -80,6 +85,10 @@ export function CategoriesPicker({
     onChange(value.filter((id) => id !== categoryId))
   }
 
+  useEffect(() => {
+    if (atMax && isPopoverOpen) setIsPopoverOpen(false)
+  }, [atMax, isPopoverOpen])
+
   if (categoriesQuery.isLoading) {
     return (
       <div className="flex flex-col gap-2">
@@ -96,72 +105,74 @@ export function CategoriesPicker({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {selectedCategories.map((category) => {
-        const label = buildParentPathLabel(category, categories, locale)
-        return (
-          <Badge
-            key={category.id}
-            variant="outline"
-            className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
-          >
-            <span>{label}</span>
-            <button
-              type="button"
-              aria-label={t('items.form.categories_remove_chip_label', { name: label })}
-              disabled={disabled}
-              onClick={() => { handleRemoveChip(category.id) }}
-              className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </Badge>
-        )
-      })}
+    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+      <PopoverAnchor asChild>
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedCategories.map((category) => {
+            const label = buildParentPathLabel(category, categories, locale)
+            return (
+              <Badge
+                key={category.id}
+                variant="outline"
+                className="gap-1.5 border-primary/40 bg-primary/10 pl-3 pr-1.5 py-1 text-sm font-normal text-foreground"
+              >
+                <span>{label}</span>
+                <button
+                  type="button"
+                  aria-label={t('items.form.categories_remove_chip_label', { name: label })}
+                  disabled={disabled}
+                  onClick={() => { handleRemoveChip(category.id) }}
+                  className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </Badge>
+            )
+          })}
 
-      {atMax ? null : (
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              {t('items.form.categories_add_button')}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-80 p-0">
-            <Command>
-              <CommandInput
-                autoFocus
-                placeholder={t('items.form.categories_search_placeholder')}
-              />
-              <CommandList>
-                {treeOrderedOptions.length === 0 ? (
-                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-                    {t('items.form.categories_empty_options')}
-                  </div>
-                ) : (
-                  <>
-                    <CommandEmpty>{t('items.form.categories_empty_search')}</CommandEmpty>
-                    {treeOrderedOptions.map((option) => (
-                      <CategoryOptionRow
-                        key={option.category.id}
-                        option={option}
-                        isSelected={value.includes(option.category.id)}
-                        onToggle={handleToggle}
-                      />
-                    ))}
-                  </>
-                )}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      )}
-    </div>
+          {atMax ? null : (
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                {t('items.form.categories_add_button')}
+              </Button>
+            </PopoverTrigger>
+          )}
+        </div>
+      </PopoverAnchor>
+      <PopoverContent withoutPortal align="start" className="w-80 p-0">
+        <Command>
+          <CommandInput
+            autoFocus
+            placeholder={t('items.form.categories_search_placeholder')}
+          />
+          <CommandList>
+            {treeOrderedOptions.length === 0 ? (
+              <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                {t('items.form.categories_empty_options')}
+              </div>
+            ) : (
+              <>
+                <CommandEmpty>{t('items.form.categories_empty_search')}</CommandEmpty>
+                {treeOrderedOptions.map((option) => (
+                  <CategoryOptionRow
+                    key={option.category.id}
+                    option={option}
+                    isSelected={value.includes(option.category.id)}
+                    onToggle={handleToggle}
+                  />
+                ))}
+              </>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   )
 }
 
