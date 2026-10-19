@@ -1,18 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import type { UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
 import {
   Form,
   FormControl,
@@ -23,7 +15,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
 import {
   editListFormResolverSchema,
@@ -34,9 +25,8 @@ import {
   type UpdateListInput,
 } from '@/data-access/lists/lists.schemas'
 import { TagsPicker } from '@/features/items/components/item-form/tags-picker'
-import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-types'
+import { OccasionTypePicker } from '@/features/occasion-types/components/occasion-type-picker'
 import { useTranslate } from '@/lib/i18n/use-translate'
-import { cn } from '@/lib/utils'
 
 export type ListFormEditValues = UpdateListInput
 
@@ -61,11 +51,6 @@ export function ListForm(props: ListFormProps): React.JSX.Element {
   const { list, onDirtyChange, isPending, onSubmit } = props
   const t = useTranslate()
 
-  const occasionTypesQuery = useOccasionTypes()
-  const occasionTypes = occasionTypesQuery.data ?? []
-
-  const [isOccasionOpen, setIsOccasionOpen] = useState(false)
-
   const defaultValues = useMemo(() => buildDefaultValues(list), [list])
 
   const form = useForm<ListFormEditValues>({
@@ -83,11 +68,6 @@ export function ListForm(props: ListFormProps): React.JSX.Element {
   useEffect(() => {
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
-
-  const selectedOccasion =
-    typeof values.occasionTypeId === 'string'
-      ? occasionTypes.find((occasionType) => occasionType.id === values.occasionTypeId) ?? null
-      : null
 
   return (
     <Form {...form}>
@@ -155,71 +135,13 @@ export function ListForm(props: ListFormProps): React.JSX.Element {
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>{t('lists.form.occasion_type_label')}</FormLabel>
-              <Popover open={isOccasionOpen} onOpenChange={setIsOccasionOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      role="combobox"
-                      disabled={isPending || occasionTypesQuery.isLoading}
-                      className={cn(
-                        'justify-between',
-                        selectedOccasion === null && 'text-muted-foreground',
-                      )}
-                    >
-                      {selectedOccasion?.label ?? t('lists.form.occasion_type_placeholder')}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent
-                  withoutPortal
-                  align="start"
-                  className="w-[var(--radix-popover-trigger-width)] p-0"
-                >
-                  <Command>
-                    <CommandInput placeholder={t('lists.form.occasion_type_search_placeholder')} />
-                    <CommandList>
-                      <CommandEmpty>{t('lists.form.occasion_type_empty')}</CommandEmpty>
-                      <CommandItem
-                        value="__none__"
-                        onSelect={() => {
-                          field.onChange(null)
-                          setIsOccasionOpen(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 h-4 w-4',
-                            field.value === null ? 'opacity-100' : 'opacity-0',
-                          )}
-                        />
-                        {t('lists.form.occasion_type_none')}
-                      </CommandItem>
-                      {occasionTypes.map((occasionType) => (
-                        <CommandItem
-                          key={occasionType.id}
-                          value={occasionType.label}
-                          keywords={[occasionType.slug]}
-                          onSelect={() => {
-                            field.onChange(occasionType.id)
-                            setIsOccasionOpen(false)
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              'mr-2 h-4 w-4',
-                              field.value === occasionType.id ? 'opacity-100' : 'opacity-0',
-                            )}
-                          />
-                          {occasionType.label}
-                        </CommandItem>
-                      ))}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <FormControl>
+                <OccasionTypePicker
+                  value={typeof field.value === 'string' ? field.value : null}
+                  onChange={(next) => { field.onChange(next) }}
+                  disabled={isPending}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

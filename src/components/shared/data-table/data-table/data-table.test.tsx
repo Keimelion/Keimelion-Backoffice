@@ -205,4 +205,56 @@ describe('DataTable', () => {
       expect(calledUrl).toContain('sort=id%3Aasc')
     })
   })
+
+  describe('expandable rows', () => {
+    const EXPANDED_MARKER = 'expanded-content'
+
+    function makeExpandedRenderer(): { renderExpanded: (row: FixtureRow) => React.JSX.Element; calls: string[] } {
+      const calls: string[] = []
+      function renderExpanded(row: FixtureRow): React.JSX.Element {
+        calls.push(row.id)
+        return <div data-testid={`${EXPANDED_MARKER}-${row.id}`}>Inner for {row.name}</div>
+      }
+      return { renderExpanded, calls }
+    }
+
+    it('does not mount the expanded content for collapsed rows', () => {
+      const { renderExpanded, calls } = makeExpandedRenderer()
+      renderWithIntl(
+        <DataTable
+          columns={COLUMNS}
+          data={DATA}
+          isLoading={false}
+          error={null}
+          emptyLabel={EMPTY_LABEL}
+          skeletonRowCount={SKELETON_ROW_COUNT}
+          onRetry={vi.fn()}
+          renderExpandedRow={renderExpanded}
+          isRowExpanded={() => false}
+        />,
+      )
+      expect(screen.queryByTestId(`${EXPANDED_MARKER}-1`)).not.toBeInTheDocument()
+      expect(screen.queryByTestId(`${EXPANDED_MARKER}-2`)).not.toBeInTheDocument()
+      expect(calls).toEqual(['1', '2'])
+    })
+
+    it('mounts the expanded content only for rows reported as expanded', () => {
+      const { renderExpanded } = makeExpandedRenderer()
+      renderWithIntl(
+        <DataTable
+          columns={COLUMNS}
+          data={DATA}
+          isLoading={false}
+          error={null}
+          emptyLabel={EMPTY_LABEL}
+          skeletonRowCount={SKELETON_ROW_COUNT}
+          onRetry={vi.fn()}
+          renderExpandedRow={renderExpanded}
+          isRowExpanded={(row) => row.id === '1'}
+        />,
+      )
+      expect(screen.getByTestId(`${EXPANDED_MARKER}-1`)).toBeInTheDocument()
+      expect(screen.queryByTestId(`${EXPANDED_MARKER}-2`)).not.toBeInTheDocument()
+    })
+  })
 })

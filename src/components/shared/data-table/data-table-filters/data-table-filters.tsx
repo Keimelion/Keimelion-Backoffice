@@ -22,6 +22,7 @@ interface TextFilterDefinition {
 interface SelectOption {
   value: string
   label: string
+  icon?: string
 }
 
 interface SelectFilterDefinition {
@@ -139,7 +140,14 @@ function SelectFilter({ definition, currentValue }: SelectFilterProps): React.JS
           <SelectItem value={ALL_VALUE}>{definition.placeholder}</SelectItem>
           {definition.options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              {option.icon !== undefined && option.icon.length > 0 ? (
+                <span className="inline-flex items-center gap-2">
+                  <span aria-hidden="true" className="text-base leading-none">{option.icon}</span>
+                  <span>{option.label}</span>
+                </span>
+              ) : (
+                option.label
+              )}
             </SelectItem>
           ))}
         </SelectContent>

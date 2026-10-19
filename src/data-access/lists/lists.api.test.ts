@@ -72,7 +72,7 @@ const MOCK_LIST_ITEM = {
   itemId: 'item-1',
   quantityDesired: 1,
   quantityReservedTotal: 0,
-  itemStatus: 'active',
+  itemStatus: 'available' as const,
   sortOrder: 0,
   creatorNote: null,
   createdAt: '2024-01-01T00:00:00.000Z',

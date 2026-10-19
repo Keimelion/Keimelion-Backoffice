@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useIntl } from 'react-intl'
+import { ITEM_STATUS_VALUES } from '@keimelion/api/shared/enums/item-status'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -23,10 +25,27 @@ import type { MessageId } from '@/lib/i18n/messages/en'
 const DEFAULT_PAGE_SIZE = 20
 const SKELETON_ROW_COUNT = 3
 const SKELETON_OPACITY_STEP = 0.15
-const SKELETON_COLUMN_COUNT = 8
-const CURRENCY_FALLBACK = 'EUR'
 const PRICE_DECIMALS = 2
-const KNOWN_ITEM_STATUSES = new Set(['available', 'reserved', 'purchased'])
+
+interface ColumnDefinition {
+  headerId: MessageId
+  className?: string
+}
+
+const COLUMNS: ColumnDefinition[] = [
+  { headerId: 'lists.sub_table.column.image', className: 'w-14' },
+  { headerId: 'lists.sub_table.column.name' },
+  { headerId: 'lists.sub_table.column.quantity', className: 'w-20' },
+  { headerId: 'lists.sub_table.column.average_price', className: 'w-28' },
+  { headerId: 'lists.sub_table.column.item_status', className: 'w-28' },
+  { headerId: 'lists.sub_table.column.categories', className: 'w-40' },
+  { headerId: 'lists.sub_table.column.tags', className: 'w-40' },
+  { headerId: 'lists.sub_table.column.created_at', className: 'w-28' },
+]
+
+const KNOWN_ITEM_STATUSES: ReadonlySet<string> = new Set(ITEM_STATUS_VALUES)
+
+type FormatCurrencyFn = (amount: number, currency: string) => string
 
 interface ListItemsSubTableProps {
   listId: string
@@ -34,6 +53,7 @@ interface ListItemsSubTableProps {
 
 export function ListItemsSubTable({ listId }: ListItemsSubTableProps): React.JSX.Element {
   const t = useTranslate()
+  const intl = useIntl()
   const [page, setPage] = useState<number>(1)
   const query = useAdminListItems(listId, { page, limit: DEFAULT_PAGE_SIZE })
 
@@ -59,25 +79,30 @@ export function ListItemsSubTable({ listId }: ListItemsSubTableProps): React.JSX
   const isFirstPage = page <= 1
   const isLastPage = page >= totalPages
 
+  const formatCurrency: FormatCurrencyFn = (amount, currency) =>
+    intl.formatNumber(amount, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: PRICE_DECIMALS,
+      maximumFractionDigits: PRICE_DECIMALS,
+    })
+
   return (
     <div className="rounded-md border border-border bg-background">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-14">{t('lists.sub_table.column.image')}</TableHead>
-            <TableHead>{t('lists.sub_table.column.name')}</TableHead>
-            <TableHead className="w-20">{t('lists.sub_table.column.quantity')}</TableHead>
-            <TableHead className="w-28">{t('lists.sub_table.column.average_price')}</TableHead>
-            <TableHead className="w-28">{t('lists.sub_table.column.item_status')}</TableHead>
-            <TableHead className="w-40">{t('lists.sub_table.column.categories')}</TableHead>
-            <TableHead className="w-40">{t('lists.sub_table.column.tags')}</TableHead>
-            <TableHead className="w-28">{t('lists.sub_table.column.created_at')}</TableHead>
+            {COLUMNS.map((column) => (
+              <TableHead key={column.headerId} className={column.className}>
+                {t(column.headerId)}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {query.isLoading
             ? renderSkeletonRows()
-            : renderDataRows(items, t)}
+            : renderDataRows(items, t, formatCurrency)}
         </TableBody>
       </Table>
       {total > DEFAULT_PAGE_SIZE ? (
@@ -110,8 +135,8 @@ export function ListItemsSubTable({ listId }: ListItemsSubTableProps): React.JSX
 function renderSkeletonRows(): React.ReactNode {
   return Array.from({ length: SKELETON_ROW_COUNT }, (_, rowIndex) => (
     <TableRow key={rowIndex} style={{ opacity: 1 - rowIndex * SKELETON_OPACITY_STEP }}>
-      {Array.from({ length: SKELETON_COLUMN_COUNT }, (__, columnIndex) => (
-        <TableCell key={columnIndex}>
+      {COLUMNS.map((column) => (
+        <TableCell key={column.headerId} className={column.className}>
           <Skeleton className="h-4 w-full" />
         </TableCell>
       ))}
@@ -119,11 +144,15 @@ function renderSkeletonRows(): React.ReactNode {
   ))
 }
 
-function renderDataRows(items: ApiAdminListItem[], t: TranslateFn): React.ReactNode {
+function renderDataRows(
+  items: ApiAdminListItem[],
+  t: TranslateFn,
+  formatCurrency: FormatCurrencyFn,
+): React.ReactNode {
   if (items.length === 0) {
     return (
       <TableRow>
-        <TableCell colSpan={SKELETON_COLUMN_COUNT} className="py-6 text-center text-sm text-muted-foreground">
+        <TableCell colSpan={COLUMNS.length} className="py-6 text-center text-sm text-muted-foreground">
           {t('lists.sub_table.empty')}
         </TableCell>
       </TableRow>
@@ -216,23 +245,14 @@ function computeAveragePrice(listItem: ApiAdminListItem): AveragePrice | null {
     if (source.price === null) continue
     const amount = Number(source.price)
     if (!Number.isFinite(amount)) continue
+    if (currency === null) {
+      currency = source.currency
+    } else if (currency !== source.currency) {
+      return null
+    }
     sum += amount
     count += 1
-    currency ??= source.currency
   }
-  if (count === 0) return null
-  return { amount: sum / count, currency: currency ?? CURRENCY_FALLBACK }
-}
-
-function formatCurrency(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: PRICE_DECIMALS,
-      maximumFractionDigits: PRICE_DECIMALS,
-    }).format(amount)
-  } catch {
-    return `${amount.toFixed(PRICE_DECIMALS)} ${currency}`
-  }
+  if (count === 0 || currency === null) return null
+  return { amount: sum / count, currency }
 }

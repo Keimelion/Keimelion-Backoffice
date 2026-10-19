@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useIntl } from 'react-intl'
 import { Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import { LIST_STATUS_VALUES } from '@keimelion/api/shared/enums/list-status'
 import {
@@ -33,7 +34,6 @@ const LIST_STATUS_PARAM = 'listStatus'
 const OCCASION_TYPE_PARAM = 'occasionTypeId'
 const OWNER_PARAM = 'ownerUserId'
 const SORT_PARAM = 'sort'
-const CURRENCY_FALLBACK = 'EUR'
 const PRICE_DECIMALS = 2
 
 const CLEARABLE_PARAMS = [
@@ -49,29 +49,23 @@ function resolveRowClassName(list: ApiAdminList): string | undefined {
   return undefined
 }
 
-function formatCurrency(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: PRICE_DECIMALS,
-      maximumFractionDigits: PRICE_DECIMALS,
-    }).format(amount)
-  } catch {
-    return `${amount.toFixed(PRICE_DECIMALS)} ${currency}`
-  }
-}
-
 export function ListsPageContent(): React.JSX.Element {
   const t = useTranslate()
+  const intl = useIntl()
   const filters = useListSearchParams(listListsQuerySchema)
   const currentRole = useCurrentUserRole()
   const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
 
   const occasionTypesQuery = useOccasionTypes()
   const occasionTypes = occasionTypesQuery.data ?? []
-  const occasionTypeById = useMemo(
-    () => new Map(occasionTypes.map((occasionType) => [occasionType.id, occasionType])),
+  const occasionTypeById = useMemo<Map<string, OccasionTypeCell>>(
+    () =>
+      new Map(
+        occasionTypes.map((occasionType) => [
+          occasionType.id,
+          { id: occasionType.id, label: occasionType.label, emoji: occasionType.emoji },
+        ]),
+      ),
     [occasionTypes],
   )
 
@@ -79,11 +73,12 @@ export function ListsPageContent(): React.JSX.Element {
   const [deleteTarget, setDeleteTarget] = useState<ApiAdminList | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
 
-  const listsQuery = useAdminLists(isCurrentUserAdmin ? filters : {})
+  const listsQuery = useAdminLists(filters, { enabled: isCurrentUserAdmin })
   const lists = isCurrentUserAdmin ? listsQuery.data?.items ?? [] : []
   const total = listsQuery.data?.pagination.total ?? 0
 
   const restoreMutation = useRestoreList()
+  const restoreMutate = restoreMutation.mutate
 
   const visibleIds = useMemo(() => new Set(lists.map((list) => list.id)), [lists])
 
@@ -115,12 +110,12 @@ export function ListsPageContent(): React.JSX.Element {
   }
 
   const handleRestore = useCallback((list: ApiAdminList): void => {
-    restoreMutation.mutate(list.id, {
+    restoreMutate(list.id, {
       onSuccess: () => {
         notifySuccess({ title: translate('lists.mutation.restored_toast', { title: list.title }) })
       },
     })
-  }, [restoreMutation])
+  }, [restoreMutate])
 
   const listsFilters: FilterDefinition[] = [
     {
@@ -144,10 +139,11 @@ export function ListsPageContent(): React.JSX.Element {
       paramName: OCCASION_TYPE_PARAM,
       label: t('lists.filters.occasion_type_label'),
       placeholder: t('lists.filters.all_option'),
-      options: occasionTypes.map((occasionType) => ({
-        value: occasionType.id,
-        label: occasionType.label,
-      })),
+      options: occasionTypes.map((occasionType) =>
+        occasionType.emoji !== null && occasionType.emoji.length > 0
+          ? { value: occasionType.id, label: occasionType.label, icon: occasionType.emoji }
+          : { value: occasionType.id, label: occasionType.label },
+      ),
     },
     {
       type: 'text',
@@ -157,17 +153,27 @@ export function ListsPageContent(): React.JSX.Element {
     },
   ]
 
+  const formatPrice = useCallback(
+    (amount: number): string =>
+      intl.formatNumber(amount, {
+        minimumFractionDigits: PRICE_DECIMALS,
+        maximumFractionDigits: PRICE_DECIMALS,
+      }),
+    [intl],
+  )
+
   const columns = useMemo<DataTableColumn<ApiAdminList>[]>(
     () => buildColumns({
       t,
       occasionTypeById,
       isCurrentUserAdmin,
       isRestorePending: restoreMutation.isPending,
+      formatPrice,
       onEdit: setEditTarget,
       onDelete: setDeleteTarget,
       onRestore: handleRestore,
     }),
-    [t, occasionTypeById, isCurrentUserAdmin, restoreMutation.isPending, handleRestore],
+    [t, occasionTypeById, isCurrentUserAdmin, restoreMutation.isPending, formatPrice, handleRestore],
   )
 
   const renderExpandedRow = useMemo(
@@ -233,11 +239,18 @@ export function ListsPageContent(): React.JSX.Element {
   )
 }
 
+interface OccasionTypeCell {
+  id: string
+  label: string
+  emoji: string | null
+}
+
 interface BuildColumnsArgs {
   t: TranslateFn
-  occasionTypeById: Map<string, { id: string; label: string }>
+  occasionTypeById: Map<string, OccasionTypeCell>
   isCurrentUserAdmin: boolean
   isRestorePending: boolean
+  formatPrice: (amount: number) => string
   onEdit: (list: ApiAdminList) => void
   onDelete: (list: ApiAdminList) => void
   onRestore: (list: ApiAdminList) => void
@@ -248,6 +261,7 @@ function buildColumns({
   occasionTypeById,
   isCurrentUserAdmin,
   isRestorePending,
+  formatPrice,
   onEdit,
   onDelete,
   onRestore,
@@ -286,7 +300,14 @@ function buildColumns({
         if (occasionType === null) {
           return <span className="text-xs text-muted-foreground">—</span>
         }
-        return <span className="text-sm">{occasionType.label}</span>
+        return (
+          <span className="flex items-center gap-1.5 text-sm">
+            {occasionType.emoji !== null && occasionType.emoji.length > 0 ? (
+              <span aria-hidden="true" className="text-base leading-none">{occasionType.emoji}</span>
+            ) : null}
+            <span>{occasionType.label}</span>
+          </span>
+        )
       },
     },
     {
@@ -324,7 +345,7 @@ function buildColumns({
         if (!Number.isFinite(amount)) {
           return <span className="text-xs text-muted-foreground">{t('lists.table.price_none')}</span>
         }
-        return <span className="text-sm">{formatCurrency(amount, CURRENCY_FALLBACK)}</span>
+        return <span className="text-sm">{formatPrice(amount)}</span>
       },
     },
     {

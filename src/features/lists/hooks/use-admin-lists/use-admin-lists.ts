@@ -33,12 +33,18 @@ export function buildAdminListKey(id: string): readonly ['lists', 'detail', stri
 
 const DISABLED_ADMIN_LIST_KEY = [...LISTS_QUERY_KEY, 'detail', null] as const
 
+interface UseAdminListsOptions {
+  enabled?: boolean
+}
+
 export function useAdminLists(
   filters: ListsFilters,
+  options: UseAdminListsOptions = {},
 ): UseQueryResult<PaginatedResponse<ApiAdminList>> {
   return useQuery({
     queryKey: buildAdminListsKey(filters),
     queryFn: () => listAdminLists(filters),
+    enabled: options.enabled ?? true,
   })
 }
 

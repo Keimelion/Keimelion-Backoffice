@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ITEM_STATUS_VALUES } from '@keimelion/api/shared/enums/item-status'
 import { LIST_STATUS_VALUES } from '@keimelion/api/shared/enums/list-status'
 import { basePaginationShape } from '@/data-access/_shared/pagination'
 import { apiTagSchema } from '@/data-access/tags/tags.schemas'
@@ -44,7 +45,7 @@ const apiListItemBaseSchema = z.object({
   itemId: z.string(),
   quantityDesired: z.number().int(),
   quantityReservedTotal: z.number().int(),
-  itemStatus: z.string(),
+  itemStatus: z.enum(ITEM_STATUS_VALUES),
   sortOrder: z.number().nullable(),
   creatorNote: z.string().nullable(),
   createdAt: z.string(),

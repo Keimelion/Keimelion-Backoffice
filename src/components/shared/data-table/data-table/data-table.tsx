@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-
-const EXPANSION_ANIMATION_MS = 300
 import {
   DndContext,
   PointerSensor,
@@ -68,6 +66,7 @@ interface DataTableProps<TRow extends DataTableBaseRow> {
 
 const SKELETON_OPACITY_STEP = 0.15
 const DRAG_HANDLE_KEY = '__drag__'
+const EXPANSION_ANIMATION_MS = 300
 
 export function DataTable<TRow extends DataTableBaseRow>({
   columns,
@@ -330,9 +329,10 @@ function DataTableRow<TRow extends DataTableBaseRow>({
       setShouldRenderExpanded(true)
       return
     }
+    if (!shouldRenderExpanded) return
     const timer = setTimeout(() => { setShouldRenderExpanded(false) }, EXPANSION_ANIMATION_MS)
     return () => { clearTimeout(timer) }
-  }, [isExpanded])
+  }, [isExpanded, shouldRenderExpanded])
 
   return (
     <>

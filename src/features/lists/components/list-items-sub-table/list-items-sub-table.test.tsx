@@ -122,7 +122,7 @@ beforeEach(() => {
 })
 
 describe('ListItemsSubTable', () => {
-  it('does not call the fetch hook until the component is mounted (mount-only-on-expand)', () => {
+  it('calls useAdminListItems with the listId and default pagination on mount', () => {
     mockListItemsResult([])
     expect(useAdminListItems).not.toHaveBeenCalled()
     render(<ListItemsSubTable listId={LIST_ID} />)

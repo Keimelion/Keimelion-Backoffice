@@ -146,7 +146,7 @@ export function TagsPicker({
               variant="outline"
               size="sm"
               disabled={disabled}
-              className="w-full justify-start"
+              className="w-full justify-start hover:border-primary/40 hover:bg-primary/10 hover:text-foreground"
             >
               <Tags className="mr-1.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               {t('items.form.tags_add_button')}
@@ -182,7 +182,7 @@ export function TagsPicker({
                     value={`${CREATE_ITEM_PREFIX}${trimmedSearch}`}
                     keywords={[trimmedSearch]}
                     onSelect={handleSelect}
-                    className="flex cursor-pointer items-center gap-2 data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground"
+                    className="flex cursor-pointer items-center gap-2"
                   >
                     <Plus className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                     <span className="truncate">
@@ -217,7 +217,7 @@ function TagOptionRow({ tag, onSelect }: TagOptionRowProps): React.JSX.Element {
       value={tag.name}
       keywords={[tag.slug]}
       onSelect={onSelect}
-      className="flex cursor-pointer items-center gap-2 data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground"
+      className="flex cursor-pointer items-center gap-2"
     >
       <span className="truncate">{tag.name}</span>
     </CommandItem>
