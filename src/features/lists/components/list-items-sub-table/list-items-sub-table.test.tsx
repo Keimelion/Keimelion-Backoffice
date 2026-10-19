@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react'
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { renderWithQueryClient } from '@/test/test-utils'
 import { ListItemsSubTable } from './list-items-sub-table'
@@ -93,11 +94,11 @@ function listItemWithPrices(prices: (string | null)[]): {
   }
 }
 
-function mockListItemsResult(data: ReturnType<typeof listItemWithPrices>[]): void {
+function mockListItemsResult(data: ReturnType<typeof listItemWithPrices>[], total = data.length): void {
   vi.mocked(useAdminListItems).mockReturnValue({
     data: {
       items: data,
-      pagination: { page: 1, limit: 20, total: data.length, totalPages: 1 },
+      pagination: { page: 1, limit: 20, total, totalPages: Math.max(1, Math.ceil(total / 20)) },
     },
     isLoading: false,
     isError: false,
@@ -142,6 +143,27 @@ describe('ListItemsSubTable', () => {
     expect(screen.getByText('Weighted blanket')).toBeInTheDocument()
     expect(screen.getByText('Cozy and warm')).toBeInTheDocument()
     expect(screen.getByText('2')).toBeInTheDocument()
+  })
+
+  it('hides pagination controls when total is at or below the page size', () => {
+    mockListItemsResult([listItemWithPrices(['10.00'])], 20)
+    render(<ListItemsSubTable listId={LIST_ID} />)
+    expect(screen.queryByRole('button', { name: /previous/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /next/i })).not.toBeInTheDocument()
+  })
+
+  it('shows pagination controls and advances the page when total exceeds the page size', async () => {
+    mockListItemsResult([listItemWithPrices(['10.00'])], 25)
+    render(<ListItemsSubTable listId={LIST_ID} />)
+
+    const previousButton = screen.getByRole('button', { name: /previous/i })
+    const nextButton = screen.getByRole('button', { name: /next/i })
+    expect(previousButton).toBeDisabled()
+    expect(nextButton).toBeEnabled()
+    expect(useAdminListItems).toHaveBeenLastCalledWith(LIST_ID, { page: 1, limit: 20 })
+
+    await userEvent.click(nextButton)
+    expect(useAdminListItems).toHaveBeenLastCalledWith(LIST_ID, { page: 2, limit: 20 })
   })
 
   it('renders a retry button on error', () => {

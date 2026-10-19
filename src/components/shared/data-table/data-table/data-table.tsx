@@ -1,7 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+
+const EXPANSION_ANIMATION_MS = 300
 import {
   DndContext,
   PointerSensor,
@@ -322,6 +324,16 @@ function DataTableRow<TRow extends DataTableBaseRow>({
     opacity: isDragging ? 0.5 : undefined,
   }
 
+  const [shouldRenderExpanded, setShouldRenderExpanded] = useState<boolean>(isExpanded)
+  useEffect(() => {
+    if (isExpanded) {
+      setShouldRenderExpanded(true)
+      return
+    }
+    const timer = setTimeout(() => { setShouldRenderExpanded(false) }, EXPANSION_ANIMATION_MS)
+    return () => { clearTimeout(timer) }
+  }, [isExpanded])
+
   return (
     <>
       <TableRow
@@ -373,7 +385,7 @@ function DataTableRow<TRow extends DataTableBaseRow>({
               className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out data-[state=open]:grid-rows-[1fr]"
             >
               <div className="overflow-hidden">
-                {isExpanded ? <div className="px-4 py-3">{expandedContent}</div> : null}
+                {shouldRenderExpanded ? <div className="px-4 py-3">{expandedContent}</div> : null}
               </div>
             </div>
           </TableCell>
