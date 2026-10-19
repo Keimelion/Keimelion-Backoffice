@@ -21,7 +21,7 @@ interface NavItem {
 const NAV_ITEMS: readonly NavItem[] = [
   { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
   { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
-  { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo },
+  { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo, adminOnly: true },
   { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
   { labelId: 'sidebar.nav.items', href: '/items', icon: PackageOpen, adminOnly: true },
   { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
