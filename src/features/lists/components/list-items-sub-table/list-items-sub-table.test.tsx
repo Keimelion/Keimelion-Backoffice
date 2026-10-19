@@ -28,7 +28,13 @@ type UseAdminListItemsReturn = ReturnType<typeof useAdminListItems>
 
 const LIST_ID = '11111111-1111-4111-8111-111111111111'
 
-function listItemWithPrices(prices: (string | null)[]): {
+interface ListItemFixtureOptions {
+  itemStatus?: string
+  tags?: { id: string; name: string; slug: string }[]
+  categories?: { id: string; parentId: string | null; name: string; slug: string; depth: number }[]
+}
+
+function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureOptions = {}): {
   id: string
   listId: string
   itemId: string
@@ -47,6 +53,8 @@ function listItemWithPrices(prices: (string | null)[]): {
     createdByUserId: string | null
     createdAt: string
     updatedAt: string
+    tags: { id: string; name: string; slug: string }[]
+    categories: { id: string; parentId: string | null; name: string; slug: string; depth: number }[]
   }
   sources: {
     id: string
@@ -66,7 +74,7 @@ function listItemWithPrices(prices: (string | null)[]): {
     itemId: 'item-1',
     quantityDesired: 2,
     quantityReservedTotal: 0,
-    itemStatus: 'active',
+    itemStatus: options.itemStatus ?? 'available',
     sortOrder: 0,
     creatorNote: null,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -79,6 +87,8 @@ function listItemWithPrices(prices: (string | null)[]): {
       createdByUserId: null,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-02T00:00:00.000Z',
+      tags: options.tags ?? [],
+      categories: options.categories ?? [],
     },
     sources: prices.map((price, index) => ({
       id: `src-${String(index)}`,
@@ -164,6 +174,41 @@ describe('ListItemsSubTable', () => {
 
     await userEvent.click(nextButton)
     expect(useAdminListItems).toHaveBeenLastCalledWith(LIST_ID, { page: 2, limit: 20 })
+  })
+
+  it('renders the item status via a localized badge', () => {
+    mockListItemsResult([listItemWithPrices(['10.00'], { itemStatus: 'reserved' })])
+    render(<ListItemsSubTable listId={LIST_ID} />)
+    expect(screen.getByText('Reserved')).toBeInTheDocument()
+  })
+
+  it('falls back to the raw status value when the status is unknown', () => {
+    mockListItemsResult([listItemWithPrices(['10.00'], { itemStatus: 'quarantined' })])
+    render(<ListItemsSubTable listId={LIST_ID} />)
+    expect(screen.getByText('quarantined')).toBeInTheDocument()
+  })
+
+  it('renders a badge per category and per tag', () => {
+    mockListItemsResult([
+      listItemWithPrices(['10.00'], {
+        categories: [{ id: 'cat-1', parentId: null, name: 'Books', slug: 'books', depth: 0 }],
+        tags: [
+          { id: 'tag-1', name: 'fantasy', slug: 'fantasy' },
+          { id: 'tag-2', name: 'bestseller', slug: 'bestseller' },
+        ],
+      }),
+    ])
+    render(<ListItemsSubTable listId={LIST_ID} />)
+    expect(screen.getByText('Books')).toBeInTheDocument()
+    expect(screen.getByText('fantasy')).toBeInTheDocument()
+    expect(screen.getByText('bestseller')).toBeInTheDocument()
+  })
+
+  it('renders the none placeholder when an item has neither categories nor tags', () => {
+    mockListItemsResult([listItemWithPrices(['10.00'])])
+    render(<ListItemsSubTable listId={LIST_ID} />)
+    const placeholders = screen.getAllByText('—')
+    expect(placeholders.length).toBeGreaterThanOrEqual(2)
   })
 
   it('renders a retry button on error', () => {

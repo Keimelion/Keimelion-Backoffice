@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -17,13 +18,15 @@ import type { ApiAdminListItem } from '@/data-access/lists/lists.schemas'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
+import type { MessageId } from '@/lib/i18n/messages/en'
 
 const DEFAULT_PAGE_SIZE = 20
 const SKELETON_ROW_COUNT = 3
 const SKELETON_OPACITY_STEP = 0.15
-const SKELETON_COLUMN_COUNT = 5
+const SKELETON_COLUMN_COUNT = 8
 const CURRENCY_FALLBACK = 'EUR'
 const PRICE_DECIMALS = 2
+const KNOWN_ITEM_STATUSES = new Set(['available', 'reserved', 'purchased'])
 
 interface ListItemsSubTableProps {
   listId: string
@@ -63,9 +66,12 @@ export function ListItemsSubTable({ listId }: ListItemsSubTableProps): React.JSX
           <TableRow>
             <TableHead className="w-14">{t('lists.sub_table.column.image')}</TableHead>
             <TableHead>{t('lists.sub_table.column.name')}</TableHead>
-            <TableHead className="w-24">{t('lists.sub_table.column.quantity')}</TableHead>
-            <TableHead className="w-32">{t('lists.sub_table.column.average_price')}</TableHead>
-            <TableHead className="w-32">{t('lists.sub_table.column.created_at')}</TableHead>
+            <TableHead className="w-20">{t('lists.sub_table.column.quantity')}</TableHead>
+            <TableHead className="w-28">{t('lists.sub_table.column.average_price')}</TableHead>
+            <TableHead className="w-28">{t('lists.sub_table.column.item_status')}</TableHead>
+            <TableHead className="w-40">{t('lists.sub_table.column.categories')}</TableHead>
+            <TableHead className="w-40">{t('lists.sub_table.column.tags')}</TableHead>
+            <TableHead className="w-28">{t('lists.sub_table.column.created_at')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -141,22 +147,60 @@ function renderDataRows(items: ApiAdminListItem[], t: TranslateFn): React.ReactN
             ) : null}
           </div>
         </TableCell>
-        <TableCell className="w-24 text-sm text-muted-foreground">
+        <TableCell className="w-20 text-sm text-muted-foreground">
           {listItem.quantityDesired}
         </TableCell>
-        <TableCell className="w-32 text-sm">
+        <TableCell className="w-28 text-sm">
           {average === null ? (
             <span className="text-muted-foreground">{t('lists.sub_table.no_price')}</span>
           ) : (
             formatCurrency(average.amount, average.currency)
           )}
         </TableCell>
-        <TableCell className="w-32 text-sm text-muted-foreground">
+        <TableCell className="w-28">
+          {renderItemStatus(listItem.itemStatus, t)}
+        </TableCell>
+        <TableCell className="w-40">
+          {renderBadgeList(
+            listItem.item.categories.map((category) => category.name),
+            t,
+          )}
+        </TableCell>
+        <TableCell className="w-40">
+          {renderBadgeList(
+            listItem.item.tags.map((tag) => tag.name),
+            t,
+          )}
+        </TableCell>
+        <TableCell className="w-28 text-sm text-muted-foreground">
           {formatDate(listItem.createdAt)}
         </TableCell>
       </TableRow>
     )
   })
+}
+
+function renderItemStatus(itemStatus: string, t: TranslateFn): React.ReactNode {
+  if (!KNOWN_ITEM_STATUSES.has(itemStatus)) {
+    return <Badge variant="outline">{itemStatus}</Badge>
+  }
+  const label = t(`lists.sub_table.item_status.${itemStatus}` as MessageId)
+  return <Badge variant="outline">{label}</Badge>
+}
+
+function renderBadgeList(names: string[], t: TranslateFn): React.ReactNode {
+  if (names.length === 0) {
+    return <span className="text-xs text-muted-foreground">{t('lists.sub_table.none')}</span>
+  }
+  return (
+    <div className="flex flex-wrap gap-1">
+      {names.map((name) => (
+        <Badge key={name} variant="secondary" className="text-xs">
+          {name}
+        </Badge>
+      ))}
+    </div>
+  )
 }
 
 interface AveragePrice {

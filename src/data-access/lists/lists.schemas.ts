@@ -4,6 +4,7 @@ import { basePaginationShape } from '@/data-access/_shared/pagination'
 import { apiTagSchema } from '@/data-access/tags/tags.schemas'
 import { apiUserSchema } from '@/data-access/_shared/user'
 import { apiItemSourceSchema } from '@/data-access/items/item-sources.schemas'
+import { apiItemCategorySchema } from '@/data-access/items/items.schemas'
 
 const TITLE_MIN_LENGTH = 1
 const TITLE_MAX_LENGTH = 200
@@ -58,6 +59,8 @@ const apiListItemInnerItemSchema = z.object({
   createdByUserId: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  tags: z.array(apiTagSchema).default([]),
+  categories: z.array(apiItemCategorySchema).default([]),
 })
 
 export const apiAdminListItemSchema = apiListItemBaseSchema.extend({
