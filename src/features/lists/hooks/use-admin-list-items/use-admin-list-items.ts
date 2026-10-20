@@ -24,7 +24,10 @@ export function useAdminListItems(
 ): UseQueryResult<PaginatedResponse<ApiAdminListItem>> {
   return useQuery({
     queryKey: listId === null ? DISABLED_ADMIN_LIST_ITEMS_KEY : buildAdminListItemsKey(listId, pagination),
-    queryFn: () => listAdminListItems(listId ?? '', pagination),
+    queryFn: () => {
+      if (listId === null) throw new Error('useAdminListItems: listId must not be null when the query runs')
+      return listAdminListItems(listId, pagination)
+    },
     enabled: listId !== null,
   })
 }

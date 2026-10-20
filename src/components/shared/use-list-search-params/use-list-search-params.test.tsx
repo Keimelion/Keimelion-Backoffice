@@ -48,4 +48,25 @@ describe('useListSearchParams', () => {
     expect(result.current.page).toBe(1)
     expect(result.current.role).toBeUndefined()
   })
+
+  it('preserves valid keys when a superRefine issue has an empty path', () => {
+    const schemaWithInvariant = z
+      .object({
+        page: z.coerce.number().int().positive().catch(1),
+        role: z.enum(ROLE_VALUES).optional(),
+        secret: z.string().optional(),
+      })
+      .superRefine((value, ctx) => {
+        if (value.secret === 'forbidden') {
+          ctx.addIssue({ code: 'custom', path: [], message: 'nope' })
+        }
+      })
+    useSearchParamsMock.mockReturnValue(
+      new URLSearchParams({ page: '3', role: 'admin', secret: 'forbidden' }),
+    )
+    const { result } = renderHook(() => useListSearchParams(schemaWithInvariant))
+    expect(result.current.page).toBe(3)
+    expect(result.current.role).toBe('admin')
+    expect(result.current.secret).toBeUndefined()
+  })
 })

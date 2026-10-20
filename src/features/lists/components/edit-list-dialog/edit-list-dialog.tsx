@@ -11,7 +11,8 @@ import { useUpdateList } from '@/features/lists/hooks/use-admin-lists'
 import type { ApiAdminList, UpdateListInput } from '@/data-access/lists/lists.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
-import { collapseTagsIssuePaths } from '@/features/items/lib/collapse-tags-issue-paths'
+import { collapseTagsIssuePaths } from '@/lib/collapse-tags-issue-paths'
+import { haveSameUnorderedValues } from '@/lib/have-same-unordered-values'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { pickChangedFields } from '@/lib/pick-changed-fields'
@@ -26,16 +27,6 @@ interface EditListDialogProps {
 }
 
 const EDITABLE_LIST_FIELDS = ['title', 'description', 'occasionTypeId'] as const satisfies readonly (keyof ListFormEditValues)[]
-
-function haveSameUnorderedValues(
-  before: readonly string[],
-  after: readonly string[],
-): boolean {
-  if (before.length !== after.length) return false
-  const sortedBefore = [...before].sort()
-  const sortedAfter = [...after].sort()
-  return sortedBefore.every((value, index) => value === sortedAfter[index])
-}
 
 export function EditListDialog({
   open,

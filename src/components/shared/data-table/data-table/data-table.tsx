@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   DndContext,
@@ -324,7 +324,13 @@ function DataTableRow<TRow extends DataTableBaseRow>({
   }
 
   const [shouldRenderExpanded, setShouldRenderExpanded] = useState<boolean>(isExpanded)
+  const previousIsExpandedRef = useRef<boolean>(isExpanded)
+  const [openEpoch, setOpenEpoch] = useState<number>(isExpanded ? 1 : 0)
   useEffect(() => {
+    if (isExpanded && !previousIsExpandedRef.current) {
+      setOpenEpoch((previous) => previous + 1)
+    }
+    previousIsExpandedRef.current = isExpanded
     if (isExpanded) {
       setShouldRenderExpanded(true)
       return
@@ -385,7 +391,9 @@ function DataTableRow<TRow extends DataTableBaseRow>({
               className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out data-[state=open]:grid-rows-[1fr]"
             >
               <div className="overflow-hidden">
-                {shouldRenderExpanded ? <div className="px-4 py-3">{expandedContent}</div> : null}
+                {shouldRenderExpanded ? (
+                  <div key={openEpoch} className="px-4 py-3">{expandedContent}</div>
+                ) : null}
               </div>
             </div>
           </TableCell>

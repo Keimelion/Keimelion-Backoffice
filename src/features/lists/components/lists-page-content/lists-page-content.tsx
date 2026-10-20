@@ -35,6 +35,7 @@ const OCCASION_TYPE_PARAM = 'occasionTypeId'
 const OWNER_PARAM = 'ownerUserId'
 const SORT_PARAM = 'sort'
 const PRICE_DECIMALS = 2
+const TOTAL_ESTIMATED_CURRENCY = 'EUR'
 
 const CLEARABLE_PARAMS = [
   SEARCH_PARAM,
@@ -56,7 +57,7 @@ export function ListsPageContent(): React.JSX.Element {
   const currentRole = useCurrentUserRole()
   const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
 
-  const occasionTypesQuery = useOccasionTypes()
+  const occasionTypesQuery = useOccasionTypes({ enabled: isCurrentUserAdmin })
   const occasionTypes = occasionTypesQuery.data ?? []
   const occasionTypeById = useMemo<Map<string, OccasionTypeCell>>(
     () =>
@@ -79,6 +80,7 @@ export function ListsPageContent(): React.JSX.Element {
 
   const restoreMutation = useRestoreList()
   const restoreMutate = restoreMutation.mutate
+  const restoringId = restoreMutation.isPending ? restoreMutation.variables : null
 
   const visibleIds = useMemo(() => new Set(lists.map((list) => list.id)), [lists])
 
@@ -117,45 +119,50 @@ export function ListsPageContent(): React.JSX.Element {
     })
   }, [restoreMutate])
 
-  const listsFilters: FilterDefinition[] = [
-    {
-      type: 'text',
-      paramName: SEARCH_PARAM,
-      label: t('lists.filters.search_label'),
-      placeholder: t('lists.filters.search_placeholder'),
-    },
-    {
-      type: 'select',
-      paramName: LIST_STATUS_PARAM,
-      label: t('lists.filters.list_status_label'),
-      placeholder: t('lists.filters.all_option'),
-      options: LIST_STATUS_VALUES.map((status) => ({
-        value: status,
-        label: t(`lists.status.${status}`),
-      })),
-    },
-    {
-      type: 'select',
-      paramName: OCCASION_TYPE_PARAM,
-      label: t('lists.filters.occasion_type_label'),
-      placeholder: t('lists.filters.all_option'),
-      options: occasionTypes.map((occasionType) =>
-        occasionType.emoji !== null && occasionType.emoji.length > 0
-          ? { value: occasionType.id, label: occasionType.label, icon: occasionType.emoji }
-          : { value: occasionType.id, label: occasionType.label },
-      ),
-    },
-    {
-      type: 'text',
-      paramName: OWNER_PARAM,
-      label: t('lists.filters.owner_label'),
-      placeholder: t('lists.filters.owner_placeholder'),
-    },
-  ]
+  const listsFilters = useMemo<FilterDefinition[]>(
+    () => [
+      {
+        type: 'text',
+        paramName: SEARCH_PARAM,
+        label: t('lists.filters.search_label'),
+        placeholder: t('lists.filters.search_placeholder'),
+      },
+      {
+        type: 'select',
+        paramName: LIST_STATUS_PARAM,
+        label: t('lists.filters.list_status_label'),
+        placeholder: t('lists.filters.all_option'),
+        options: LIST_STATUS_VALUES.map((status) => ({
+          value: status,
+          label: t(`lists.status.${status}`),
+        })),
+      },
+      {
+        type: 'select',
+        paramName: OCCASION_TYPE_PARAM,
+        label: t('lists.filters.occasion_type_label'),
+        placeholder: t('lists.filters.all_option'),
+        options: occasionTypes.map((occasionType) =>
+          occasionType.emoji !== null && occasionType.emoji.length > 0
+            ? { value: occasionType.id, label: occasionType.label, icon: occasionType.emoji }
+            : { value: occasionType.id, label: occasionType.label },
+        ),
+      },
+      {
+        type: 'text',
+        paramName: OWNER_PARAM,
+        label: t('lists.filters.owner_label'),
+        placeholder: t('lists.filters.owner_placeholder'),
+      },
+    ],
+    [t, occasionTypes],
+  )
 
   const formatPrice = useCallback(
     (amount: number): string =>
       intl.formatNumber(amount, {
+        style: 'currency',
+        currency: TOTAL_ESTIMATED_CURRENCY,
         minimumFractionDigits: PRICE_DECIMALS,
         maximumFractionDigits: PRICE_DECIMALS,
       }),
@@ -167,13 +174,13 @@ export function ListsPageContent(): React.JSX.Element {
       t,
       occasionTypeById,
       isCurrentUserAdmin,
-      isRestorePending: restoreMutation.isPending,
+      restoringId,
       formatPrice,
       onEdit: setEditTarget,
       onDelete: setDeleteTarget,
       onRestore: handleRestore,
     }),
-    [t, occasionTypeById, isCurrentUserAdmin, restoreMutation.isPending, formatPrice, handleRestore],
+    [t, occasionTypeById, isCurrentUserAdmin, restoringId, formatPrice, handleRestore],
   )
 
   const renderExpandedRow = useMemo(
@@ -249,7 +256,7 @@ interface BuildColumnsArgs {
   t: TranslateFn
   occasionTypeById: Map<string, OccasionTypeCell>
   isCurrentUserAdmin: boolean
-  isRestorePending: boolean
+  restoringId: string | null
   formatPrice: (amount: number) => string
   onEdit: (list: ApiAdminList) => void
   onDelete: (list: ApiAdminList) => void
@@ -260,7 +267,7 @@ function buildColumns({
   t,
   occasionTypeById,
   isCurrentUserAdmin,
-  isRestorePending,
+  restoringId,
   formatPrice,
   onEdit,
   onDelete,
@@ -393,7 +400,7 @@ function buildColumns({
         ) : (
           <IconButton
             label={t('lists.admin.restore.tooltip', { name: list.title })}
-            disabled={isRestorePending}
+            disabled={restoringId === list.id}
             onClick={() => { onRestore(list) }}
           >
             <RotateCcw />

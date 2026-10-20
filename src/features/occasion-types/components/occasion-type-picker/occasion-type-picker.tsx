@@ -36,11 +36,32 @@ export function OccasionTypePicker({
   const [isOpen, setIsOpen] = useState(false)
 
   if (occasionTypesQuery.isLoading) {
-    return <Skeleton className="h-9 w-full" />
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        disabled
+        className="w-full justify-between font-normal"
+      >
+        <Skeleton className="h-4 w-24" />
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />
+      </Button>
+    )
   }
 
   if (occasionTypesQuery.isError) {
-    return <p className="text-sm text-destructive">{occasionTypesQuery.error.message}</p>
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        disabled
+        className="w-full justify-between font-normal text-destructive"
+        aria-invalid
+      >
+        <span className="truncate">{occasionTypesQuery.error.message}</span>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />
+      </Button>
+    )
   }
 
   const selected =

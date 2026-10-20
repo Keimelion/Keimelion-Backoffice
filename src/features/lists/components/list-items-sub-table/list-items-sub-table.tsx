@@ -245,11 +245,8 @@ function computeAveragePrice(listItem: ApiAdminListItem): AveragePrice | null {
     if (source.price === null) continue
     const amount = Number(source.price)
     if (!Number.isFinite(amount)) continue
-    if (currency === null) {
-      currency = source.currency
-    } else if (currency !== source.currency) {
-      return null
-    }
+    if (currency !== null && currency !== source.currency) return null
+    currency = currency ?? source.currency
     sum += amount
     count += 1
   }

@@ -26,6 +26,7 @@ import {
 } from '@/data-access/lists/lists.schemas'
 import { TagsPicker } from '@/features/items/components/item-form/tags-picker'
 import { OccasionTypePicker } from '@/features/occasion-types/components/occasion-type-picker'
+import { haveSameUnorderedValues } from '@/lib/have-same-unordered-values'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 export type ListFormEditValues = UpdateListInput
@@ -47,6 +48,15 @@ function buildDefaultValues(list: ApiAdminList): ListFormEditValues {
   }
 }
 
+function computeHasChanges(list: ApiAdminList, values: ListFormEditValues): boolean {
+  if (values.title !== list.title) return true
+  if (values.description !== list.description) return true
+  if (values.occasionTypeId !== list.occasionTypeId) return true
+  const originalTagNames = list.tags.map((tag) => tag.name)
+  const submittedTagNames = values.tags ?? []
+  return !haveSameUnorderedValues(originalTagNames, submittedTagNames)
+}
+
 export function ListForm(props: ListFormProps): React.JSX.Element {
   const { list, onDirtyChange, isPending, onSubmit } = props
   const t = useTranslate()
@@ -62,12 +72,12 @@ export function ListForm(props: ListFormProps): React.JSX.Element {
 
   const values = form.watch()
   const isFormValid = updateListInputSchema.safeParse(values).success
-  const { isDirty } = form.formState
-  const canSubmit = isFormValid && isDirty && !isPending
+  const hasChanges = useMemo(() => computeHasChanges(list, values), [list, values])
+  const canSubmit = isFormValid && hasChanges && !isPending
 
   useEffect(() => {
-    onDirtyChange(isDirty)
-  }, [isDirty, onDirtyChange])
+    onDirtyChange(hasChanges)
+  }, [hasChanges, onDirtyChange])
 
   return (
     <Form {...form}>
