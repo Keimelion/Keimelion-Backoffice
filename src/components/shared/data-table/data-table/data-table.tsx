@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   DndContext,
@@ -66,6 +66,7 @@ interface DataTableProps<TRow extends DataTableBaseRow> {
 
 const SKELETON_OPACITY_STEP = 0.15
 const DRAG_HANDLE_KEY = '__drag__'
+const EXPANSION_ANIMATION_MS = 300
 
 export function DataTable<TRow extends DataTableBaseRow>({
   columns,
@@ -322,6 +323,23 @@ function DataTableRow<TRow extends DataTableBaseRow>({
     opacity: isDragging ? 0.5 : undefined,
   }
 
+  const [shouldRenderExpanded, setShouldRenderExpanded] = useState<boolean>(isExpanded)
+  const previousIsExpandedRef = useRef<boolean>(isExpanded)
+  const [openEpoch, setOpenEpoch] = useState<number>(isExpanded ? 1 : 0)
+  useEffect(() => {
+    if (isExpanded && !previousIsExpandedRef.current) {
+      setOpenEpoch((previous) => previous + 1)
+    }
+    previousIsExpandedRef.current = isExpanded
+    if (isExpanded) {
+      setShouldRenderExpanded(true)
+      return
+    }
+    if (!shouldRenderExpanded) return
+    const timer = setTimeout(() => { setShouldRenderExpanded(false) }, EXPANSION_ANIMATION_MS)
+    return () => { clearTimeout(timer) }
+  }, [isExpanded, shouldRenderExpanded])
+
   return (
     <>
       <TableRow
@@ -373,7 +391,9 @@ function DataTableRow<TRow extends DataTableBaseRow>({
               className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out data-[state=open]:grid-rows-[1fr]"
             >
               <div className="overflow-hidden">
-                {isExpanded ? <div className="px-4 py-3">{expandedContent}</div> : null}
+                {shouldRenderExpanded ? (
+                  <div key={openEpoch} className="px-4 py-3">{expandedContent}</div>
+                ) : null}
               </div>
             </div>
           </TableCell>

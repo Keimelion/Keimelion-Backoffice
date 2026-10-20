@@ -48,7 +48,7 @@ export function FormDialog({
     <>
       <Dialog open={open} onOpenChange={handleDialogOpenChange}>
         <DialogContent
-          className="flex max-h-[calc(100vh-2rem)] max-w-xl flex-col overflow-hidden"
+          className="flex max-h-[calc(100vh-2rem)] max-w-xl flex-col"
           onInteractOutside={(event) => {
             const originalEvent = event.detail.originalEvent
             const target = originalEvent.target as HTMLElement | null
@@ -60,7 +60,7 @@ export function FormDialog({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          <div className="-mx-6 overflow-y-auto px-6">{children}</div>
+          <div className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6">{children}</div>
         </DialogContent>
       </Dialog>
 

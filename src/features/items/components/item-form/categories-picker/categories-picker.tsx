@@ -135,7 +135,7 @@ export function CategoriesPicker({
               variant="outline"
               size="sm"
               disabled={disabled}
-              className="w-full justify-start"
+              className="w-full justify-start hover:border-primary/40 hover:bg-primary/10 hover:text-foreground"
             >
               <FolderTree className="mr-1.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               {t('items.form.categories_add_button')}
@@ -197,7 +197,6 @@ function CategoryOptionRow({
       onSelect={() => { onToggle(category.id) }}
       className={cn(
         'flex cursor-pointer items-center gap-2',
-        'data-[selected=true]:bg-primary/15 data-[selected=true]:text-foreground',
         isSelected && 'bg-primary/10 text-foreground',
       )}
     >

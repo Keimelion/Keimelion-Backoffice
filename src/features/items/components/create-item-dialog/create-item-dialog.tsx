@@ -10,7 +10,7 @@ import type { ItemFormCreateValues } from '@/features/items/components/item-form
 import { useCreateItem } from '@/features/items/hooks/use-admin-items'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
-import { collapseTagsIssuePaths } from '@/features/items/lib/collapse-tags-issue-paths'
+import { collapseTagsIssuePaths } from '@/lib/collapse-tags-issue-paths'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
