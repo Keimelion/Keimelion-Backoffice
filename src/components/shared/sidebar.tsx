@@ -2,11 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarHeart, FolderTree, LayoutDashboard, ListTodo, LogOut, PackageOpen, Store, Tag, Users } from 'lucide-react'
+import { CalendarHeart, FolderTree, LayoutDashboard, ListTodo, PackageOpen, Store, Tag, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
-import { useLogout } from '@/features/auth/hooks/use-logout'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -34,16 +33,11 @@ const BRAND_NAME = 'Keimelion'
 
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname()
-  const logout = useLogout()
   const t = useTranslate()
   const currentRole = useCurrentUserRole()
   const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
 
   const visibleItems = NAV_ITEMS.filter((item) => item.adminOnly !== true || isCurrentUserAdmin)
-
-  const handleLogout = (): void => {
-    logout.mutate(null)
-  }
 
   return (
     <aside className="flex w-64 flex-col border-r border-border bg-background px-4 py-6">
@@ -85,16 +79,6 @@ export function Sidebar(): React.JSX.Element {
           )
         })}
       </nav>
-
-      <button
-        type="button"
-        onClick={handleLogout}
-        disabled={logout.isPending}
-        className="group mt-auto flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-500 ease-in-out hover:bg-destructive hover:text-destructive-foreground disabled:pointer-events-none disabled:opacity-50"
-      >
-        <LogOut className="h-5 w-5 transition-transform duration-500 ease-in-out group-hover:-translate-x-0.5" />
-        {t('common.actions.sign_out')}
-      </button>
     </aside>
   )
 }

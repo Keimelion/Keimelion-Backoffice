@@ -7,6 +7,7 @@ export const NOTICE_CODE = {
   RESET_LINK_INVALID: 'reset-link-invalid',
   RESET_LINK_EXPIRED: 'reset-link-expired',
   PASSWORD_UPDATED: 'password-updated',
+  PASSWORD_CHANGED: 'password-changed',
   FORGOT_PASSWORD_REQUESTED: 'forgot-password-requested',
 } as const
 
@@ -16,6 +17,7 @@ export const NOTICE_MESSAGE_IDS: Record<NoticeCode, MessageId> = {
   [NOTICE_CODE.RESET_LINK_INVALID]: 'auth.notices.reset_link_invalid',
   [NOTICE_CODE.RESET_LINK_EXPIRED]: 'auth.notices.reset_link_expired',
   [NOTICE_CODE.PASSWORD_UPDATED]: 'auth.notices.password_updated',
+  [NOTICE_CODE.PASSWORD_CHANGED]: 'auth.notices.password_changed',
   [NOTICE_CODE.FORGOT_PASSWORD_REQUESTED]: 'auth.notices.forgot_password_requested',
 }
 
@@ -41,6 +43,10 @@ export const FORGOT_PASSWORD_EXPIRED_LINK_URL = buildNoticeUrl(
 export const LOGIN_RESET_SUCCESS_URL = buildNoticeUrl(
   LOGIN_PATH,
   NOTICE_CODE.PASSWORD_UPDATED,
+)
+export const LOGIN_PASSWORD_CHANGED_URL = buildNoticeUrl(
+  LOGIN_PATH,
+  NOTICE_CODE.PASSWORD_CHANGED,
 )
 export const LOGIN_FORGOT_REQUESTED_URL = buildNoticeUrl(
   LOGIN_PATH,

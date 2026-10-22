@@ -63,6 +63,11 @@ export function rotateTokens(accessToken: string, refreshToken: string): void {
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
 }
 
+export function updateStoredUser(user: ApiUser): void {
+  localStorage.setItem(STORED_USER_KEY, JSON.stringify(user))
+  writeSessionCookie(user.role)
+}
+
 export function clearSession(): void {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)

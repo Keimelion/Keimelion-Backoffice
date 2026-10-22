@@ -5,6 +5,8 @@
   "common.actions.update": "Modifier {name}",
   "common.actions.delete": "Supprimer {name}",
   "common.nav.menu": "Menu",
+  "common.nav.profile": "Profil",
+  "common.user_menu.open": "Ouvrir le menu utilisateur",
   "common.pagination.page_of": "Page {page} / {totalPages}",
   "common.pagination.previous": "Précédent",
   "common.pagination.next": "Suivant",
