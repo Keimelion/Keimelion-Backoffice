@@ -6,5 +6,6 @@
   "sidebar.nav.categories": "Categories",
   "sidebar.nav.tags": "Tags",
   "sidebar.nav.users": "Users",
-  "sidebar.nav.occasion_types": "Occasion Types"
+  "sidebar.nav.occasion_types": "Occasion Types",
+  "sidebar.nav.feedback": "Feedback"
 }

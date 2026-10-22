@@ -4,6 +4,7 @@ import categories from './fr/categories.json'
 import common from './fr/common.json'
 import dashboard from './fr/dashboard.json'
 import errorMessages from './fr/error.json'
+import feedback from './fr/feedback.json'
 import items from './fr/items.json'
 import lists from './fr/lists.json'
 import occasionTypes from './fr/occasion-types.json'
@@ -27,6 +28,7 @@ export const frMessages = {
   ...tags,
   ...profile,
   ...sidebar,
+  ...feedback,
   ...errorMessages,
   ...query,
 } satisfies Record<MessageId, string>
