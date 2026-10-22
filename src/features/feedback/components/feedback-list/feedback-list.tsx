@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { FEEDBACK_STATUS_VALUES } from '@keimelion/api/shared/enums/feedback-status'
 import {
   ClearFiltersButton,
   DataTable,
@@ -19,18 +18,20 @@ import { FeedbackDetailsRow } from '@/features/feedback/components/feedback-deta
 import { FeedbackStatusActions } from '@/features/feedback/components/feedback-status-actions'
 import { FeedbackStatusBadge } from '@/features/feedback/components/feedback-status-badge'
 import {
+  STATUS_PARAM,
+  FeedbackStatusFilter,
+} from '@/features/feedback/components/feedback-status-filter'
+import {
   CREATED_FROM_PARAM,
   CREATED_TO_PARAM,
   FeedbackDateRangeFilter,
 } from '@/features/feedback/components/feedback-date-range-filter'
 import { formatDate } from '@/lib/format-date'
-import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
 
 const TITLE_PARAM = 'title'
 const USER_ID_PARAM = 'userId'
-const STATUS_PARAM = 'status'
 const SORT_PARAM = 'sort'
 const DESCRIPTION_PREVIEW_LENGTH = 120
 
@@ -166,16 +167,6 @@ export function FeedbackList(): React.JSX.Element {
         label: t('feedback.filters.user_label'),
         placeholder: t('feedback.filters.user_placeholder'),
       },
-      {
-        type: 'select',
-        paramName: STATUS_PARAM,
-        label: t('feedback.filters.status_label'),
-        placeholder: t('feedback.filters.all_option'),
-        options: FEEDBACK_STATUS_VALUES.map((status) => ({
-          value: status,
-          label: t(`feedback.status.${status}` as MessageId),
-        })),
-      },
     ],
     [t],
   )
@@ -209,6 +200,9 @@ export function FeedbackList(): React.JSX.Element {
         <div className="flex flex-wrap items-end gap-3">
           <DataTableFilters filters={filtersDefinition} />
           <FeedbackDateRangeFilter />
+          <div className="flex items-center self-end pb-1">
+            <FeedbackStatusFilter />
+          </div>
           <ClearFiltersButton paramNames={CLEARABLE_PARAMS} />
         </div>
       }

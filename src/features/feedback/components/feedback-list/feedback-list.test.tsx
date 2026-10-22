@@ -85,7 +85,7 @@ describe('FeedbackList', () => {
     render(<FeedbackList />)
     expect(screen.getByText('Reservation badge misaligned')).toBeInTheDocument()
     expect(screen.getByText(/misaligned on mobile/)).toBeInTheDocument()
-    expect(screen.getByText('Open')).toBeInTheDocument()
+    expect(screen.getAllByText('Open').length).toBeGreaterThan(0)
   })
 
   it('renders the user block when the feedback has an author', () => {
@@ -107,14 +107,16 @@ describe('FeedbackList', () => {
     expect(screen.getByText('No feedback matches these filters.')).toBeInTheDocument()
   })
 
-  it('renders the title, user id and status filters', () => {
+  it('renders the title, user id, status and date range filters', () => {
     mockFeedbackResult([])
     render(<FeedbackList />)
     expect(screen.getByLabelText('Title')).toBeInTheDocument()
     expect(screen.getByLabelText('User ID')).toBeInTheDocument()
-    expect(screen.getByLabelText('Status')).toBeInTheDocument()
-    expect(screen.getByLabelText('Submitted from')).toBeInTheDocument()
-    expect(screen.getByLabelText('Submitted to')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reviewed' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Closed' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Created from')).toBeInTheDocument()
+    expect(screen.getByLabelText('Created to')).toBeInTheDocument()
   })
 
   it('renders a retry button on error', () => {
