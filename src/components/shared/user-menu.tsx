@@ -41,15 +41,13 @@ export function UserMenu(): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={t('common.user_menu.open')}
-        className="group flex cursor-pointer items-center gap-3 rounded-full outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex cursor-pointer items-center gap-3 rounded-md p-1 outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-muted"
       >
         <div className="hidden flex-col text-right leading-tight sm:flex">
-          <span className="text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
-            {displayName}
-          </span>
+          <span className="text-sm font-semibold text-foreground">{displayName}</span>
           <span className="text-xs text-muted-foreground">{currentUser.email}</span>
         </div>
-        <Avatar className="h-10 w-10 ring-2 ring-transparent transition-colors group-hover:ring-primary">
+        <Avatar className="h-9 w-9">
           {currentUser.avatarUrl ? (
             <AvatarImage src={currentUser.avatarUrl} alt={displayName} />
           ) : null}
