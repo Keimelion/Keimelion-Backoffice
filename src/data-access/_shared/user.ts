@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { AUTH_PROVIDER_VALUES } from '@keimelion/api/shared/enums/auth-provider'
+import { SUPPORTED_CURRENCY_VALUES, SupportedCurrencies } from '@keimelion/api/shared/enums/currency'
 import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
 
 const ALLOWED_AVATAR_URL_PROTOCOLS: readonly string[] = ['http:', 'https:']
@@ -28,6 +29,7 @@ export const apiUserSchema = z.object({
   isCgvAccepted: z.boolean(),
   cgvAcceptedAt: z.string().nullable(),
   isMarketingOptedIn: z.boolean(),
+  defaultCurrency: z.enum(SUPPORTED_CURRENCY_VALUES).catch(SupportedCurrencies.EUR),
   emailVerifiedAt: z.string().nullable(),
   lastActiveAt: z.string().nullable(),
   createdAt: z.string(),

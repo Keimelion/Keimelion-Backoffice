@@ -6,6 +6,7 @@ import errorMessages from './en/error.json'
 import items from './en/items.json'
 import lists from './en/lists.json'
 import occasionTypes from './en/occasion-types.json'
+import profile from './en/profile.json'
 import query from './en/query.json'
 import shops from './en/shops.json'
 import sidebar from './en/sidebar.json'
@@ -23,6 +24,7 @@ export const enMessages = {
   ...shops,
   ...categories,
   ...tags,
+  ...profile,
   ...sidebar,
   ...errorMessages,
   ...query,
