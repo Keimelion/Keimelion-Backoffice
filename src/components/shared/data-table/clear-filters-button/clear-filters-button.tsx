@@ -17,14 +17,17 @@ export function ClearFiltersButton({ paramNames }: ClearFiltersButtonProps): Rea
   if (!hasActive) return null
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="mb-0.5 h-9 gap-1 px-2 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
-      onClick={() => { clearParams(paramNames) }}
-    >
-      <X className="h-3.5 w-3.5" />
-      {t('common.actions.clear_filters')}
-    </Button>
+    <>
+      <div className="mb-1.5 h-6 w-px self-end bg-border" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-0.5 h-9 gap-1 px-2 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+        onClick={() => { clearParams(paramNames) }}
+      >
+        <X className="h-3.5 w-3.5" />
+        {t('common.actions.clear_filters')}
+      </Button>
+    </>
   )
 }
