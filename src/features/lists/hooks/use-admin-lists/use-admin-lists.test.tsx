@@ -46,6 +46,7 @@ const MOCK_LIST = {
   tags: [],
   itemCount: 0,
   totalEstimatedPrice: null,
+  displayCurrency: 'EUR' as const,
   deletedAt: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
@@ -62,21 +63,28 @@ beforeEach(() => {
 
 describe('buildAdminListsKey', () => {
   it('produces the expected key shape', () => {
-    const key = buildAdminListsKey({ page: 1, limit: 20 })
+    const key = buildAdminListsKey({ page: 1, limit: 20 }, 'EUR')
     expect(key[0]).toBe('lists')
     expect(key[1]).toBe('list')
     expect(key[2]).toMatchObject({ page: 1, limit: 20 })
+    expect(key[3]).toBe('EUR')
   })
 
   it('strips undefined and empty values from the normalized filters', () => {
-    const key = buildAdminListsKey({ page: 1, search: undefined })
+    const key = buildAdminListsKey({ page: 1, search: undefined }, 'EUR')
     expect('search' in key[2]).toBe(false)
   })
 
   it('sorts filter keys for cache stability', () => {
-    const keyA = buildAdminListsKey({ page: 1, search: 'a', limit: 20 })
-    const keyB = buildAdminListsKey({ limit: 20, search: 'a', page: 1 })
+    const keyA = buildAdminListsKey({ page: 1, search: 'a', limit: 20 }, 'EUR')
+    const keyB = buildAdminListsKey({ limit: 20, search: 'a', page: 1 }, 'EUR')
     expect(JSON.stringify(keyA[2])).toBe(JSON.stringify(keyB[2]))
+  })
+
+  it('produces different keys for different currencies', () => {
+    const keyEur = buildAdminListsKey({ page: 1 }, 'EUR')
+    const keyUsd = buildAdminListsKey({ page: 1 }, 'USD')
+    expect(JSON.stringify(keyEur)).not.toBe(JSON.stringify(keyUsd))
   })
 })
 

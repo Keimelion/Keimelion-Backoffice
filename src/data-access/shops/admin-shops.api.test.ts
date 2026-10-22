@@ -180,6 +180,7 @@ describe('listAdminShops', () => {
         'isActive[eq]': 'true',
         'isAffiliated[eq]': 'false',
         sort: 'name:asc',
+        currency: 'EUR',
       })
       return [
         HttpStatus.OK,
@@ -204,7 +205,7 @@ describe('listAdminShops', () => {
 
   it('omits filters when not set', async () => {
     mock.onGet('/admin/shops').reply((config) => {
-      expect(config.params).toEqual({ page: '1', limit: '20' })
+      expect(config.params).toEqual({ page: '1', limit: '20', currency: 'EUR' })
       return [
         HttpStatus.OK,
         {

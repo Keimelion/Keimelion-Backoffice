@@ -39,6 +39,8 @@ const MOCK_LIST_ITEM = {
     categories: [],
   },
   sources: [],
+  averagePrice: null,
+  displayCurrency: 'EUR' as const,
 }
 
 const MOCK_RESPONSE = {
@@ -51,12 +53,19 @@ beforeEach(() => {
 })
 
 describe('buildAdminListItemsKey', () => {
-  it('includes the list id and pagination in the key', () => {
-    const key = buildAdminListItemsKey(LIST_ID, { page: 2, limit: 10 })
+  it('includes the list id, pagination and currency in the key', () => {
+    const key = buildAdminListItemsKey(LIST_ID, { page: 2, limit: 10 }, 'EUR')
     expect(key[0]).toBe('lists')
     expect(key[1]).toBe('items')
     expect(key[2]).toBe(LIST_ID)
     expect(key[3]).toEqual({ page: 2, limit: 10 })
+    expect(key[4]).toBe('EUR')
+  })
+
+  it('produces different keys for different currencies', () => {
+    const keyEur = buildAdminListItemsKey(LIST_ID, { page: 1, limit: 20 }, 'EUR')
+    const keyUsd = buildAdminListItemsKey(LIST_ID, { page: 1, limit: 20 }, 'USD')
+    expect(JSON.stringify(keyEur)).not.toBe(JSON.stringify(keyUsd))
   })
 })
 
@@ -86,7 +95,7 @@ describe('useAdminListItems', () => {
 
   it('uses a distinct sentinel key when listId is null (no empty-string collision)', () => {
     const nullKey = ['lists', 'items', null]
-    const emptyKey = buildAdminListItemsKey('', { page: 1, limit: 20 })
+    const emptyKey = buildAdminListItemsKey('', { page: 1, limit: 20 }, 'EUR')
     expect(JSON.stringify(nullKey)).not.toBe(JSON.stringify(emptyKey))
   })
 })

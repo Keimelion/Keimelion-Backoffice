@@ -35,7 +35,6 @@ const OCCASION_TYPE_PARAM = 'occasionTypeId'
 const OWNER_PARAM = 'ownerUserId'
 const SORT_PARAM = 'sort'
 const PRICE_DECIMALS = 2
-const TOTAL_ESTIMATED_CURRENCY = 'EUR'
 
 const CLEARABLE_PARAMS = [
   SEARCH_PARAM,
@@ -159,10 +158,10 @@ export function ListsPageContent(): React.JSX.Element {
   )
 
   const formatPrice = useCallback(
-    (amount: number): string =>
+    (amount: number, currency: string): string =>
       intl.formatNumber(amount, {
         style: 'currency',
-        currency: TOTAL_ESTIMATED_CURRENCY,
+        currency,
         minimumFractionDigits: PRICE_DECIMALS,
         maximumFractionDigits: PRICE_DECIMALS,
       }),
@@ -257,7 +256,7 @@ interface BuildColumnsArgs {
   occasionTypeById: Map<string, OccasionTypeCell>
   isCurrentUserAdmin: boolean
   restoringId: string | null
-  formatPrice: (amount: number) => string
+  formatPrice: (amount: number, currency: string) => string
   onEdit: (list: ApiAdminList) => void
   onDelete: (list: ApiAdminList) => void
   onRestore: (list: ApiAdminList) => void
@@ -352,7 +351,7 @@ function buildColumns({
         if (!Number.isFinite(amount)) {
           return <span className="text-xs text-muted-foreground">{t('lists.table.price_none')}</span>
         }
-        return <span className="text-sm">{formatPrice(amount)}</span>
+        return <span className="text-sm">{formatPrice(amount, list.displayCurrency)}</span>
       },
     },
     {

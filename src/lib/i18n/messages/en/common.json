@@ -16,6 +16,7 @@
   "common.reorder.success_message": "Order updated.",
   "common.reorder.drag_handle_label": "Reorder {name}",
   "common.locale_picker.select_language": "Select language",
+  "common.currency_picker.select_currency": "Select currency",
   "common.theme_toggle.toggle": "Toggle theme",
   "common.table.sort_by": "Sort by {column}",
   "common.discard_changes.title": "Discard changes?",

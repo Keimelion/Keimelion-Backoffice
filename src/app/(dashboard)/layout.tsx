@@ -1,6 +1,7 @@
 import { Sidebar } from '@/components/shared/sidebar'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { UserMenu } from '@/components/shared/user-menu'
+import { CurrencyPicker } from '@/components/shared/currency-picker'
 import { LocalePicker } from '@/components/shared/locale-picker'
 import { SessionGuard } from '@/features/auth/components/session-guard'
 
@@ -15,6 +16,7 @@ export default function DashboardLayout({
         <Sidebar />
         <div className="flex flex-1 flex-col">
           <header className="flex h-16 items-center justify-end gap-4 border-b border-border px-6">
+            <CurrencyPicker />
             <LocalePicker />
             <ThemeToggle />
             <UserMenu />

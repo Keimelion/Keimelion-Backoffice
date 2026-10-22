@@ -160,7 +160,7 @@ function renderDataRows(
   }
 
   return items.map((listItem) => {
-    const average = computeAveragePrice(listItem)
+    const average = resolveAveragePrice(listItem)
     return (
       <TableRow key={listItem.id} className="hover:bg-transparent">
         <TableCell className="w-14">
@@ -237,19 +237,9 @@ interface AveragePrice {
   currency: string
 }
 
-function computeAveragePrice(listItem: ApiAdminListItem): AveragePrice | null {
-  let sum = 0
-  let count = 0
-  let currency: string | null = null
-  for (const source of listItem.sources) {
-    if (source.price === null) continue
-    const amount = Number(source.price)
-    if (!Number.isFinite(amount)) continue
-    if (currency !== null && currency !== source.currency) return null
-    currency = currency ?? source.currency
-    sum += amount
-    count += 1
-  }
-  if (count === 0 || currency === null) return null
-  return { amount: sum / count, currency }
+function resolveAveragePrice(listItem: ApiAdminListItem): AveragePrice | null {
+  if (listItem.averagePrice === null) return null
+  const amount = Number(listItem.averagePrice)
+  if (!Number.isFinite(amount)) return null
+  return { amount, currency: listItem.displayCurrency }
 }

@@ -187,6 +187,7 @@ describe('listAdminTags', () => {
         limit: '10',
         'name[ilike]': 'gam',
         sort: 'createdAt:desc',
+        currency: 'EUR',
       })
       return [
         HttpStatus.OK,
@@ -209,7 +210,7 @@ describe('listAdminTags', () => {
 
   it('omits search when not provided', async () => {
     mock.onGet('/admin/tags').reply((config) => {
-      expect(config.params).toEqual({ page: '1', limit: '20', sort: 'createdAt:desc' })
+      expect(config.params).toEqual({ page: '1', limit: '20', sort: 'createdAt:desc', currency: 'EUR' })
       return [
         HttpStatus.OK,
         { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } },

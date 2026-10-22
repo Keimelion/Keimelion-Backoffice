@@ -56,6 +56,7 @@ const MOCK_LIST = {
   tags: [{ id: 't-1', name: 'family', slug: 'family' }],
   itemCount: 2,
   totalEstimatedPrice: '42.00',
+  displayCurrency: 'EUR' as const,
   deletedAt: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
