@@ -1,6 +1,10 @@
 {
   "profile.title": "Profil",
   "profile.description": "Gérez votre compte et vos préférences.",
+  "profile.section.account": "Compte",
+  "profile.section.account_description": "Votre identité et vos préférences dans le Backoffice.",
+  "profile.section.security": "Sécurité",
+  "profile.section.security_description": "Identifiants utilisés pour vous connecter au Backoffice.",
   "profile.personal_info.title": "Informations personnelles",
   "profile.personal_info.description": "Mettez à jour la façon dont vous apparaissez auprès du reste de l'équipe.",
   "profile.personal_info.email_label": "E-mail",

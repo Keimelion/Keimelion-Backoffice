@@ -14,10 +14,10 @@ export function ProfilePageContent(): React.JSX.Element {
 
   if (isPending) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-10">
+        <Skeleton className="h-72 w-full" />
+        <Skeleton className="h-40 w-full" />
         <Skeleton className="h-56 w-full" />
-        <Skeleton className="h-48 w-full" />
-        <Skeleton className="h-32 w-full" />
       </div>
     )
   }
@@ -40,10 +40,33 @@ export function ProfilePageContent(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <PersonalInfoForm user={user} />
-      <ChangePasswordForm />
-      <DefaultCurrencyForm user={user} />
+    <div className="flex flex-col gap-10">
+      <section className="flex flex-col gap-4">
+        <header className="flex flex-col gap-1">
+          <h2 className="text-lg font-semibold text-foreground">
+            {t('profile.section.account')}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t('profile.section.account_description')}
+          </p>
+        </header>
+        <div className="flex flex-col gap-6">
+          <PersonalInfoForm user={user} />
+          <DefaultCurrencyForm user={user} />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <header className="flex flex-col gap-1">
+          <h2 className="text-lg font-semibold text-foreground">
+            {t('profile.section.security')}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t('profile.section.security_description')}
+          </p>
+        </header>
+        <ChangePasswordForm />
+      </section>
     </div>
   )
 }
