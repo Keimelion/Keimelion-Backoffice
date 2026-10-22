@@ -105,12 +105,8 @@ function buildColumns(t: TranslateFn): DataTableColumn<ApiAdminFeedback>[] {
     {
       key: 'actions',
       header: t('feedback.table.column.actions'),
-      className: 'w-16 text-right',
-      cell: (feedback) => (
-        <div className="flex justify-end">
-          <FeedbackStatusActions feedback={feedback} />
-        </div>
-      ),
+      className: 'w-24 text-right',
+      cell: (feedback) => <FeedbackStatusActions feedback={feedback} />,
     },
   ]
 }

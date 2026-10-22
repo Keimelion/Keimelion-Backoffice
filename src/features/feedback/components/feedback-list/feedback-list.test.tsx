@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { ApiAdminFeedback } from '@/data-access/feedback/feedback.schemas'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { renderWithQueryClient } from '@/test/test-utils'
 import { FeedbackList } from './feedback-list'
 
@@ -71,7 +72,7 @@ function mockFeedbackResult(data: ApiAdminFeedback[] | null, overrides: Partial<
 }
 
 function render(ui: ReactElement): void {
-  renderWithQueryClient(ui)
+  renderWithQueryClient(<TooltipProvider delayDuration={0}>{ui}</TooltipProvider>)
 }
 
 beforeEach(() => {
@@ -129,11 +130,11 @@ describe('FeedbackList', () => {
     expect(screen.getByText('Boom')).toBeInTheDocument()
   })
 
-  it('shows the per-row status actions trigger with the feedback title in the aria label', () => {
+  it('shows an icon button for every status transition available from the current status', () => {
     mockFeedbackResult([BASE_FEEDBACK])
     render(<FeedbackList />)
-    expect(
-      screen.getByRole('button', { name: /change status for reservation badge misaligned/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mark as reviewed' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mark as closed' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mark as open' })).not.toBeInTheDocument()
   })
 })

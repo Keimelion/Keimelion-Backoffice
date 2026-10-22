@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { renderWithQueryClient } from '@/test/test-utils'
 import { FeedbackStatusActions } from './feedback-status-actions'
 
@@ -33,7 +34,7 @@ const BASE_FEEDBACK = {
 }
 
 function render(ui: ReactElement): void {
-  renderWithQueryClient(ui)
+  renderWithQueryClient(<TooltipProvider delayDuration={0}>{ui}</TooltipProvider>)
 }
 
 beforeEach(() => {
@@ -41,19 +42,16 @@ beforeEach(() => {
 })
 
 describe('FeedbackStatusActions', () => {
-  it('exposes a trigger labeled with the feedback title', () => {
+  it('renders an icon button for every status except the current one', () => {
     render(<FeedbackStatusActions feedback={BASE_FEEDBACK} />)
-    expect(
-      screen.getByRole('button', { name: /change status for reservation badge misaligned/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mark as reviewed' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mark as closed' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mark as open' })).not.toBeInTheDocument()
   })
 
-  it('calls the mutation with the next status when the user picks reviewed', async () => {
+  it('calls the mutation with the next status when the user clicks the reviewed icon', async () => {
     render(<FeedbackStatusActions feedback={BASE_FEEDBACK} />)
-    await userEvent.click(
-      screen.getByRole('button', { name: /change status for reservation badge misaligned/i }),
-    )
-    await userEvent.click(screen.getByRole('menuitem', { name: /mark as reviewed/i }))
+    await userEvent.click(screen.getByRole('button', { name: 'Mark as reviewed' }))
 
     expect(mutateMock).toHaveBeenCalledTimes(1)
     expect(mutateMock.mock.calls[0]?.[0]).toEqual({
@@ -62,12 +60,10 @@ describe('FeedbackStatusActions', () => {
     })
   })
 
-  it('does not fire the mutation when the user re-selects the current status', async () => {
-    render(<FeedbackStatusActions feedback={BASE_FEEDBACK} />)
-    await userEvent.click(
-      screen.getByRole('button', { name: /change status for reservation badge misaligned/i }),
-    )
-    const openItem = screen.getByRole('menuitem', { name: /mark as open/i })
-    expect(openItem).toHaveAttribute('aria-disabled', 'true')
+  it('offers the reopen action when the feedback is already closed', () => {
+    render(<FeedbackStatusActions feedback={{ ...BASE_FEEDBACK, status: 'closed' }} />)
+    expect(screen.getByRole('button', { name: 'Mark as open' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mark as reviewed' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mark as closed' })).not.toBeInTheDocument()
   })
 })

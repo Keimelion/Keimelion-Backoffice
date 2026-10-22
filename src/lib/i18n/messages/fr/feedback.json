@@ -22,7 +22,6 @@
   "feedback.details.description_title": "Description",
   "feedback.details.context_title": "Contexte",
   "feedback.details.context_empty": "Aucun contexte attaché.",
-  "feedback.actions.change_status": "Changer le statut de {title}",
   "feedback.actions.mark_open": "Marquer comme ouvert",
   "feedback.actions.mark_reviewed": "Marquer comme examiné",
   "feedback.actions.mark_closed": "Marquer comme clos",

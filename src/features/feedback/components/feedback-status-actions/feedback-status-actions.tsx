@@ -1,17 +1,12 @@
 'use client'
 
-import { MoreHorizontal } from 'lucide-react'
+import { Archive, Eye, Undo2 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import {
   FeedbackStatuses,
   type FeedbackStatus,
 } from '@keimelion/api/shared/enums/feedback-status'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { IconButton } from '@/components/shared/icon-button'
 import type { ApiAdminFeedback } from '@/data-access/feedback/feedback.schemas'
 import { useUpdateFeedbackStatus } from '@/features/feedback/hooks/use-update-feedback-status'
 import { translate } from '@/lib/i18n/translate'
@@ -23,23 +18,29 @@ interface FeedbackStatusActionsProps {
   feedback: ApiAdminFeedback
 }
 
-interface StatusAction {
-  status: FeedbackStatus
+interface StatusActionConfig {
   labelId: MessageId
+  Icon: LucideIcon
 }
 
-const STATUS_ACTIONS: readonly StatusAction[] = [
-  { status: FeedbackStatuses.OPEN, labelId: 'feedback.actions.mark_open' },
-  { status: FeedbackStatuses.REVIEWED, labelId: 'feedback.actions.mark_reviewed' },
-  { status: FeedbackStatuses.CLOSED, labelId: 'feedback.actions.mark_closed' },
-]
+const STATUS_ACTIONS: Record<FeedbackStatus, StatusActionConfig> = {
+  open: { labelId: 'feedback.actions.mark_open', Icon: Undo2 },
+  reviewed: { labelId: 'feedback.actions.mark_reviewed', Icon: Eye },
+  closed: { labelId: 'feedback.actions.mark_closed', Icon: Archive },
+}
+
+const TRANSITIONS: Record<FeedbackStatus, readonly FeedbackStatus[]> = {
+  open: [FeedbackStatuses.REVIEWED, FeedbackStatuses.CLOSED],
+  reviewed: [FeedbackStatuses.OPEN, FeedbackStatuses.CLOSED],
+  closed: [FeedbackStatuses.OPEN, FeedbackStatuses.REVIEWED],
+}
 
 export function FeedbackStatusActions({ feedback }: FeedbackStatusActionsProps): React.JSX.Element {
   const t = useTranslate()
   const mutation = useUpdateFeedbackStatus()
+  const nextStatuses = TRANSITIONS[feedback.status]
 
   const handleSelect = (nextStatus: FeedbackStatus): void => {
-    if (nextStatus === feedback.status) return
     mutation.mutate(
       { id: feedback.id, status: nextStatus },
       {
@@ -59,30 +60,20 @@ export function FeedbackStatusActions({ feedback }: FeedbackStatusActionsProps):
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          aria-label={t('feedback.actions.change_status', { title: feedback.title })}
-          disabled={mutation.isPending}
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        {STATUS_ACTIONS.map((action) => (
-          <DropdownMenuItem
-            key={action.status}
-            disabled={action.status === feedback.status || mutation.isPending}
-            onSelect={() => { handleSelect(action.status) }}
-            className="cursor-pointer"
+    <div className="flex justify-end gap-1">
+      {nextStatuses.map((nextStatus) => {
+        const { labelId, Icon } = STATUS_ACTIONS[nextStatus]
+        return (
+          <IconButton
+            key={nextStatus}
+            label={t(labelId)}
+            disabled={mutation.isPending}
+            onClick={() => { handleSelect(nextStatus) }}
           >
-            {t(action.labelId)}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            <Icon />
+          </IconButton>
+        )
+      })}
+    </div>
   )
 }
