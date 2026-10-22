@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronDown, LogOut, UserCircle } from 'lucide-react'
+import { LogOut, UserCircle } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -41,13 +41,15 @@ export function UserMenu(): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={t('common.user_menu.open')}
-        className="group flex cursor-pointer items-center gap-2 rounded-full border border-transparent py-1 pl-3 pr-2 outline-none transition-colors hover:border-border hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:border-border data-[state=open]:bg-muted sm:gap-3"
+        className="group flex cursor-pointer items-center gap-3 rounded-full outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <div className="hidden flex-col text-right leading-tight sm:flex">
-          <span className="text-sm font-semibold text-foreground">{displayName}</span>
+          <span className="text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
+            {displayName}
+          </span>
           <span className="text-xs text-muted-foreground">{currentUser.email}</span>
         </div>
-        <Avatar className="h-9 w-9">
+        <Avatar className="h-10 w-10 ring-2 ring-transparent transition-colors group-hover:ring-primary">
           {currentUser.avatarUrl ? (
             <AvatarImage src={currentUser.avatarUrl} alt={displayName} />
           ) : null}
@@ -55,7 +57,6 @@ export function UserMenu(): React.JSX.Element {
             {initials}
           </AvatarFallback>
         </Avatar>
-        <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem asChild>
