@@ -200,7 +200,7 @@ export function FeedbackList(): React.JSX.Element {
         <div className="flex flex-wrap items-end gap-3">
           <DataTableFilters filters={filtersDefinition} />
           <FeedbackDateRangeFilter />
-          <div className="h-9 w-px self-end bg-border" />
+          <div className="mb-1.5 h-6 w-px self-end bg-border" />
           <FeedbackStatusFilter />
           <ClearFiltersButton paramNames={CLEARABLE_PARAMS} />
         </div>

@@ -176,7 +176,7 @@ export function UsersPageContent(): React.JSX.Element {
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={usersFilters} />
-            <div className="h-9 w-px self-end bg-border" />
+            <div className="mb-1.5 h-6 w-px self-end bg-border" />
             <RoleFilter />
             <ClearFiltersButton paramNames={usersClearableParams} />
             {isCurrentUserAdmin ? (
