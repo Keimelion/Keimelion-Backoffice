@@ -13,6 +13,7 @@
   "users.filters.email_placeholder": "Rechercher par e-mail…",
   "users.filters.username_label": "Nom d'utilisateur",
   "users.filters.username_placeholder": "Rechercher par nom d'utilisateur…",
+  "users.filters.role_label": "Rôle",
   "users.role.admin": "Admin",
   "users.role.moderator": "Modérateur",
   "users.role.user": "Utilisateur",

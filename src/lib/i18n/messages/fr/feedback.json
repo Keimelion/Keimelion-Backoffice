@@ -13,6 +13,7 @@
   "feedback.filters.title_placeholder": "Rechercher par titre…",
   "feedback.filters.user_label": "ID utilisateur",
   "feedback.filters.user_placeholder": "UUID utilisateur",
+  "feedback.filters.status_label": "Statut",
   "feedback.filters.created_from_label": "Créé depuis",
   "feedback.filters.created_to_label": "Créé jusqu'à",
   "feedback.status.open": "Ouvert",
