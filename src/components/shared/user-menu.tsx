@@ -41,7 +41,7 @@ export function UserMenu(): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={t('common.user_menu.open')}
-        className="flex cursor-pointer items-center gap-3 rounded-md p-1 outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-muted"
+        className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-1.5 outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-muted"
       >
         <div className="hidden flex-col text-right leading-tight sm:flex">
           <span className="text-sm font-semibold text-foreground">{displayName}</span>
