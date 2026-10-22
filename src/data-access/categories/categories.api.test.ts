@@ -161,9 +161,9 @@ describe('listAdminCategories', () => {
     expect(items[1]?.slug).toBe('phones')
   })
 
-  it('sends no query params', async () => {
+  it('sends only the auto-injected currency param', async () => {
     mock.onGet('/admin/categories').reply((config) => {
-      expect(config.params).toBeUndefined()
+      expect(config.params).toEqual({ currency: 'EUR' })
       return [HttpStatus.OK, { items: [] }]
     })
 

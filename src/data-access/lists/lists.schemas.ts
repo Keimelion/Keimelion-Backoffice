@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { SUPPORTED_CURRENCY_VALUES } from '@keimelion/api/shared/enums/currency'
 import { ITEM_STATUS_VALUES } from '@keimelion/api/shared/enums/item-status'
 import { LIST_STATUS_VALUES } from '@keimelion/api/shared/enums/list-status'
 import { basePaginationShape } from '@/data-access/_shared/pagination'
@@ -32,6 +33,7 @@ export const apiAdminListSchema = z.object({
   tags: z.array(apiTagSchema).default([]),
   itemCount: z.number().int().nonnegative(),
   totalEstimatedPrice: z.string().nullable(),
+  displayCurrency: z.enum(SUPPORTED_CURRENCY_VALUES),
   deletedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -67,6 +69,8 @@ const apiListItemInnerItemSchema = z.object({
 export const apiAdminListItemSchema = apiListItemBaseSchema.extend({
   item: apiListItemInnerItemSchema,
   sources: z.array(apiItemSourceSchema),
+  averagePrice: z.string().nullable(),
+  displayCurrency: z.enum(SUPPORTED_CURRENCY_VALUES),
 })
 
 export type ApiAdminListItem = z.infer<typeof apiAdminListItemSchema>

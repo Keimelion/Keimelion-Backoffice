@@ -32,6 +32,8 @@ interface ListItemFixtureOptions {
   itemStatus?: string
   tags?: { id: string; name: string; slug: string }[]
   categories?: { id: string; parentId: string | null; name: string; slug: string; depth: number }[]
+  averagePrice?: string | null
+  displayCurrency?: string
 }
 
 function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureOptions = {}): {
@@ -67,6 +69,8 @@ function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureO
     createdAt: string
     updatedAt: string
   }[]
+  averagePrice: string | null
+  displayCurrency: string
 } {
   return {
     id: 'li-1',
@@ -101,6 +105,8 @@ function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureO
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
     })),
+    averagePrice: options.averagePrice !== undefined ? options.averagePrice : null,
+    displayCurrency: options.displayCurrency ?? 'EUR',
   }
 }
 
@@ -129,14 +135,26 @@ describe('ListItemsSubTable', () => {
     expect(useAdminListItems).toHaveBeenCalledWith(LIST_ID, { page: 1, limit: 20 })
   })
 
-  it('computes the average price across priced sources only (ignores null prices)', () => {
-    mockListItemsResult([listItemWithPrices(['10.00', null, '20.00'])])
+  it('renders the API-provided average price with the API display currency', () => {
+    mockListItemsResult([
+      listItemWithPrices(['10.00'], { averagePrice: '15.00', displayCurrency: 'EUR' }),
+    ])
     render(<ListItemsSubTable listId={LIST_ID} />)
     expect(screen.getByText(/€15\.00/)).toBeInTheDocument()
   })
 
-  it('shows the empty-price state when no source has a non-null price', () => {
-    mockListItemsResult([listItemWithPrices([null, null])])
+  it('formats the average price in the display currency returned by the API', () => {
+    mockListItemsResult([
+      listItemWithPrices(['10.00'], { averagePrice: '15.00', displayCurrency: 'USD' }),
+    ])
+    render(<ListItemsSubTable listId={LIST_ID} />)
+    expect(screen.getByText(/\$15\.00/)).toBeInTheDocument()
+  })
+
+  it('shows the empty-price state when averagePrice is null', () => {
+    mockListItemsResult([
+      listItemWithPrices(['10.00'], { averagePrice: null }),
+    ])
     render(<ListItemsSubTable listId={LIST_ID} />)
     expect(screen.getByText('No priced source')).toBeInTheDocument()
   })

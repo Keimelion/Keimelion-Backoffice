@@ -232,6 +232,7 @@ describe('listAdminItems', () => {
         limit: '10',
         'name[ilike]': 'blanket',
         sort: 'name:asc',
+        currency: 'EUR',
       })
       return [
         HttpStatus.OK,
@@ -254,7 +255,7 @@ describe('listAdminItems', () => {
 
   it('omits optional params when not set', async () => {
     mock.onGet('/admin/items').reply((config) => {
-      expect(config.params).toEqual({ page: '1', limit: '20' })
+      expect(config.params).toEqual({ page: '1', limit: '20', currency: 'EUR' })
       return [
         HttpStatus.OK,
         {

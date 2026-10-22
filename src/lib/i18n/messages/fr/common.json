@@ -16,6 +16,7 @@
   "common.reorder.success_message": "Ordre mis à jour.",
   "common.reorder.drag_handle_label": "Réordonner {name}",
   "common.locale_picker.select_language": "Choisir la langue",
+  "common.currency_picker.select_currency": "Choisir la devise",
   "common.theme_toggle.toggle": "Changer de thème",
   "common.table.sort_by": "Trier par {column}",
   "common.discard_changes.title": "Abandonner les modifications ?",

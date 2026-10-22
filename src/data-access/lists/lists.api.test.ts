@@ -49,6 +49,7 @@ const MOCK_LIST = {
   tags: [],
   itemCount: 3,
   totalEstimatedPrice: '42.00',
+  displayCurrency: 'EUR' as const,
   deletedAt: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
@@ -87,6 +88,8 @@ const MOCK_LIST_ITEM = {
     updatedAt: '2024-01-01T00:00:00.000Z',
   },
   sources: [MOCK_SOURCE],
+  averagePrice: '19.99',
+  displayCurrency: 'EUR' as const,
 }
 
 describe('apiAdminListSchema', () => {
@@ -215,6 +218,7 @@ describe('listAdminLists', () => {
         'occasionTypeId[eq]': OCCASION_TYPE_ID,
         ownerUserId: OWNER_ID,
         sort: 'createdAt:desc',
+        currency: 'EUR',
       })
       return [
         HttpStatus.OK,
@@ -240,7 +244,7 @@ describe('listAdminLists', () => {
 
   it('omits optional params when not set', async () => {
     mock.onGet('/admin/lists').reply((config) => {
-      expect(config.params).toEqual({ page: '1', limit: '20' })
+      expect(config.params).toEqual({ page: '1', limit: '20', currency: 'EUR' })
       return [
         HttpStatus.OK,
         {
@@ -362,7 +366,7 @@ describe('listAdminListItems', () => {
 
   it('sends the pagination params and parses the response', async () => {
     mock.onGet(`/admin/lists/${LIST_ID}/items`).reply((config) => {
-      expect(config.params).toEqual({ page: '1', limit: '20' })
+      expect(config.params).toEqual({ page: '1', limit: '20', currency: 'EUR' })
       return [
         HttpStatus.OK,
         {

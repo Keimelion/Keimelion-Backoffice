@@ -5,6 +5,7 @@ import { HttpStatus } from '@keimelion/api/shared/enums/http'
 import { clearSession, getAccessToken, getRefreshToken } from '@/data-access/_shared/auth-storage'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { refreshTokens } from '@/data-access/auth/refresh'
+import { useCurrencyStore } from '@/lib/i18n/currency-store'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
@@ -13,6 +14,8 @@ const API_V1_URL = `${API_BASE_URL}/v1`
 const REFRESH_PATH = '/auth/refresh'
 const LOGIN_ROUTE = '/auth/login'
 const LOGIN_REDIRECT = '/login'
+const ADMIN_PATH_PREFIX = '/admin/'
+const CURRENCY_PARAM = 'currency'
 
 const apiValidationIssueSchema = z.object({
   path: z.string(),
@@ -99,6 +102,23 @@ export const axiosInstance: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+function isAdminGetRequest(config: InternalAxiosRequestConfig): boolean {
+  const method = config.method?.toLowerCase() ?? ''
+  if (method !== 'get') return false
+  const url = config.url ?? ''
+  return url.startsWith(ADMIN_PATH_PREFIX)
+}
+
+function hasCurrencyParam(params: unknown): boolean {
+  if (params === null || typeof params !== 'object') return false
+  return CURRENCY_PARAM in (params as Record<string, unknown>)
+}
+
+function appendCurrencyParam(config: InternalAxiosRequestConfig, currency: string): void {
+  const existing = (config.params ?? {}) as Record<string, unknown>
+  config.params = { ...existing, [CURRENCY_PARAM]: currency }
+}
+
 axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken()
   if (token) {
@@ -106,6 +126,10 @@ axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   }
   const locale = useLocaleStore.getState().locale
   config.headers.set('Accept-Language', locale)
+  if (isAdminGetRequest(config) && !hasCurrencyParam(config.params)) {
+    const currency = useCurrencyStore.getState().currency
+    appendCurrencyParam(config, currency)
+  }
   return config
 })
 

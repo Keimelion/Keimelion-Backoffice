@@ -19,6 +19,7 @@ vi.stubGlobal('window', { location: { assign: mockAssign } })
 const { axiosInstance } = await import('@/data-access/_shared/axios')
 const { ApiRequestError } = await import('@/data-access/_shared/api-error')
 const { useLocaleStore } = await import('@/lib/i18n/locale-store')
+const { useCurrencyStore } = await import('@/lib/i18n/currency-store')
 
 let mock: MockAdapter
 
@@ -62,6 +63,74 @@ describe('Accept-Language interceptor', () => {
 
     expect(mock.history.get[0]?.headers?.['Accept-Language']).toBe('en')
     expect(mock.history.get[1]?.headers?.['Accept-Language']).toBe('fr')
+  })
+})
+
+describe('currency interceptor', () => {
+  it('appends ?currency= from the store on admin GET requests', async () => {
+    useCurrencyStore.setState({ currency: 'USD' })
+    mock.onGet('/admin/lists').reply(200, { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 1 } })
+
+    await axiosInstance.get('/admin/lists')
+
+    expect(mock.history.get[0]?.params).toMatchObject({ currency: 'USD' })
+  })
+
+  it('does NOT append ?currency= on non-admin GET requests', async () => {
+    useCurrencyStore.setState({ currency: 'USD' })
+    mock.onGet('/occasion-types').reply(200, [])
+
+    await axiosInstance.get('/occasion-types')
+
+    expect(mock.history.get[0]?.params ?? {}).not.toHaveProperty('currency')
+  })
+
+  it('does NOT append ?currency= on auth routes', async () => {
+    useCurrencyStore.setState({ currency: 'USD' })
+    mock.onPost('/auth/login').reply(200, {})
+
+    await axiosInstance.post('/auth/login', { email: 'a@b.com', password: 'secret' })
+
+    expect(mock.history.post[0]?.params ?? {}).not.toHaveProperty('currency')
+  })
+
+  it('does NOT append ?currency= on admin non-GET requests', async () => {
+    useCurrencyStore.setState({ currency: 'USD' })
+    mock.onPatch('/admin/lists/abc').reply(200, { list: {} })
+
+    await axiosInstance.patch('/admin/lists/abc', {})
+
+    expect(mock.history.patch[0]?.params ?? {}).not.toHaveProperty('currency')
+  })
+
+  it('reflects a currency change on the next admin GET without recreating the client', async () => {
+    useCurrencyStore.setState({ currency: 'EUR' })
+    mock.onGet('/admin/lists').reply(200, { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 1 } })
+
+    await axiosInstance.get('/admin/lists')
+    useCurrencyStore.setState({ currency: 'JPY' })
+    await axiosInstance.get('/admin/lists')
+
+    expect(mock.history.get[0]?.params).toMatchObject({ currency: 'EUR' })
+    expect(mock.history.get[1]?.params).toMatchObject({ currency: 'JPY' })
+  })
+
+  it('does not overwrite an explicit currency param supplied by the caller', async () => {
+    useCurrencyStore.setState({ currency: 'EUR' })
+    mock.onGet('/admin/lists').reply(200, { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 1 } })
+
+    await axiosInstance.get('/admin/lists', { params: { currency: 'GBP' } })
+
+    expect(mock.history.get[0]?.params).toMatchObject({ currency: 'GBP' })
+  })
+
+  it('preserves other query params when appending ?currency=', async () => {
+    useCurrencyStore.setState({ currency: 'USD' })
+    mock.onGet('/admin/lists').reply(200, { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 1 } })
+
+    await axiosInstance.get('/admin/lists', { params: { page: '2', limit: '20' } })
+
+    expect(mock.history.get[0]?.params).toMatchObject({ currency: 'USD', page: '2', limit: '20' })
   })
 })
 

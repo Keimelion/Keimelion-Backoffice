@@ -17,14 +17,17 @@ import type {
   ListListsQuery,
   UpdateListInput,
 } from '@/data-access/lists/lists.schemas'
+import { useCurrencyStore } from '@/lib/i18n/currency-store'
+import type { Currency } from '@/lib/i18n/currency'
 
 type ListsFilters = Partial<ListListsQuery>
 
 export function buildAdminListsKey(
   filters: ListsFilters,
-): readonly ['lists', 'list', ListsFilters] {
+  currency: Currency,
+): readonly ['lists', 'list', ListsFilters, Currency] {
   const normalized = normalizeFilters(filters)
-  return [...LISTS_QUERY_KEY, 'list', normalized] as const
+  return [...LISTS_QUERY_KEY, 'list', normalized, currency] as const
 }
 
 export function buildAdminListKey(id: string): readonly ['lists', 'detail', string] {
@@ -41,8 +44,9 @@ export function useAdminLists(
   filters: ListsFilters,
   options: UseAdminListsOptions = {},
 ): UseQueryResult<PaginatedResponse<ApiAdminList>> {
+  const currency = useCurrencyStore((state) => state.currency)
   return useQuery({
-    queryKey: buildAdminListsKey(filters),
+    queryKey: buildAdminListsKey(filters, currency),
     queryFn: () => listAdminLists(filters),
     enabled: options.enabled ?? true,
   })
