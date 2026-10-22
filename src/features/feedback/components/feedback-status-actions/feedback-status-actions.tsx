@@ -21,12 +21,28 @@ interface FeedbackStatusActionsProps {
 interface StatusActionConfig {
   labelId: MessageId
   Icon: LucideIcon
+  className: string
 }
 
 const STATUS_ACTIONS: Record<FeedbackStatus, StatusActionConfig> = {
-  open: { labelId: 'feedback.actions.mark_open', Icon: Undo2 },
-  reviewed: { labelId: 'feedback.actions.mark_reviewed', Icon: Eye },
-  closed: { labelId: 'feedback.actions.mark_closed', Icon: Archive },
+  open: {
+    labelId: 'feedback.actions.mark_open',
+    Icon: Undo2,
+    className:
+      'text-amber-600/80 hover:bg-amber-500/10 hover:text-amber-600 dark:text-amber-400/90 dark:hover:bg-amber-400/10 dark:hover:text-amber-400',
+  },
+  reviewed: {
+    labelId: 'feedback.actions.mark_reviewed',
+    Icon: Eye,
+    className:
+      'text-sky-600/80 hover:bg-sky-500/10 hover:text-sky-600 dark:text-sky-400/90 dark:hover:bg-sky-400/10 dark:hover:text-sky-400',
+  },
+  closed: {
+    labelId: 'feedback.actions.mark_closed',
+    Icon: Archive,
+    className:
+      'text-slate-600/80 hover:bg-slate-500/10 hover:text-slate-600 dark:text-slate-400/90 dark:hover:bg-slate-400/10 dark:hover:text-slate-400',
+  },
 }
 
 const TRANSITIONS: Record<FeedbackStatus, readonly FeedbackStatus[]> = {
@@ -62,13 +78,14 @@ export function FeedbackStatusActions({ feedback }: FeedbackStatusActionsProps):
   return (
     <div className="flex justify-end gap-1">
       {nextStatuses.map((nextStatus) => {
-        const { labelId, Icon } = STATUS_ACTIONS[nextStatus]
+        const { labelId, Icon, className } = STATUS_ACTIONS[nextStatus]
         return (
           <IconButton
             key={nextStatus}
             label={t(labelId)}
             disabled={mutation.isPending}
             onClick={() => { handleSelect(nextStatus) }}
+            className={className}
           >
             <Icon />
           </IconButton>
