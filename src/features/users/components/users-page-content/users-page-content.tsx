@@ -174,9 +174,9 @@ export function UsersPageContent(): React.JSX.Element {
         onRetry={() => { void usersQuery.refetch() }}
         getRowClassName={resolveRowClassName}
         toolbar={
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={usersFilters} />
-            <div className="h-6 w-px bg-border" />
+            <div className="mb-1.5 h-6 w-px self-end bg-border" />
             <RoleFilter />
             <ClearFiltersButton paramNames={usersClearableParams} />
             {isCurrentUserAdmin ? (

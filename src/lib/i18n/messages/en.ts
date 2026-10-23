@@ -3,6 +3,7 @@ import categories from './en/categories.json'
 import common from './en/common.json'
 import dashboard from './en/dashboard.json'
 import errorMessages from './en/error.json'
+import feedback from './en/feedback.json'
 import items from './en/items.json'
 import lists from './en/lists.json'
 import occasionTypes from './en/occasion-types.json'
@@ -26,6 +27,7 @@ export const enMessages = {
   ...tags,
   ...profile,
   ...sidebar,
+  ...feedback,
   ...errorMessages,
   ...query,
 } satisfies Record<string, string>
