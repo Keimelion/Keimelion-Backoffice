@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import type * as AdminOccasionTypesHooks from '@/features/occasion-types/hooks/use-admin-occasion-types'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
@@ -12,12 +13,12 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }))
 
-vi.mock(import('@/features/occasion-types/hooks/use-admin-occasion-types'), async (importOriginal) => {
-  const actual = await importOriginal()
+vi.mock('@/features/occasion-types/hooks/use-admin-occasion-types', async (importOriginal) => {
+  const actual = await importOriginal<typeof AdminOccasionTypesHooks>()
   return {
     ...actual,
     useAdminOccasionTypes: vi.fn(),
-    useReorderOccasionTypes: () => ({ mutate: vi.fn() }),
+    useReorderOccasionTypes: vi.fn(() => ({ mutate: vi.fn() })),
   }
 })
 

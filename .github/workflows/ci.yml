@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  quality:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Backoffice
+        uses: actions/checkout@v4
+        with:
+          path: Keimelion-Backoffice
+
+      - name: Checkout API (sibling repo for @keimelion/api/* type imports)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/Keimelion-API
+          path: Keimelion-API
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: Keimelion-Backoffice/.nvmrc
+          cache: 'npm'
+          cache-dependency-path: Keimelion-Backoffice/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Keimelion-Backoffice
+        run: npm ci
+
+      - name: Lint
+        working-directory: Keimelion-Backoffice
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: Keimelion-Backoffice
+        run: npx tsc --noEmit
+
+      - name: Test
+        working-directory: Keimelion-Backoffice
+        run: npm test
+
+      - name: Build
+        working-directory: Keimelion-Backoffice
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000
