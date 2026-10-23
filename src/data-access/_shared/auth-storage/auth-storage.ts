@@ -18,12 +18,17 @@ export function isAdmin(role: string): boolean {
   return role === UserRoles.ADMIN
 }
 
+function buildCookieFlags(): string {
+  const secureFlag = window.location.protocol === 'https:' ? '; secure' : ''
+  return `path=/; samesite=lax${secureFlag}`
+}
+
 function writeSessionCookie(role: string): void {
-  document.cookie = `${SESSION_COOKIE_NAME}=${role}; path=/; max-age=${String(SESSION_COOKIE_MAX_AGE_SECONDS)}; samesite=lax`
+  document.cookie = `${SESSION_COOKIE_NAME}=${role}; ${buildCookieFlags()}; max-age=${String(SESSION_COOKIE_MAX_AGE_SECONDS)}`
 }
 
 function deleteSessionCookie(): void {
-  document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0; samesite=lax`
+  document.cookie = `${SESSION_COOKIE_NAME}=; ${buildCookieFlags()}; max-age=0`
 }
 
 export function getAccessToken(): string | null {
