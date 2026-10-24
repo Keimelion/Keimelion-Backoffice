@@ -33,6 +33,7 @@ const MOCK_USER = {
   bannedAt: null,
   banReason: null,
   deletedAt: null,
+  reservationsCount: 0,
 }
 
 const EMAIL_PLACEHOLDER = 'name@example.com'

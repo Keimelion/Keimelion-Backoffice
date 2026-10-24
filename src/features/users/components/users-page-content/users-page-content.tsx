@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   ClearFiltersButton,
@@ -117,6 +118,17 @@ export function UsersPageContent(): React.JSX.Element {
       cell: (user) => (
         <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
       ),
+    },
+    {
+      key: 'reservationsCount',
+      header: t('users.table.column.reservations'),
+      className: 'w-24',
+      cell: (user) =>
+        user.reservationsCount > 0 ? (
+          <Badge variant="secondary">{user.reservationsCount}</Badge>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
     },
     ...(isCurrentUserAdmin
       ? [

@@ -9,6 +9,7 @@ import { ItemForm } from '@/features/items/components/item-form'
 import type { ItemFormEditValues } from '@/features/items/components/item-form'
 import { ItemSourcesManager } from '@/features/items/components/item-sources-manager'
 import { useUpdateItem } from '@/features/items/hooks/use-admin-items'
+import { ItemReservationsSection } from '@/features/reservations/components/item-reservations-section'
 import type { ApiAdminItem, UpdateItemInput } from '@/data-access/items/items.schemas'
 import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
@@ -138,6 +139,7 @@ export function EditItemDialog({
           isPending={mutation.isPending}
         />
         <ItemSourcesManager item={item} />
+        <ItemReservationsSection itemId={item.id} />
       </div>
     </FormDialog>
   )

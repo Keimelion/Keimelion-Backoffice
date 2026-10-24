@@ -21,6 +21,7 @@ export const adminUserSchema = apiUserSchema.extend({
   bannedAt: z.string().nullable(),
   banReason: z.string().nullable(),
   deletedAt: z.string().nullable(),
+  reservationsCount: z.number().int().nonnegative().default(0),
 })
 
 export type AdminApiUser = z.infer<typeof adminUserSchema>

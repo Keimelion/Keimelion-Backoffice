@@ -49,6 +49,7 @@ export const apiAdminItemSchema = z.object({
   sources: z.array(apiItemSourceSchema),
   categories: z.array(apiItemCategorySchema).default([]),
   tags: z.array(apiTagSchema).default([]),
+  reservationCount: z.number().int().nonnegative().default(0),
 })
 
 export type ApiAdminItem = z.infer<typeof apiAdminItemSchema>

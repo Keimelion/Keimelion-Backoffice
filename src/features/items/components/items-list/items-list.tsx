@@ -109,6 +109,17 @@ export function ItemsList(): React.JSX.Element {
         cell: (item) => <Badge variant="secondary">{item.sources.length}</Badge>,
       },
       {
+        key: 'reservationCount',
+        header: t('items.table.column.reservations'),
+        className: 'w-24',
+        cell: (item) =>
+          item.reservationCount > 0 ? (
+            <Badge variant="secondary">{item.reservationCount}</Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          ),
+      },
+      {
         key: 'createdAt',
         header: t('items.table.column.created_at'),
         sortable: true,
