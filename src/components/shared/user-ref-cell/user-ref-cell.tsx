@@ -16,14 +16,16 @@ export function UserRefCell({ user, fallback }: UserRefCellProps): React.JSX.Ele
     return <span className="text-sm text-muted-foreground">{fallback}</span>
   }
   return (
-    <div className="flex flex-col gap-0.5">
-      <Link
-        href={`/users?id=${user.id}`}
-        className="text-sm font-medium hover:underline"
-      >
+    <Link
+      href={`/users?id=${user.id}`}
+      className="group flex flex-col gap-0.5"
+    >
+      <span className="text-sm font-medium group-hover:underline">
         {user.username ?? user.email}
-      </Link>
-      <span className="font-mono text-[10px] text-muted-foreground">{user.id}</span>
-    </div>
+      </span>
+      <span className="font-mono text-[10px] text-muted-foreground group-hover:underline">
+        {user.id}
+      </span>
+    </Link>
   )
 }

@@ -107,7 +107,7 @@ describe('ReservationsList', () => {
   it('renders reserver, item and list as links to their respective pages', () => {
     mockReservationsResult([BASE_RESERVATION])
     render(<ReservationsList />)
-    const reserverLink = screen.getByRole('link', { name: 'reserver' })
+    const reserverLink = screen.getByRole('link', { name: new RegExp(`reserver.*${USER_ID}`) })
     expect(reserverLink).toHaveAttribute('href', `/users?id=${USER_ID}`)
     const itemLink = screen.getByRole('link', { name: 'Weighted blanket' })
     expect(itemLink).toHaveAttribute('href', `/items?id=${ITEM_ID}`)
