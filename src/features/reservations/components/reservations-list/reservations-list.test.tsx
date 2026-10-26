@@ -35,6 +35,8 @@ type UseAdminReservationsReturn = ReturnType<typeof useAdminReservations>
 
 const RESERVATION_ID = '11111111-1111-4111-8111-111111111111'
 const USER_ID = '22222222-2222-4222-8222-222222222222'
+const ITEM_ID = '33333333-3333-4333-8333-333333333333'
+const LIST_ID = '44444444-4444-4444-8444-444444444444'
 
 const BASE_RESERVATION: ApiAdminReservation = {
   id: RESERVATION_ID,
@@ -42,12 +44,13 @@ const BASE_RESERVATION: ApiAdminReservation = {
   createdAt: '2024-02-01T00:00:00.000Z',
   listItem: {
     id: 'li-1',
+    itemId: ITEM_ID,
     name: 'Weighted blanket',
     quantityDesired: 3,
     image: null,
   },
   list: {
-    id: 'list-1',
+    id: LIST_ID,
     slug: 'wedding',
     title: 'Wedding wishlist',
     owner: null,
@@ -101,13 +104,15 @@ beforeEach(() => {
 })
 
 describe('ReservationsList', () => {
-  it('renders reservation reserver, item and list columns', () => {
+  it('renders reserver, item and list as links to their respective pages', () => {
     mockReservationsResult([BASE_RESERVATION])
     render(<ReservationsList />)
-    expect(screen.getByText('reserver')).toBeInTheDocument()
-    expect(screen.getByText(USER_ID)).toBeInTheDocument()
-    expect(screen.getAllByText('Weighted blanket').length).toBeGreaterThan(0)
-    expect(screen.getByText('Wedding wishlist')).toBeInTheDocument()
+    const reserverLink = screen.getByRole('link', { name: 'reserver' })
+    expect(reserverLink).toHaveAttribute('href', `/users?id=${USER_ID}`)
+    const itemLink = screen.getByRole('link', { name: 'Weighted blanket' })
+    expect(itemLink).toHaveAttribute('href', `/items?id=${ITEM_ID}`)
+    const listLink = screen.getByRole('link', { name: 'Wedding wishlist' })
+    expect(listLink).toHaveAttribute('href', `/lists?id=${LIST_ID}`)
     expect(screen.getByText(/wedding · no owner/)).toBeInTheDocument()
   })
 

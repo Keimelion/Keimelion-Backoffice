@@ -25,8 +25,9 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 
 const SEARCH_PARAM = 'search'
 const SORT_PARAM = 'sort'
+const ID_PARAM = 'id'
 
-const CLEARABLE_PARAMS = [SEARCH_PARAM, SORT_PARAM]
+const CLEARABLE_PARAMS = [SEARCH_PARAM, SORT_PARAM, ID_PARAM]
 
 export function ItemsList(): React.JSX.Element {
   const t = useTranslate()

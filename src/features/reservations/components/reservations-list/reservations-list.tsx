@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { XCircle } from 'lucide-react'
 import {
   ClearFiltersButton,
@@ -17,7 +18,6 @@ import {
 } from '@/data-access/reservations/reservations.schemas'
 import { useAdminReservations } from '@/features/reservations/hooks/use-admin-reservations'
 import { CancelReservationDialog } from '@/features/reservations/components/cancel-reservation-dialog'
-import { ReservationDetailDialog } from '@/features/reservations/components/reservation-detail-dialog'
 import { ItemThumbnail } from '@/features/items/components/item-thumbnail'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -34,7 +34,6 @@ export function ReservationsList(): React.JSX.Element {
   const t = useTranslate()
   const filters = useListSearchParams(listAdminReservationsQuerySchema)
 
-  const [detailTarget, setDetailTarget] = useState<ApiAdminReservation | null>(null)
   const [cancelTarget, setCancelTarget] = useState<ApiAdminReservation | null>(null)
 
   const reservationsQuery = useAdminReservations(filters)
@@ -81,7 +80,6 @@ export function ReservationsList(): React.JSX.Element {
         skeletonRowCount={filters.limit}
         onRetry={() => { void reservationsQuery.refetch() }}
         getRowLabel={(reservation) => reservation.listItem.name}
-        onRowClick={(reservation) => { setDetailTarget(reservation) }}
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={filtersDefinition} />
@@ -92,16 +90,6 @@ export function ReservationsList(): React.JSX.Element {
           <DataTablePagination page={filters.page} pageSize={filters.limit} total={total} />
         }
       />
-
-      {detailTarget !== null ? (
-        <ReservationDetailDialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setDetailTarget(null)
-          }}
-          reservation={detailTarget}
-        />
-      ) : null}
 
       {cancelTarget !== null ? (
         <CancelReservationDialog
@@ -117,6 +105,8 @@ export function ReservationsList(): React.JSX.Element {
   )
 }
 
+const LINK_CLASS = 'text-sm font-medium hover:underline'
+
 function buildColumns(
   t: TranslateFn,
   onCancel: (reservation: ApiAdminReservation) => void,
@@ -126,14 +116,9 @@ function buildColumns(
       key: 'reserver',
       header: t('reservations.table.column.reserver'),
       cell: (reservation) => (
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">
-            {reservation.user.username ?? reservation.user.email}
-          </span>
-          <span className="font-mono text-[10px] text-muted-foreground">
-            {reservation.user.id}
-          </span>
-        </div>
+        <Link href={`/users?id=${reservation.user.id}`} className={LINK_CLASS}>
+          {reservation.user.username ?? reservation.user.email}
+        </Link>
       ),
     },
     {
@@ -145,7 +130,9 @@ function buildColumns(
             imageUrl={reservation.listItem.image?.urls.sm ?? null}
             alt={reservation.listItem.name}
           />
-          <span className="text-sm font-medium">{reservation.listItem.name}</span>
+          <Link href={`/items?id=${reservation.listItem.itemId}`} className={LINK_CLASS}>
+            {reservation.listItem.name}
+          </Link>
         </div>
       ),
     },
@@ -154,7 +141,9 @@ function buildColumns(
       header: t('reservations.table.column.list'),
       cell: (reservation) => (
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm">{reservation.list.title}</span>
+          <Link href={`/lists?id=${reservation.list.id}`} className="text-sm hover:underline">
+            {reservation.list.title}
+          </Link>
           <span className="text-xs text-muted-foreground">
             {reservation.list.slug}
             {' · '}

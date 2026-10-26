@@ -33,6 +33,7 @@ const imageDetailSchema = z.object({
 
 const reservationListItemSummarySchema = z.object({
   id: z.string(),
+  itemId: z.string(),
   name: z.string(),
   quantityDesired: z.number().int(),
   image: imageDetailSchema.nullable(),

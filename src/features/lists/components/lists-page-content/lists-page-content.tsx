@@ -34,6 +34,7 @@ const LIST_STATUS_PARAM = 'listStatus'
 const OCCASION_TYPE_PARAM = 'occasionTypeId'
 const OWNER_PARAM = 'ownerUserId'
 const SORT_PARAM = 'sort'
+const ID_PARAM = 'id'
 const PRICE_DECIMALS = 2
 
 const CLEARABLE_PARAMS = [
@@ -42,6 +43,7 @@ const CLEARABLE_PARAMS = [
   OCCASION_TYPE_PARAM,
   OWNER_PARAM,
   SORT_PARAM,
+  ID_PARAM,
 ]
 
 function resolveRowClassName(list: ApiAdminList): string | undefined {

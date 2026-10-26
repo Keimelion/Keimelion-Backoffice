@@ -4,7 +4,6 @@
   "common.actions.sign_out": "Se déconnecter",
   "common.actions.update": "Modifier {name}",
   "common.actions.delete": "Supprimer {name}",
-  "common.nav.menu": "Menu",
   "common.nav.profile": "Profil",
   "common.user_menu.open": "Ouvrir le menu utilisateur",
   "common.pagination.page_of": "Page {page} / {totalPages}",

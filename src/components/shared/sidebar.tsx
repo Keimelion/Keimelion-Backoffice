@@ -17,17 +17,37 @@ interface NavItem {
   adminOnly?: boolean
 }
 
-const NAV_ITEMS: readonly NavItem[] = [
-  { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
-  { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
-  { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo, adminOnly: true },
-  { labelId: 'sidebar.nav.reservations', href: '/reservations', icon: BookmarkCheck, adminOnly: true },
-  { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
-  { labelId: 'sidebar.nav.items', href: '/items', icon: PackageOpen, adminOnly: true },
-  { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
-  { labelId: 'sidebar.nav.categories', href: '/categories', icon: FolderTree, adminOnly: true },
-  { labelId: 'sidebar.nav.tags', href: '/tags', icon: Tag, adminOnly: true },
-  { labelId: 'sidebar.nav.feedback', href: '/feedback', icon: MessageSquareWarning, adminOnly: true },
+interface NavGroup {
+  labelId: MessageId | null
+  items: readonly NavItem[]
+}
+
+const NAV_GROUPS: readonly NavGroup[] = [
+  {
+    labelId: null,
+    items: [
+      { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
+    ],
+  },
+  {
+    labelId: 'sidebar.group.content',
+    items: [
+      { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
+      { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo, adminOnly: true },
+      { labelId: 'sidebar.nav.items', href: '/items', icon: PackageOpen, adminOnly: true },
+      { labelId: 'sidebar.nav.reservations', href: '/reservations', icon: BookmarkCheck, adminOnly: true },
+      { labelId: 'sidebar.nav.feedback', href: '/feedback', icon: MessageSquareWarning, adminOnly: true },
+    ],
+  },
+  {
+    labelId: 'sidebar.group.catalog',
+    items: [
+      { labelId: 'sidebar.nav.categories', href: '/categories', icon: FolderTree, adminOnly: true },
+      { labelId: 'sidebar.nav.tags', href: '/tags', icon: Tag, adminOnly: true },
+      { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
+      { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
+    ],
+  },
 ]
 
 const BRAND_INITIAL = 'K'
@@ -39,7 +59,12 @@ export function Sidebar(): React.JSX.Element {
   const currentRole = useCurrentUserRole()
   const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
 
-  const visibleItems = NAV_ITEMS.filter((item) => item.adminOnly !== true || isCurrentUserAdmin)
+  const visibleGroups = NAV_GROUPS
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.adminOnly !== true || isCurrentUserAdmin),
+    }))
+    .filter((group) => group.items.length > 0)
 
   return (
     <aside className="flex w-64 flex-col border-r border-border bg-background px-4 py-6">
@@ -50,36 +75,42 @@ export function Sidebar(): React.JSX.Element {
         <span className="text-xl font-bold tracking-tight text-foreground">{BRAND_NAME}</span>
       </Link>
 
-      <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {t('common.nav.menu')}
-      </div>
-      <nav className="flex flex-col gap-1">
-        {visibleItems.map((item) => {
-          const isActive = pathname === item.href
-          const Icon = item.icon
-          const label = t(item.labelId)
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-out',
-                isActive
-                  ? 'bg-primary/10 text-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-0.5',
-              )}
-            >
-              <span
-                className={cn(
-                  'absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary transition-all duration-200 ease-out',
-                  isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0',
-                )}
-              />
-              <Icon className="h-5 w-5 transition-transform duration-200 ease-out group-hover:scale-110" />
-              {label}
-            </Link>
-          )
-        })}
+      <nav className="flex flex-col gap-6">
+        {visibleGroups.map((group, groupIndex) => (
+          <div key={group.labelId ?? `group-${String(groupIndex)}`} className="flex flex-col gap-1">
+            {group.labelId !== null ? (
+              <div className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t(group.labelId)}
+              </div>
+            ) : null}
+            {group.items.map((item) => {
+              const isActive = pathname === item.href
+              const Icon = item.icon
+              const label = t(item.labelId)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-out',
+                    isActive
+                      ? 'bg-primary/10 text-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-0.5',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary transition-all duration-200 ease-out',
+                      isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0',
+                    )}
+                  />
+                  <Icon className="h-5 w-5 transition-transform duration-200 ease-out group-hover:scale-110" />
+                  {label}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
     </aside>
   )
