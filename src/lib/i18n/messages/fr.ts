@@ -10,6 +10,7 @@ import lists from './fr/lists.json'
 import occasionTypes from './fr/occasion-types.json'
 import profile from './fr/profile.json'
 import query from './fr/query.json'
+import reservations from './fr/reservations.json'
 import shops from './fr/shops.json'
 import sidebar from './fr/sidebar.json'
 import tags from './fr/tags.json'
@@ -29,6 +30,7 @@ export const frMessages = {
   ...profile,
   ...sidebar,
   ...feedback,
+  ...reservations,
   ...errorMessages,
   ...query,
 } satisfies Record<MessageId, string>

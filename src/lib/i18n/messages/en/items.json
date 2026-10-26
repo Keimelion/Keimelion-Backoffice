@@ -6,6 +6,7 @@
   "items.table.column.image": "Image",
   "items.table.column.name": "Name",
   "items.table.column.sources": "Sources",
+  "items.table.column.reservations": "Reservations",
   "items.table.column.created_at": "Created",
   "items.table.column.updated_at": "Updated",
   "items.table.column.actions": "Actions",

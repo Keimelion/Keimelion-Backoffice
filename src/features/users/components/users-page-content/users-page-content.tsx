@@ -40,6 +40,7 @@ export function UsersPageContent(): React.JSX.Element {
   const usersQuery = useUsers({
     page: filters.page,
     limit: filters.limit,
+    id: filters.id,
     email: filters.email,
     username: filters.username,
     role: filters.role,
@@ -160,7 +161,11 @@ export function UsersPageContent(): React.JSX.Element {
       : []),
   ]
 
-  const usersClearableParams = [...usersFilters.map((filter) => filter.paramName), ROLE_PARAM]
+  const usersClearableParams = [
+    ...usersFilters.map((filter) => filter.paramName),
+    ROLE_PARAM,
+    'id',
+  ]
 
   return (
     <>

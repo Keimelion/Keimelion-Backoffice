@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { useIntl } from 'react-intl'
 import { ITEM_STATUS_VALUES } from '@keimelion/api/shared/enums/item-status'
+import type { ItemStatus } from '@keimelion/api/shared/enums/item-status'
 import { Badge } from '@/components/ui/badge'
+import { ItemStatusBadge } from '@/features/lists/components/item-status-badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -187,7 +189,7 @@ function renderDataRows(
           )}
         </TableCell>
         <TableCell className="w-28">
-          {renderItemStatus(listItem.itemStatus, t)}
+          {renderItemStatus(listItem.itemStatus)}
         </TableCell>
         <TableCell className="w-40">
           {renderBadgeList(
@@ -209,12 +211,11 @@ function renderDataRows(
   })
 }
 
-function renderItemStatus(itemStatus: string, t: TranslateFn): React.ReactNode {
+function renderItemStatus(itemStatus: string): React.ReactNode {
   if (!KNOWN_ITEM_STATUSES.has(itemStatus)) {
     return <Badge variant="outline">{itemStatus}</Badge>
   }
-  const label = t(`lists.sub_table.item_status.${itemStatus}` as MessageId)
-  return <Badge variant="outline">{label}</Badge>
+  return <ItemStatusBadge status={itemStatus as ItemStatus} />
 }
 
 function renderBadgeList(names: string[], t: TranslateFn): React.ReactNode {

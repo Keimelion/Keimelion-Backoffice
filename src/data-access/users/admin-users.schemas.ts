@@ -27,6 +27,7 @@ export type AdminApiUser = z.infer<typeof adminUserSchema>
 
 export const listUsersQuerySchema = z.object({
   ...basePaginationShape,
+  id: z.uuid().optional(),
   email: z.string().optional(),
   username: z.string().optional(),
   role: z.enum(USER_ROLE_VALUES).optional(),

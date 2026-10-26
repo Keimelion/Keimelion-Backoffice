@@ -7,5 +7,6 @@
   "sidebar.nav.tags": "Tags",
   "sidebar.nav.users": "Users",
   "sidebar.nav.occasion_types": "Occasion Types",
-  "sidebar.nav.feedback": "Feedback"
+  "sidebar.nav.feedback": "Feedback",
+  "sidebar.nav.reservations": "Reservations"
 }

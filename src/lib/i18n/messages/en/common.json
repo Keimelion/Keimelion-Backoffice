@@ -4,7 +4,6 @@
   "common.actions.sign_out": "Sign out",
   "common.actions.update": "Update {name}",
   "common.actions.delete": "Delete {name}",
-  "common.nav.menu": "Menu",
   "common.nav.profile": "Profile",
   "common.user_menu.open": "Open user menu",
   "common.pagination.page_of": "Page {page} / {totalPages}",

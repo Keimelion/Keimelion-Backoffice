@@ -82,6 +82,7 @@ const MOCK_ITEM = {
   sources: [],
   categories: [],
   tags: [],
+  reservationCount: 0,
 }
 
 beforeEach(() => {

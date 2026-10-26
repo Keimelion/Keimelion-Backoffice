@@ -116,6 +116,7 @@ const SORT_VALUES = SORTABLE_FIELDS.flatMap((field) =>
 
 export const listListsQuerySchema = z.object({
   ...basePaginationShape,
+  id: z.uuid().optional(),
   search: z.string().trim().min(1).optional(),
   listStatus: z.enum(LIST_STATUS_VALUES).optional(),
   occasionTypeId: z.uuid().optional(),

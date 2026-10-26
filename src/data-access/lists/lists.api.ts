@@ -18,6 +18,7 @@ function buildListParams(input: Partial<ListListsQuery>): Record<string, string>
   const params: Record<string, string> = {}
   if (input.page !== undefined) params.page = String(input.page)
   if (input.limit !== undefined) params.limit = String(input.limit)
+  if (input.id !== undefined) params['id[eq]'] = input.id
   if (typeof input.search === 'string' && input.search.length > 0) {
     params['title[ilike]'] = input.search
   }

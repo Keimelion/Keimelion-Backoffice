@@ -25,8 +25,9 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 
 const SEARCH_PARAM = 'search'
 const SORT_PARAM = 'sort'
+const ID_PARAM = 'id'
 
-const CLEARABLE_PARAMS = [SEARCH_PARAM, SORT_PARAM]
+const CLEARABLE_PARAMS = [SEARCH_PARAM, SORT_PARAM, ID_PARAM]
 
 export function ItemsList(): React.JSX.Element {
   const t = useTranslate()
@@ -107,6 +108,17 @@ export function ItemsList(): React.JSX.Element {
         header: t('items.table.column.sources'),
         className: 'w-20',
         cell: (item) => <Badge variant="secondary">{item.sources.length}</Badge>,
+      },
+      {
+        key: 'reservationCount',
+        header: t('items.table.column.reservations'),
+        className: 'w-24',
+        cell: (item) =>
+          item.reservationCount > 0 ? (
+            <Badge variant="secondary">{item.reservationCount}</Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          ),
       },
       {
         key: 'createdAt',
