@@ -5,6 +5,7 @@ import { renderWithQueryClient } from '@/test/test-utils'
 import type { UseFormSetError } from 'react-hook-form'
 import { UserForm } from './user-form'
 import type { UserFormCreateValues, UserFormEditValues } from './user-form'
+import type { AdminApiUser } from '@/data-access/users/admin-users.schemas'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
@@ -15,7 +16,7 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }))
 
-const MOCK_USER = {
+const MOCK_USER: AdminApiUser = {
   id: 'u-1',
   email: 'user@keimelion.app',
   username: 'testuser',
@@ -49,7 +50,7 @@ function renderCreateForm(onSubmit = vi.fn(), onDirtyChange = vi.fn()): void {
 }
 
 function renderEditForm(
-  user = MOCK_USER,
+  user: AdminApiUser = MOCK_USER,
   onSubmit = vi.fn(),
   onDirtyChange = vi.fn(),
 ): void {
