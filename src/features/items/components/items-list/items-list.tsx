@@ -10,6 +10,7 @@ import {
 } from '@/components/shared/data-table'
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
+import { ImageThumbnail } from '@/components/shared/image-thumbnail'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,7 +20,6 @@ import { CreateItemDialog } from '@/features/items/components/create-item-dialog
 import { EditItemDialog } from '@/features/items/components/edit-item-dialog'
 import { DeleteItemDialog } from '@/features/items/components/delete-item-dialog'
 import { ItemSourcesManager } from '@/features/items/components/item-sources-manager'
-import { ItemThumbnail } from '@/features/items/components/item-thumbnail'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
@@ -86,7 +86,13 @@ export function ItemsList(): React.JSX.Element {
         key: 'image',
         header: t('items.table.column.image'),
         className: 'w-14',
-        cell: (item) => <ItemThumbnail imageUrl={item.imageUrl} alt={item.name} />,
+        cell: (item) => (
+          <ImageThumbnail
+            src={item.image?.urls.sm ?? item.imageUrl}
+            fullSrc={item.image?.urls.lg ?? item.imageUrl}
+            alt={item.name}
+          />
+        ),
       },
       {
         key: 'name',

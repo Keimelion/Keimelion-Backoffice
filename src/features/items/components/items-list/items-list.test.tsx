@@ -51,11 +51,33 @@ const MOCK_SOURCE = {
   updatedAt: '2024-01-01T00:00:00.000Z',
 }
 
-const MOCK_ITEM = {
+interface ImageFixture {
+  id: string
+  hash: string
+  mime: string
+  sizeBytes: number
+  width: number
+  height: number
+  createdAt: string
+  urls: { sm: string; md: string; lg: string }
+}
+
+const MOCK_ITEM: {
+  id: string
+  name: string
+  description: string | null
+  imageUrl: string | null
+  image: ImageFixture | null
+  createdByUserId: string | null
+  createdAt: string
+  updatedAt: string
+  sources: typeof MOCK_SOURCE[]
+} = {
   id: 'item-1',
   name: 'Weighted blanket',
   description: 'Cozy and warm',
   imageUrl: null,
+  image: null,
   createdByUserId: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-02T00:00:00.000Z',
@@ -94,6 +116,47 @@ describe('ItemsList', () => {
     expect(screen.getByText('Weighted blanket')).toBeInTheDocument()
     expect(screen.getByText('Cozy and warm')).toBeInTheDocument()
     expect(screen.getByText('1')).toBeInTheDocument()
+  })
+
+  it('renders a placeholder in the image column when the item has no image', () => {
+    mockItemsResult()
+    render(<ItemsList />)
+    const placeholder = screen.getByRole('img', { name: 'Weighted blanket' })
+    expect(placeholder.tagName).toBe('DIV')
+  })
+
+  it('renders a clickable thumbnail wired to the large variant when image is present', () => {
+    mockItemsResult({
+      data: {
+        items: [
+          {
+            ...MOCK_ITEM,
+            image: {
+              id: 'img-1',
+              hash: 'h',
+              mime: 'image/webp',
+              sizeBytes: 1024,
+              width: 300,
+              height: 300,
+              createdAt: '2024-01-01T00:00:00.000Z',
+              urls: {
+                sm: 'https://cdn.example.com/a-300.webp',
+                md: 'https://cdn.example.com/a-800.webp',
+                lg: 'https://cdn.example.com/a-1600.webp',
+              },
+            },
+          },
+        ],
+        pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      },
+    })
+    render(<ItemsList />)
+    const img = screen.getByAltText('Weighted blanket')
+    expect(img).toHaveAttribute('src', 'https://cdn.example.com/a-300.webp')
+    const link = img.closest('a')
+    expect(link).not.toBeNull()
+    expect(link).toHaveAttribute('href', 'https://cdn.example.com/a-1600.webp')
+    expect(link).toHaveAttribute('target', '_blank')
   })
 
   it('renders sortable headers for name, created, updated', () => {

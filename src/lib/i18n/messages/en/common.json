@@ -23,5 +23,6 @@
   "common.discard_changes.title": "Discard changes?",
   "common.discard_changes.description": "You have unsaved changes. Do you want to discard them and close?",
   "common.discard_changes.discard": "Discard my changes",
-  "common.discard_changes.keep": "Back to the form"
+  "common.discard_changes.keep": "Back to the form",
+  "common.image.open_full_size": "Open full-size image for {name}"
 }

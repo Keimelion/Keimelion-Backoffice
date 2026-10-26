@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { apiImageDetailSchema } from '@/data-access/_shared/image'
 import { basePaginationShape } from '@/data-access/_shared/pagination'
 import { apiUserSchema } from '@/data-access/_shared/user'
 
@@ -14,29 +15,12 @@ const SORT_VALUES = SORTABLE_FIELDS.flatMap((field) =>
   ...`${AdminReservationSortField}:${(typeof SORT_DIRECTIONS)[number]}`[],
 ]
 
-const imageUrlsSchema = z.object({
-  sm: z.string(),
-  md: z.string(),
-  lg: z.string(),
-})
-
-const imageDetailSchema = z.object({
-  id: z.string(),
-  hash: z.string(),
-  mime: z.string(),
-  sizeBytes: z.number().int().nonnegative(),
-  width: z.number().int().nonnegative(),
-  height: z.number().int().nonnegative(),
-  createdAt: z.string(),
-  urls: imageUrlsSchema,
-})
-
 const reservationListItemSummarySchema = z.object({
   id: z.string(),
   itemId: z.string(),
   name: z.string(),
   quantityDesired: z.number().int(),
-  image: imageDetailSchema.nullable(),
+  image: apiImageDetailSchema.nullable(),
 })
 
 const reservationListSummarySchema = z.object({

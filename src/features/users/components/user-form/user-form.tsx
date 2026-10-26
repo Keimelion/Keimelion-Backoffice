@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import type { UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { USER_ROLE_VALUES, UserRoles } from '@keimelion/api/shared/enums/user-role'
+import { UserAvatar } from '@/components/shared/user-avatar'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -87,6 +88,8 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
 
+  const editUser = props.mode === 'edit' ? props.user : null
+
   return (
     <Form {...form}>
       <form
@@ -102,6 +105,24 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
         }}
         noValidate
       >
+        {editUser !== null ? (
+          <div className="flex items-center gap-3 rounded-md border border-border bg-muted/20 p-3">
+            <UserAvatar
+              src={editUser.avatar?.urls.md ?? editUser.avatarUrl}
+              name={editUser.username ?? editUser.email}
+              size="md"
+            />
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate text-sm font-medium">
+                {editUser.username ?? editUser.email}
+              </span>
+              {editUser.username !== null ? (
+                <span className="truncate text-xs text-muted-foreground">{editUser.email}</span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
         {isEdit ? null : (
           <>
             <FormField

@@ -19,7 +19,7 @@ import {
 } from '@/data-access/reservations/reservations.schemas'
 import { useAdminReservations } from '@/features/reservations/hooks/use-admin-reservations'
 import { CancelReservationDialog } from '@/features/reservations/components/cancel-reservation-dialog'
-import { ItemThumbnail } from '@/features/items/components/item-thumbnail'
+import { ImageThumbnail } from '@/components/shared/image-thumbnail'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
@@ -123,8 +123,9 @@ function buildColumns(
       header: t('reservations.table.column.item'),
       cell: (reservation) => (
         <div className="flex items-center gap-2">
-          <ItemThumbnail
-            imageUrl={reservation.listItem.image?.urls.sm ?? null}
+          <ImageThumbnail
+            src={reservation.listItem.image?.urls.sm ?? null}
+            fullSrc={reservation.listItem.image?.urls.lg ?? null}
             alt={reservation.listItem.name}
           />
           <Link href={`/items?id=${reservation.listItem.itemId}`} className={LINK_CLASS}>

@@ -148,6 +148,35 @@ describe('UserForm (edit mode)', () => {
     expect(screen.queryByText('Username')).not.toBeInTheDocument()
   })
 
+  it('renders the user header with avatar initial fallback and email', () => {
+    renderEditForm()
+    expect(screen.getByRole('img', { name: 'testuser' })).toHaveTextContent('T')
+    expect(screen.getByText('user@keimelion.app')).toBeInTheDocument()
+  })
+
+  it('renders the uploaded avatar in the header when provided', () => {
+    renderEditForm({
+      ...MOCK_USER,
+      avatar: {
+        id: 'img-1',
+        hash: 'h',
+        mime: 'image/webp',
+        sizeBytes: 1024,
+        width: 800,
+        height: 800,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        urls: {
+          sm: 'https://cdn.example.com/avatar-sm.webp',
+          md: 'https://cdn.example.com/avatar-md.webp',
+          lg: 'https://cdn.example.com/avatar-lg.webp',
+        },
+      },
+    })
+    const img = screen.getByAltText('testuser')
+    expect(img.tagName).toBe('IMG')
+    expect(img).toHaveAttribute('src', 'https://cdn.example.com/avatar-md.webp')
+  })
+
   it('keeps the submit button disabled when role is unchanged', () => {
     renderEditForm()
     expect(screen.getByRole('button', { name: /save/i })).toBeDisabled()

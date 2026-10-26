@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { AUTH_PROVIDER_VALUES } from '@keimelion/api/shared/enums/auth-provider'
 import { SUPPORTED_CURRENCY_VALUES, SupportedCurrencies } from '@keimelion/api/shared/enums/currency'
 import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
+import { apiImageDetailSchema } from '@/data-access/_shared/image'
 
 const ALLOWED_AVATAR_URL_PROTOCOLS: readonly string[] = ['http:', 'https:']
 
@@ -26,6 +27,7 @@ export const apiUserSchema = z.object({
   authProvider: z.enum(AUTH_PROVIDER_VALUES),
   role: z.enum(USER_ROLE_VALUES),
   avatarUrl: safeAvatarUrlSchema,
+  avatar: apiImageDetailSchema.nullable().optional(),
   isCgvAccepted: z.boolean(),
   cgvAcceptedAt: z.string().nullable(),
   isMarketingOptedIn: z.boolean(),

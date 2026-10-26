@@ -59,6 +59,17 @@ function renderContent(): void {
   )
 }
 
+interface AvatarImage {
+  id: string
+  hash: string
+  mime: string
+  sizeBytes: number
+  width: number
+  height: number
+  createdAt: string
+  urls: { sm: string; md: string; lg: string }
+}
+
 function makeUser(overrides: Partial<{
   id: string
   email: string
@@ -66,6 +77,8 @@ function makeUser(overrides: Partial<{
   deletedAt: string | null
   bannedAt: string | null
   role: 'admin' | 'moderator' | 'user'
+  avatarUrl: string | null
+  avatar: AvatarImage | null
 }> = {}) {
   return {
     id: overrides.id ?? 'u1',
@@ -73,7 +86,8 @@ function makeUser(overrides: Partial<{
     username: overrides.username === undefined ? 'testuser' : overrides.username,
     authProvider: 'email' as const,
     role: overrides.role ?? ('user' as const),
-    avatarUrl: null,
+    avatarUrl: overrides.avatarUrl ?? null,
+    avatar: overrides.avatar ?? null,
     isCgvAccepted: true,
     cgvAcceptedAt: null,
     isMarketingOptedIn: false,
@@ -153,6 +167,59 @@ describe('UsersPageContent', () => {
     )
     renderContent()
     expect(screen.getByText('No users match these filters.')).toBeInTheDocument()
+  })
+
+  it('renders the initial fallback in the avatar column when the user has no avatar', () => {
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({
+        data: makeUsersData([makeUser({ username: 'alice' })]),
+      }),
+    )
+    renderContent()
+    expect(within(firstDataRow()).getByRole('img', { name: 'alice' })).toHaveTextContent('A')
+  })
+
+  it('renders avatar.urls.sm in the avatar column when the user has an uploaded avatar', () => {
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({
+        data: makeUsersData([
+          makeUser({
+            username: 'alice',
+            avatar: {
+              id: 'img-1',
+              hash: 'h',
+              mime: 'image/webp',
+              sizeBytes: 1024,
+              width: 300,
+              height: 300,
+              createdAt: '2024-01-01T00:00:00.000Z',
+              urls: {
+                sm: 'https://cdn.example.com/avatar-sm.webp',
+                md: 'https://cdn.example.com/avatar-md.webp',
+                lg: 'https://cdn.example.com/avatar-lg.webp',
+              },
+            },
+          }),
+        ]),
+      }),
+    )
+    renderContent()
+    const img = within(firstDataRow()).getByAltText('alice')
+    expect(img.tagName).toBe('IMG')
+    expect(img).toHaveAttribute('src', 'https://cdn.example.com/avatar-sm.webp')
+  })
+
+  it('falls back to the legacy avatarUrl when no uploaded avatar is set', () => {
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({
+        data: makeUsersData([
+          makeUser({ username: 'alice', avatarUrl: 'https://cdn.example.com/legacy.png' }),
+        ]),
+      }),
+    )
+    renderContent()
+    const img = within(firstDataRow()).getByAltText('alice')
+    expect(img).toHaveAttribute('src', 'https://cdn.example.com/legacy.png')
   })
 
   it('renders row-specific action tooltips using the username when signed in as admin', () => {
