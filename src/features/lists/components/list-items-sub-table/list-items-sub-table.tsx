@@ -166,7 +166,11 @@ function renderDataRows(
     return (
       <TableRow key={listItem.id} className="hover:bg-transparent">
         <TableCell className="w-14">
-          <ImageThumbnail src={listItem.item.imageUrl} alt={listItem.item.name} />
+          <ImageThumbnail
+            src={listItem.image?.urls.sm ?? listItem.item.imageUrl}
+            alt={listItem.item.name}
+            fullSrc={listItem.image?.urls.lg ?? listItem.item.imageUrl}
+          />
         </TableCell>
         <TableCell>
           <div className="flex flex-col gap-0.5">
