@@ -7,7 +7,6 @@
   "users.table.column.created": "Créé le",
   "users.table.column.last_active": "Dernière activité",
   "users.table.column.status": "Statut",
-  "users.table.column.reservations": "Réservations",
   "users.table.column.actions": "Actions",
   "users.table.empty": "Aucun utilisateur ne correspond à ces filtres.",
   "users.filters.email_label": "E-mail",

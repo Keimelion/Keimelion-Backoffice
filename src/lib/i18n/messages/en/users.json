@@ -7,7 +7,6 @@
   "users.table.column.created": "Created",
   "users.table.column.last_active": "Last active",
   "users.table.column.status": "Status",
-  "users.table.column.reservations": "Reservations",
   "users.table.column.actions": "Actions",
   "users.table.empty": "No users match these filters.",
   "users.filters.email_label": "Email",

@@ -8,7 +8,5 @@
   "sidebar.nav.users": "Users",
   "sidebar.nav.occasion_types": "Occasion Types",
   "sidebar.nav.feedback": "Feedback",
-  "sidebar.nav.reservations": "Reservations",
-  "sidebar.group.content": "Content",
-  "sidebar.group.catalog": "Catalog"
+  "sidebar.nav.reservations": "Reservations"
 }

@@ -31,7 +31,6 @@ const MOCK_USER = {
   bannedAt: null,
   banReason: null,
   deletedAt: null,
-  reservationsCount: 0,
 }
 
 const MOCK_RESPONSE = {

@@ -17,37 +17,23 @@ interface NavItem {
   adminOnly?: boolean
 }
 
-interface NavGroup {
-  labelId: MessageId | null
-  items: readonly NavItem[]
-}
-
-const NAV_GROUPS: readonly NavGroup[] = [
-  {
-    labelId: null,
-    items: [
-      { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
-    ],
-  },
-  {
-    labelId: 'sidebar.group.content',
-    items: [
-      { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
-      { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo, adminOnly: true },
-      { labelId: 'sidebar.nav.items', href: '/items', icon: PackageOpen, adminOnly: true },
-      { labelId: 'sidebar.nav.reservations', href: '/reservations', icon: BookmarkCheck, adminOnly: true },
-      { labelId: 'sidebar.nav.feedback', href: '/feedback', icon: MessageSquareWarning, adminOnly: true },
-    ],
-  },
-  {
-    labelId: 'sidebar.group.catalog',
-    items: [
-      { labelId: 'sidebar.nav.categories', href: '/categories', icon: FolderTree, adminOnly: true },
-      { labelId: 'sidebar.nav.tags', href: '/tags', icon: Tag, adminOnly: true },
-      { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
-      { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
-    ],
-  },
+const NAV_GROUPS: readonly (readonly NavItem[])[] = [
+  [
+    { labelId: 'sidebar.nav.dashboard', href: '/', icon: LayoutDashboard },
+  ],
+  [
+    { labelId: 'sidebar.nav.users', href: '/users', icon: Users },
+    { labelId: 'sidebar.nav.lists', href: '/lists', icon: ListTodo, adminOnly: true },
+    { labelId: 'sidebar.nav.items', href: '/items', icon: PackageOpen, adminOnly: true },
+    { labelId: 'sidebar.nav.reservations', href: '/reservations', icon: BookmarkCheck, adminOnly: true },
+    { labelId: 'sidebar.nav.feedback', href: '/feedback', icon: MessageSquareWarning, adminOnly: true },
+  ],
+  [
+    { labelId: 'sidebar.nav.categories', href: '/categories', icon: FolderTree, adminOnly: true },
+    { labelId: 'sidebar.nav.tags', href: '/tags', icon: Tag, adminOnly: true },
+    { labelId: 'sidebar.nav.shops', href: '/shops', icon: Store, adminOnly: true },
+    { labelId: 'sidebar.nav.occasion_types', href: '/occasion-types', icon: CalendarHeart },
+  ],
 ]
 
 const BRAND_INITIAL = 'K'
@@ -60,11 +46,8 @@ export function Sidebar(): React.JSX.Element {
   const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
 
   const visibleGroups = NAV_GROUPS
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => item.adminOnly !== true || isCurrentUserAdmin),
-    }))
-    .filter((group) => group.items.length > 0)
+    .map((items) => items.filter((item) => item.adminOnly !== true || isCurrentUserAdmin))
+    .filter((items) => items.length > 0)
 
   return (
     <aside className="flex w-64 flex-col border-r border-border bg-background px-4 py-6">
@@ -75,15 +58,16 @@ export function Sidebar(): React.JSX.Element {
         <span className="text-xl font-bold tracking-tight text-foreground">{BRAND_NAME}</span>
       </Link>
 
-      <nav className="flex flex-col gap-6">
-        {visibleGroups.map((group, groupIndex) => (
-          <div key={group.labelId ?? `group-${String(groupIndex)}`} className="flex flex-col gap-1">
-            {group.labelId !== null ? (
-              <div className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t(group.labelId)}
-              </div>
-            ) : null}
-            {group.items.map((item) => {
+      <nav className="flex flex-col">
+        {visibleGroups.map((items, groupIndex) => (
+          <div
+            key={items[0]?.href ?? `group-${String(groupIndex)}`}
+            className={cn(
+              'flex flex-col gap-1 py-3',
+              groupIndex > 0 ? 'border-t border-border' : null,
+            )}
+          >
+            {items.map((item) => {
               const isActive = pathname === item.href
               const Icon = item.icon
               const label = t(item.labelId)

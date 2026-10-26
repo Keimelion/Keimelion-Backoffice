@@ -7,7 +7,7 @@
   "reservations.table.column.item": "Item",
   "reservations.table.column.list": "List",
   "reservations.table.column.quantity": "Quantity",
-  "reservations.table.column.created_at": "Booked at",
+  "reservations.table.column.created_at": "Created at",
   "reservations.table.column.actions": "Actions",
   "reservations.table.empty": "No reservations match these filters.",
   "reservations.table.list_owner": "by {owner}",

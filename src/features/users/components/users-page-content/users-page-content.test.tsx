@@ -85,7 +85,6 @@ function makeUser(overrides: Partial<{
     bannedAt: overrides.bannedAt ?? null,
     banReason: null,
     deletedAt: overrides.deletedAt ?? null,
-    reservationsCount: 0,
   }
 }
 
