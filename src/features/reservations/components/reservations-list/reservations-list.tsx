@@ -116,9 +116,7 @@ function buildColumns(
     {
       key: 'reserver',
       header: t('reservations.table.column.reserver'),
-      cell: (reservation) => (
-        <UserRefCell user={reservation.user} fallback="" />
-      ),
+      cell: (reservation) => <UserRefCell user={reservation.user} />,
     },
     {
       key: 'item',

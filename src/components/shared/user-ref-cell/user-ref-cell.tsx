@@ -8,10 +8,10 @@ interface UserRefCellProps {
     email: string
     username: string | null
   } | null
-  fallback: string
+  fallback?: string
 }
 
-export function UserRefCell({ user, fallback }: UserRefCellProps): React.JSX.Element {
+export function UserRefCell({ user, fallback = '' }: UserRefCellProps): React.JSX.Element {
   if (user === null) {
     return <span className="text-sm text-muted-foreground">{fallback}</span>
   }
