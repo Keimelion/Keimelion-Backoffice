@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
-
-const ALLOWED_PROTOCOLS: readonly string[] = ['http:', 'https:']
+import { isSafeImageUrl } from '@/lib/is-safe-image-url'
 
 export type UserAvatarSize = 'sm' | 'md'
 
@@ -17,16 +16,6 @@ interface UserAvatarProps {
 const SIZE_CLASSES: Record<UserAvatarSize, string> = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-16 w-16 text-base',
-}
-
-function isSafeImageUrl(value: string | null): value is string {
-  if (typeof value !== 'string') return false
-  try {
-    const parsed = new URL(value)
-    return ALLOWED_PROTOCOLS.includes(parsed.protocol)
-  } catch {
-    return false
-  }
 }
 
 function resolveInitial(name: string): string {

@@ -3,22 +3,12 @@ import { AUTH_PROVIDER_VALUES } from '@keimelion/api/shared/enums/auth-provider'
 import { SUPPORTED_CURRENCY_VALUES, SupportedCurrencies } from '@keimelion/api/shared/enums/currency'
 import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
 import { apiImageDetailSchema } from '@/data-access/_shared/image'
-
-const ALLOWED_AVATAR_URL_PROTOCOLS: readonly string[] = ['http:', 'https:']
+import { isSafeImageUrl } from '@/lib/is-safe-image-url'
 
 const safeAvatarUrlSchema = z
   .string()
   .nullable()
-  .transform((value): string | null => {
-    if (value === null) return null
-    try {
-      const parsed = new URL(value)
-      if (!ALLOWED_AVATAR_URL_PROTOCOLS.includes(parsed.protocol)) return null
-      return value
-    } catch {
-      return null
-    }
-  })
+  .transform((value): string | null => (isSafeImageUrl(value) ? value : null))
 
 export const apiUserSchema = z.object({
   id: z.string(),

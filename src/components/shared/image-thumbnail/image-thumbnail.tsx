@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Package } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { isSafeImageUrl } from '@/lib/is-safe-image-url'
 import { useTranslate } from '@/lib/i18n/use-translate'
-
-const ALLOWED_PROTOCOLS: readonly string[] = ['http:', 'https:']
 
 export type ImageThumbnailSize = 'sm' | 'md'
 
@@ -20,16 +19,6 @@ interface ImageThumbnailProps {
 const SIZE_CLASSES: Record<ImageThumbnailSize, string> = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-16 w-16 text-sm',
-}
-
-function isSafeImageUrl(value: string | null): value is string {
-  if (typeof value !== 'string') return false
-  try {
-    const parsed = new URL(value)
-    return ALLOWED_PROTOCOLS.includes(parsed.protocol)
-  } catch {
-    return false
-  }
 }
 
 export function ImageThumbnail({
