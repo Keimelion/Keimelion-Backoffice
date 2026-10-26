@@ -9,6 +9,7 @@ import {
 } from '@/components/shared/data-table'
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
+import { UserRefCell } from '@/components/shared/user-ref-cell'
 import {
   listFeedbackQuerySchema,
   type ApiAdminFeedback,
@@ -49,19 +50,6 @@ function truncatePreview(description: string): string {
   return `${description.slice(0, DESCRIPTION_PREVIEW_LENGTH)}…`
 }
 
-function resolveUserCell(feedback: ApiAdminFeedback, t: TranslateFn): React.ReactNode {
-  if (feedback.user === null) {
-    return <span className="text-xs text-muted-foreground">{t('feedback.table.user_none')}</span>
-  }
-  const name = feedback.user.username ?? feedback.user.email
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-sm">{name}</span>
-      <span className="font-mono text-[10px] text-muted-foreground">{feedback.user.id}</span>
-    </div>
-  )
-}
-
 function buildColumns(t: TranslateFn): DataTableColumn<ApiAdminFeedback>[] {
   return [
     {
@@ -86,7 +74,9 @@ function buildColumns(t: TranslateFn): DataTableColumn<ApiAdminFeedback>[] {
     {
       key: 'user',
       header: t('feedback.table.column.user'),
-      cell: (feedback) => resolveUserCell(feedback, t),
+      cell: (feedback) => (
+        <UserRefCell user={feedback.user} fallback={t('feedback.table.user_none')} />
+      ),
     },
     {
       key: 'status',
