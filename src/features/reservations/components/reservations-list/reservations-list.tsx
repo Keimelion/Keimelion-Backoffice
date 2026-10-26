@@ -11,6 +11,7 @@ import {
 } from '@/components/shared/data-table'
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
+import { UserRefCell } from '@/components/shared/user-ref-cell'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import {
   listAdminReservationsQuerySchema,
@@ -116,9 +117,7 @@ function buildColumns(
       key: 'reserver',
       header: t('reservations.table.column.reserver'),
       cell: (reservation) => (
-        <Link href={`/users?id=${reservation.user.id}`} className={LINK_CLASS}>
-          {reservation.user.username ?? reservation.user.email}
-        </Link>
+        <UserRefCell user={reservation.user} fallback="" />
       ),
     },
     {

@@ -12,8 +12,10 @@ import {
 } from '@/components/shared/data-table'
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
+import { UserRefCell } from '@/components/shared/user-ref-cell'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { Badge } from '@/components/ui/badge'
+import { ListStatusBadge } from '@/features/lists/components/list-status-badge'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
 import { listListsQuerySchema, type ApiAdminList } from '@/data-access/lists/lists.schemas'
 import { useAdminLists, useRestoreList } from '@/features/lists/hooks/use-admin-lists'
@@ -290,11 +292,7 @@ function buildColumns({
       key: 'owner',
       header: t('lists.table.column.owner'),
       cell: (list) => (
-        <span className="text-sm text-muted-foreground">
-          {list.owner === null
-            ? t('lists.table.owner_none')
-            : list.owner.username ?? list.owner.email}
-        </span>
+        <UserRefCell user={list.owner} fallback={t('lists.table.owner_none')} />
       ),
     },
     {
@@ -360,7 +358,7 @@ function buildColumns({
       key: 'listStatus',
       header: t('lists.table.column.list_status'),
       className: 'w-28',
-      cell: (list) => <Badge variant="outline">{t(`lists.status.${list.listStatus}`)}</Badge>,
+      cell: (list) => <ListStatusBadge status={list.listStatus} />,
     },
     {
       key: 'createdAt',
