@@ -5,6 +5,7 @@ import { LIST_STATUS_VALUES } from '@keimelion/api/shared/enums/list-status'
 import { basePaginationShape } from '@/data-access/_shared/pagination'
 import { apiTagSchema } from '@/data-access/tags/tags.schemas'
 import { apiUserSchema } from '@/data-access/_shared/user'
+import { apiImageDetailSchema } from '@/data-access/_shared/image'
 import { apiItemSourceSchema } from '@/data-access/items/item-sources.schemas'
 import { apiItemCategorySchema } from '@/data-access/items/items.schemas'
 
@@ -50,6 +51,7 @@ const apiListItemBaseSchema = z.object({
   itemStatus: z.enum(ITEM_STATUS_VALUES),
   sortOrder: z.number().nullable(),
   creatorNote: z.string().nullable(),
+  image: apiImageDetailSchema.nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 })

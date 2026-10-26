@@ -5,6 +5,7 @@ import { renderWithQueryClient } from '@/test/test-utils'
 import type { UseFormSetError } from 'react-hook-form'
 import { UserForm } from './user-form'
 import type { UserFormCreateValues, UserFormEditValues } from './user-form'
+import type { AdminApiUser } from '@/data-access/users/admin-users.schemas'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
@@ -15,7 +16,7 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }))
 
-const MOCK_USER = {
+const MOCK_USER: AdminApiUser = {
   id: 'u-1',
   email: 'user@keimelion.app',
   username: 'testuser',
@@ -49,7 +50,7 @@ function renderCreateForm(onSubmit = vi.fn(), onDirtyChange = vi.fn()): void {
 }
 
 function renderEditForm(
-  user = MOCK_USER,
+  user: AdminApiUser = MOCK_USER,
   onSubmit = vi.fn(),
   onDirtyChange = vi.fn(),
 ): void {
@@ -146,6 +147,35 @@ describe('UserForm (edit mode)', () => {
     expect(screen.getByText('Role')).toBeInTheDocument()
     expect(screen.queryByText('Email')).not.toBeInTheDocument()
     expect(screen.queryByText('Username')).not.toBeInTheDocument()
+  })
+
+  it('renders the user header with avatar initial fallback and email', () => {
+    renderEditForm()
+    expect(screen.getByRole('img', { name: 'testuser' })).toHaveTextContent('T')
+    expect(screen.getByText('user@keimelion.app')).toBeInTheDocument()
+  })
+
+  it('renders the uploaded avatar in the header when provided', () => {
+    renderEditForm({
+      ...MOCK_USER,
+      avatar: {
+        id: 'img-1',
+        hash: 'h',
+        mime: 'image/webp',
+        sizeBytes: 1024,
+        width: 800,
+        height: 800,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        urls: {
+          sm: 'https://cdn.example.com/avatar-sm.webp',
+          md: 'https://cdn.example.com/avatar-md.webp',
+          lg: 'https://cdn.example.com/avatar-lg.webp',
+        },
+      },
+    })
+    const img = screen.getByAltText('testuser')
+    expect(img.tagName).toBe('IMG')
+    expect(img).toHaveAttribute('src', 'https://cdn.example.com/avatar-md.webp')
   })
 
   it('keeps the submit button disabled when role is unchanged', () => {

@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ItemThumbnail } from '@/features/items/components/item-thumbnail'
+import { ImageThumbnail } from '@/components/shared/image-thumbnail'
 import { useAdminListItems } from '@/features/lists/hooks/use-admin-list-items'
 import type { ApiAdminListItem } from '@/data-access/lists/lists.schemas'
 import { formatDate } from '@/lib/format-date'
@@ -166,7 +166,11 @@ function renderDataRows(
     return (
       <TableRow key={listItem.id} className="hover:bg-transparent">
         <TableCell className="w-14">
-          <ItemThumbnail imageUrl={listItem.item.imageUrl} alt={listItem.item.name} />
+          <ImageThumbnail
+            src={listItem.image?.urls.sm ?? listItem.item.imageUrl}
+            alt={listItem.item.name}
+            fullSrc={listItem.image?.urls.lg ?? listItem.item.imageUrl}
+          />
         </TableCell>
         <TableCell>
           <div className="flex flex-col gap-0.5">

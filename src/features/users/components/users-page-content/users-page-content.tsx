@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   ClearFiltersButton,
@@ -13,6 +12,7 @@ import {
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
+import { UserAvatar } from '@/components/shared/user-avatar'
 import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
 import { listUsersQuerySchema, type AdminApiUser } from '@/data-access/users/admin-users.schemas'
 import { formatDate } from '@/lib/format-date'
@@ -73,12 +73,10 @@ export function UsersPageContent(): React.JSX.Element {
       header: '',
       className: 'w-10',
       cell: (user) => (
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={user.avatarUrl ?? undefined} alt={user.username ?? user.email} />
-          <AvatarFallback className="text-xs">
-            {resolveAvatarInitial(user)}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          src={user.avatar?.urls.sm ?? user.avatarUrl}
+          name={user.username ?? user.email}
+        />
       ),
     },
     {
@@ -231,11 +229,6 @@ export function UsersPageContent(): React.JSX.Element {
       ) : null}
     </>
   )
-}
-
-function resolveAvatarInitial(user: AdminApiUser): string {
-  const source = user.username ?? user.email
-  return source.charAt(0).toUpperCase()
 }
 
 function resolveRowClassName(user: AdminApiUser): string | undefined {

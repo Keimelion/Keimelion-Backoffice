@@ -23,5 +23,6 @@
   "common.discard_changes.title": "Abandonner les modifications ?",
   "common.discard_changes.description": "Vous avez des modifications non enregistrées. Voulez-vous les abandonner et fermer ?",
   "common.discard_changes.discard": "Abandonner mes modifications",
-  "common.discard_changes.keep": "Retourner au formulaire"
+  "common.discard_changes.keep": "Retourner au formulaire",
+  "common.image.open_full_size": "Ouvrir l'image en taille réelle pour {name}"
 }

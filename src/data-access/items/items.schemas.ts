@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { apiImageDetailSchema } from '@/data-access/_shared/image'
 import { basePaginationShape } from '@/data-access/_shared/pagination'
 import { apiTagSchema } from '@/data-access/tags/tags.schemas'
 import {
@@ -43,6 +44,7 @@ export const apiAdminItemSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  image: apiImageDetailSchema.nullable().optional(),
   createdByUserId: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
