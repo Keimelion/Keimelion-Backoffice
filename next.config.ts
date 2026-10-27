@@ -12,7 +12,7 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   sassOptions: {
-    includePaths: [path.join(process.cwd(), 'src')],
+    loadPaths: [path.join(process.cwd(), 'src')],
   },
   poweredByHeader: false,
   async headers() {

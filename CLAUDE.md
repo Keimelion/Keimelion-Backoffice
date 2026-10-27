@@ -118,7 +118,7 @@ src/
       resolve-locale.ts # Boot-time resolution: localStorage → navigator.language → 'en'
       i18n-provider/    # <I18nProvider /> wrapping the app with react-intl's IntlProvider
       messages/         # Catalogs: en/*.json + fr/*.json namespace files, merged via en.ts and fr.ts
-  middleware.ts         # Edge middleware entry — Next.js requires this exact path. Keep thin: composes helpers from middlewares/
+  proxy.ts              # Edge proxy entry (Next.js 16 — formerly middleware.ts). Next.js requires this exact path. Keep thin: composes helpers from middlewares/
   middlewares/          # Individual middleware helpers, each returns NextResponse | null (null = pass through)
     require-session.ts  # Gates dashboard routes on the session cookie
 ```
