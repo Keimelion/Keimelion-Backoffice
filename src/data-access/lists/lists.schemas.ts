@@ -51,7 +51,6 @@ const apiListItemBaseSchema = z.object({
   itemStatus: z.enum(ITEM_STATUS_VALUES),
   sortOrder: z.number().nullable(),
   creatorNote: z.string().nullable(),
-  image: apiImageDetailSchema.nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 })
@@ -61,6 +60,7 @@ const apiListItemInnerItemSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  image: apiImageDetailSchema.nullable().optional(),
   createdByUserId: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
