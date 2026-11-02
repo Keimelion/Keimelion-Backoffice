@@ -80,7 +80,7 @@ export function ReservationsList(): React.JSX.Element {
         emptyLabel={t('reservations.table.empty')}
         skeletonRowCount={filters.limit}
         onRetry={() => { void reservationsQuery.refetch() }}
-        getRowLabel={(reservation) => reservation.listItem.name}
+        getRowLabel={(reservation) => reservation.listItem.item.name}
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={filtersDefinition} />
@@ -124,12 +124,12 @@ function buildColumns(
       cell: (reservation) => (
         <div className="flex items-center gap-2">
           <ImageThumbnail
-            src={reservation.listItem.item?.image?.urls.sm ?? reservation.listItem.item?.imageUrl ?? null}
-            fullSrc={reservation.listItem.item?.image?.urls.lg ?? reservation.listItem.item?.imageUrl ?? null}
-            alt={reservation.listItem.name}
+            src={reservation.listItem.item.image?.urls.sm ?? reservation.listItem.item.imageUrl}
+            fullSrc={reservation.listItem.item.image?.urls.lg ?? reservation.listItem.item.imageUrl}
+            alt={reservation.listItem.item.name}
           />
-          <Link href={`/items?id=${reservation.listItem.itemId}`} className={LINK_CLASS}>
-            {reservation.listItem.name}
+          <Link href={`/items?id=${reservation.listItem.item.id}`} className={LINK_CLASS}>
+            {reservation.listItem.item.name}
           </Link>
         </div>
       ),

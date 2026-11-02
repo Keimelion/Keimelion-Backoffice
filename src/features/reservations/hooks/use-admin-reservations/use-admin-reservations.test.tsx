@@ -26,12 +26,17 @@ const MOCK_RESPONSE: Awaited<ReturnType<typeof listAdminReservations>> = {
       createdAt: '2024-02-01T00:00:00.000Z',
       listItem: {
         id: 'li-1',
-        itemId: '33333333-3333-4333-8333-333333333333',
-        name: 'Weighted blanket',
         quantityDesired: 3,
         item: {
+          id: '33333333-3333-4333-8333-333333333333',
+          name: 'Weighted blanket',
+          description: null,
           imageUrl: null,
+          imageId: null,
           image: null,
+          createdByUserId: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
         },
       },
       list: {
@@ -94,7 +99,7 @@ describe('useAdminReservations', () => {
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
-    expect(result.current.data?.items[0]?.listItem.name).toBe('Weighted blanket')
+    expect(result.current.data?.items[0]?.listItem.item.name).toBe('Weighted blanket')
     expect(listAdminReservations).toHaveBeenCalledWith({ page: 1, limit: 20 })
   })
 

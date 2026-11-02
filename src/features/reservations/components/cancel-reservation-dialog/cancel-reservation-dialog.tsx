@@ -48,7 +48,7 @@ export function CancelReservationDialog({
       title={t('reservations.cancel_dialog.title')}
       description={t('reservations.cancel_dialog.description', {
         reserver: reserverName,
-        item: reservation.listItem.name,
+        item: reservation.listItem.item.name,
       })}
       confirmLabel={t('reservations.cancel_dialog.confirm')}
       cancelLabel={t('reservations.cancel_dialog.cancel')}

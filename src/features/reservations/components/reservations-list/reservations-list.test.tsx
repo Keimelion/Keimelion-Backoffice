@@ -44,12 +44,17 @@ const BASE_RESERVATION: ApiAdminReservation = {
   createdAt: '2024-02-01T00:00:00.000Z',
   listItem: {
     id: 'li-1',
-    itemId: ITEM_ID,
-    name: 'Weighted blanket',
     quantityDesired: 3,
     item: {
+      id: ITEM_ID,
+      name: 'Weighted blanket',
+      description: null,
       imageUrl: null,
+      imageId: null,
       image: null,
+      createdByUserId: null,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
     },
   },
   list: {

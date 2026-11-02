@@ -16,16 +16,21 @@ const SORT_VALUES = SORTABLE_FIELDS.flatMap((field) =>
 ]
 
 const reservationListItemInnerItemSchema = z.object({
-  imageUrl: z.string().nullable().optional(),
-  image: apiImageDetailSchema.nullable().optional(),
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  imageUrl: z.string().nullable(),
+  imageId: z.string().nullable(),
+  image: apiImageDetailSchema.nullable(),
+  createdByUserId: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 const reservationListItemSummarySchema = z.object({
   id: z.string(),
-  itemId: z.string(),
-  name: z.string(),
   quantityDesired: z.number().int(),
-  item: reservationListItemInnerItemSchema.optional(),
+  item: reservationListItemInnerItemSchema,
 })
 
 const reservationListSummarySchema = z.object({
