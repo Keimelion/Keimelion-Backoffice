@@ -1,5 +1,20 @@
 # Keimelion Backoffice — Claude context
 
+## Language — English only
+
+**Everything in this repo is written in English.** No French, no other language. This applies to every agent, subagent, and the main Claude — no exceptions.
+
+- **UI copy** — labels, buttons, headings, subtitles, toast messages, alt text, `sr-only` text, placeholders, `<title>`, meta descriptions, `<html lang="en">`
+- **Code** — identifiers, string constants, enum values, error messages, exceptions
+- **Comments and JSDoc** (rare per standards — but when present, English only)
+- **Git** — branch names, commit messages, PR titles, PR descriptions
+- **Notion tickets when written by an agent** — description, acceptance criteria, technical notes, comments
+- **Tests** — describe/it titles, assertion messages, fixture data
+
+If you catch French in a file you are editing (`Déconnexion`, `Tableau de bord`, `Utilisateurs`, comments in French, etc.), translate it as part of your change — do not leave it.
+
+The user is French-speaking and may write to you in French — respond in French in chat, but every artifact committed to the repo stays in English.
+
 ## Project
 
 Backoffice admin for Keimelion, a collaborative wishlist app. Built with Next.js (App Router) and TypeScript, consuming the Keimelion REST API.
@@ -30,13 +45,42 @@ Summary of rules that matter most in this codebase:
 - **`async/await` only** — no `.then()` / `.catch()`
 - **`??` over `||`** for nullish coalescing
 
+## User-facing strings — always i18n
+
+Every user-facing string in the Backoffice is rendered through `react-intl`. There is no hardcoded UI copy — page titles, labels, buttons, headers, placeholders, toast bodies, table columns, empty states, error messages, `aria-label`, and metadata all go through catalog keys.
+
+- **Library**: `react-intl` (FormatJS, ICU). Provider at `src/lib/i18n/i18n-provider/`, mounted inside `Providers` in `src/components/providers.tsx`.
+- **Catalogs**: split per-namespace under `src/lib/i18n/messages/{en,fr}/*.json` (`common.json`, `auth.json`, `dashboard.json`, `users.json`, `occasion-types.json`, `lists.json`, `products.json`, `sidebar.json`, `error.json`, `query.json`). Each locale is re-exported as a single flat catalog via `messages/en.ts` and `messages/fr.ts`, which spread the namespace files. Add a new string in the file that matches its namespace prefix — in BOTH locales.
+- **Key convention**: `<feature>.<component>.<purpose>` — e.g. `occasion_types.list.title`, `common.actions.retry`, `auth.login.email_placeholder`.
+- **Adding a new string**: add the key to BOTH `en.json` and `fr.json` in the same PR. A PR that ships a new English string without the French counterpart (or vice versa) is blocked.
+- **Interpolation**: use ICU syntax (`{name}`, `{count, plural, one {# user} other {# users}}`), never string concatenation.
+- **Rendering**: use the typed `useTranslate()` hook — `const t = useTranslate(); t('auth.login.title')`. The `id` parameter is typed as `MessageId` (derived from the catalog), so typos fail typecheck. Never call `useIntl()` directly outside `src/lib/i18n/`.
+- **Outside React**: for imperative contexts that have no `IntlProvider` (mutation callbacks, `queryClient` handlers, toast helpers), use `translate(id, values)` from `src/lib/i18n/translate.ts` — it reads the current locale from the Zustand store and runs a one-shot `createIntl()`.
+- **Tests**: wrap components in `IntlProvider` via `renderWithIntl` / `renderWithQueryClient` from `src/test/query-test-utils.tsx` — both already include the English catalog.
+- **Locale switching**: the `LocalePicker` in the dashboard header drives `useLocaleStore` (KEI-59). The `I18nProvider` re-reads the store, so switching locale re-renders the whole tree instantly. The persisted locale also flows to the API via the `Accept-Language` axios interceptor.
+- **Enforcement**: no ESLint rule is wired today. Reviewers must reject any PR that introduces a raw string in JSX or a hardcoded label passed to a prop — the string belongs in the catalog.
+
 ### React/Next.js additions
 
 - **Server Components by default** — add `'use client'` only when needed (event handlers, hooks, browser APIs)
 - **`React.JSX.Element` return type** on all components
 - **Props as interface** — `interface ComponentProps { ... }`, not inline type or `type`
 - **One component per file** — file name matches component name in kebab-case (`user-form.tsx` exports `UserForm`)
+- **Folder-per-component when 2+ files** — if a component has more than one file (a `.tsx` plus `.test.tsx`, `.scss`, `.stories.tsx`…), wrap them in a folder named after the component and add an `index.ts` that re-exports so imports stay short. Example: `components/ui/input/{input.tsx, input.scss, index.ts}` — imported as `@/components/ui/input`. Single-file components stay flat.
 - **Hooks prefix** — all custom hooks start with `use` (`useUsers`, `useLogin`)
+- **One form for create + update** — single component with a `mode: 'create' | 'edit'` discriminated union prop; never two parallel forms (`UserForm`, not `UserCreateForm` + `UserEditForm`). See `.claude/coding-standards.md` for the pattern; reference: `src/features/users/components/user-form/user-form.tsx`.
+
+### Review-learned pitfalls
+
+Rules distilled from past code reviews — follow unless there's an explicit reason to deviate.
+
+- **Mount only what the user sees.** `DataTable renderExpandedRow` content must not mount until the row is actually expanded — otherwise every row runs its hooks and queries while collapsed. The gating lives in `data-table.tsx` (`{isExpanded ? expandedContent : null}`); callers just return the JSX unconditionally. Same principle for tabs, accordions, modals, popovers: render inner trees only when active.
+- **Prune transient `Set`/`Map` state when its source list changes.** Local sets like `expandedIds` or `selectedIds` must drop entries that no longer exist in the current page/filter — otherwise they leak across pagination/search and resurrect stale items. Use a `useEffect` keyed on the visible-id set.
+- **Nullable id → sentinel queryKey + `enabled: false`.** Never do `useQuery({ queryKey: [..., id ?? ''], enabled: id !== null })`: the empty-string fallback collides across every call site that passes `null`, and would hit real routes if `enabled` ever flips. Pattern: `queryKey: id === null ? [...KEY, 'detail', null] : build(id)`.
+- **Zod schemas with "at least one of X / Y" must `superRefine`.** When several fields are each nullable but the record is meaningless with all of them null (e.g., `shopId | sourceUrl` on an item source), add a `superRefine` that enforces the invariant. A schema that happily parses an all-null record is a client-side bug waiting for a server 4xx.
+- **Required form fields: `<FormLabel required>` is sufficient.** `FormControl` picks up requiredness via `FormItemContext` and sets `aria-required` on the input automatically. Don't duplicate the asterisk manually or add `sr-only "required"` text — that pollutes the input's accessible name and breaks `getByLabelText` tests.
+- **Cap concurrent pending editor rows.** When a feature lets the user append new rows that each mount their own `useForm` + data queries (sources manager, image gallery editor, …), allow at most one unsaved pending row at a time — not an unbounded array the user can stack to N instances. Hide the "Add" button while a pending row is open.
+- **Keep `INTERACTIVE_TARGET_SELECTOR` in sync.** `DataTable`'s row-click handler skips clicks whose target closes to `button, a, input, select, textarea, label, [role="button"|"link"|"menuitem"|"option"]`. Any new interactive descendant inside a clickable row (dropdown items, custom chips, labels wrapping inputs…) must be covered — otherwise clicking it double-fires row click.
 
 ## Project structure
 
@@ -48,9 +92,15 @@ src/
   components/
     ui/                 # shadcn/ui generated components — do not edit manually
     shared/             # Reusable app-level components (sidebar, page-header, data-table…)
-  data-access/          # All API calls — mirrors db/entities/ in the API
+  data-access/          # All API calls — mirrors db/ in the API
+    _shared/            # Shared infra used across resources (not itself a resource)
+      client.ts         # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
+      auth-storage.ts   # Token + user + session-cookie storage — used by client, middleware, hooks
+      list-query.ts     # buildListSearchParams helper — pagination + config-driven filter loop
+      schemas/          # Cross-resource Zod schemas (user.ts, admin-user.ts…)
     auth/
       auth.api.ts       # loginApi(), logoutApi(), registerApi()
+      auth.schemas.ts   # Zod schemas for the auth endpoints (loginInputSchema, loginResponseSchema…)
     users/
       users.api.ts      # fetchUsers(), fetchUser(), updateUser(), deleteUser()
   features/             # Feature logic: TanStack Query hooks + feature-specific components
@@ -61,9 +111,16 @@ src/
       components/       # UsersTable, UserForm, etc.
       hooks/            # useUsers, useUser, useUpdateUser, useDeleteUser
   lib/
-    api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
-    query-client.ts     # TanStack Query client configuration
-  types/                # Local-only types (nav items, UI state…)
+    query-client.ts     # TanStack Query client configuration + global mutation error toast
+    i18n/               # Client-side i18n infrastructure
+      locale.ts         # LOCALES, Locale, DEFAULT_LOCALE, LOCALE_NATIVE_NAMES
+      locale-store.ts   # Zustand store (locale + setLocale + resolveInitialLocale)
+      resolve-locale.ts # Boot-time resolution: localStorage → navigator.language → 'en'
+      i18n-provider/    # <I18nProvider /> wrapping the app with react-intl's IntlProvider
+      messages/         # Catalogs: en/*.json + fr/*.json namespace files, merged via en.ts and fr.ts
+  proxy.ts              # Edge proxy entry (Next.js 16 — formerly middleware.ts). Next.js requires this exact path. Keep thin: composes helpers from middlewares/
+  middlewares/          # Individual middleware helpers, each returns NextResponse | null (null = pass through)
+    require-session.ts  # Gates dashboard routes on the session cookie
 ```
 
 ### data-access/ layer
@@ -71,7 +128,10 @@ src/
 `data-access/` is the direct equivalent of `db/entities/` in the API:
 - Each file exports plain async functions that call the API — no TanStack Query, no hooks
 - Functions return the raw API response type (`Promise<PaginatedResponse<ApiUser>>`, etc.)
-- All API call logic lives here; features never call `fetch` or `api-client` directly
+- All API call logic lives here; features never call `fetch` or `_shared/client` directly
+- **Schemas colocated**: `<resource>.schemas.ts` next to `<resource>.api.ts` for the endpoint I/O Zod schemas (input + response)
+- **Shared schemas**: reused across resources go in `data-access/_shared/schemas/` (e.g. `schemas/user.ts` — used by `auth.schemas.ts`, `_shared/auth-storage.ts`, and any future admin endpoint)
+- **`_shared/`** groups every non-resource helper (client, storage, list-query, cross-resource schemas). The `_` prefix marks it as shared infra, not a resource
 
 ### features/ layer
 

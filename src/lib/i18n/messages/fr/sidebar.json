@@ -1,0 +1,12 @@
+{
+  "sidebar.nav.dashboard": "Tableau de bord",
+  "sidebar.nav.lists": "Listes",
+  "sidebar.nav.items": "Articles",
+  "sidebar.nav.shops": "Boutiques",
+  "sidebar.nav.categories": "Catégories",
+  "sidebar.nav.tags": "Étiquettes",
+  "sidebar.nav.users": "Utilisateurs",
+  "sidebar.nav.occasion_types": "Types d'occasion",
+  "sidebar.nav.feedback": "Retours",
+  "sidebar.nav.reservations": "Réservations"
+}

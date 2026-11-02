@@ -1,0 +1,90 @@
+import { UserRoles } from '@keimelion/api/shared/enums/user-role'
+import type { UserRole } from '@keimelion/api/shared/enums/user-role'
+import { apiUserSchema, type ApiUser } from '@/data-access/_shared/user'
+
+const ACCESS_TOKEN_KEY = 'keimelion_access_token'
+const REFRESH_TOKEN_KEY = 'keimelion_refresh_token'
+const STORED_USER_KEY = 'keimelion_user'
+export const SESSION_COOKIE_NAME = 'keimelion_session'
+const SESSION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
+
+const ALLOWED_BACKOFFICE_ROLES: readonly UserRole[] = [UserRoles.ADMIN, UserRoles.MODERATOR]
+
+export function isAllowedBackofficeRole(role: string): boolean {
+  return (ALLOWED_BACKOFFICE_ROLES as readonly string[]).includes(role)
+}
+
+export function isAdmin(role: string): boolean {
+  return role === UserRoles.ADMIN
+}
+
+function buildCookieFlags(): string {
+  const secureFlag = window.location.protocol === 'https:' ? '; secure' : ''
+  return `path=/; samesite=lax${secureFlag}`
+}
+
+function writeSessionCookie(role: string): void {
+  document.cookie = `${SESSION_COOKIE_NAME}=${role}; ${buildCookieFlags()}; max-age=${String(SESSION_COOKIE_MAX_AGE_SECONDS)}`
+}
+
+function deleteSessionCookie(): void {
+  document.cookie = `${SESSION_COOKIE_NAME}=; ${buildCookieFlags()}; max-age=0`
+}
+
+export function getAccessToken(): string | null {
+  return localStorage.getItem(ACCESS_TOKEN_KEY)
+}
+
+export function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_TOKEN_KEY)
+}
+
+export function getStoredUser(): ApiUser | null {
+  const raw = localStorage.getItem(STORED_USER_KEY)
+  if (!raw) return null
+
+  try {
+    const parsed = apiUserSchema.safeParse(JSON.parse(raw))
+    if (!parsed.success) {
+      localStorage.removeItem(STORED_USER_KEY)
+      return null
+    }
+    return parsed.data
+  } catch {
+    localStorage.removeItem(STORED_USER_KEY)
+    return null
+  }
+}
+
+export function saveSession(accessToken: string, refreshToken: string, user: ApiUser): void {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+  localStorage.setItem(STORED_USER_KEY, JSON.stringify(user))
+  writeSessionCookie(user.role)
+}
+
+export function rotateTokens(accessToken: string, refreshToken: string): void {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+}
+
+export function updateStoredUser(user: ApiUser): void {
+  localStorage.setItem(STORED_USER_KEY, JSON.stringify(user))
+  writeSessionCookie(user.role)
+}
+
+export function clearSession(): void {
+  localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(REFRESH_TOKEN_KEY)
+  localStorage.removeItem(STORED_USER_KEY)
+  deleteSessionCookie()
+}
+
+export function syncSessionCookie(): void {
+  const user = getStoredUser()
+  if (user && isAllowedBackofficeRole(user.role)) {
+    writeSessionCookie(user.role)
+    return
+  }
+  deleteSessionCookie()
+}

@@ -1,6 +1,6 @@
 # Coding Standards — Keimelion Backoffice
 
-These standards apply to all TypeScript source code in the Backoffice. The Dev agent follows them when implementing; the Lead Dev agent enforces them during code review.
+These standards apply to all TypeScript source code in the Backoffice. The Dev agent follows them when implementing and enforces them during its own self-review pass.
 
 They are shared with the Keimelion API. Rules that only apply on the backend (Drizzle repositories, Hono routes) are omitted here. React/Next-specific rules are appended at the end.
 
@@ -161,7 +161,7 @@ Exception: well-known, unambiguous domain acronyms (`id`, `url`, `uuid`, `http`,
 
 ## No comments — self-explaining names
 
-A comment is a sign that the code needs a better name. Rename the function or variable instead of annotating it.
+If you feel the need to explain what code does, the code is wrong. Rename functions, variables, or extract a helper — never annotate. This applies to "what" comments *and* "why" comments: a block explaining why we call `clearSession()` after a reset should be replaced by a named helper like `wipeSessionForRefreshedAuth()`, not documented in prose.
 
 ```typescript
 // ❌
@@ -178,6 +178,8 @@ if (isListOwnedByUser(list, currentUser.id)) { ... }
 The only acceptable comments are:
 - Workarounds for external library bugs (with a link to the issue)
 - Non-obvious legal or compliance requirements
+
+JSDoc is not exempt — a JSDoc block on `useCurrentUser` that says "Read the current user from the TanStack Query cache" is exactly the case to delete. The identifier already carries that meaning.
 
 ---
 
@@ -284,6 +286,20 @@ if (item.status === ItemStatuses.RESERVED) { ... }
 ```
 
 Enums shared with the API come from `@keimelion/api/shared/enums/*` — never redeclare them locally. See CLAUDE.md → *Type sharing with the API* for the list of safe imports.
+
+When a dedicated helper exists for a specific enum check (e.g. `isAdmin(role)` in `data-access/_shared/auth-storage`), prefer it over an inline enum comparison — it centralises the semantic and reads better at the call site. Only fall back to `role === UserRoles.ADMIN` when no helper exists yet.
+
+```typescript
+// ❌ — magic string
+if (currentRole === 'admin') { ... }
+
+// ⚠️ — enum comparison, acceptable if no helper exists
+if (currentRole === UserRoles.ADMIN) { ... }
+
+// ✅ — dedicated helper
+import { isAdmin } from '@/data-access/_shared/auth-storage'
+if (currentRole !== null && isAdmin(currentRole)) { ... }
+```
 
 ---
 
@@ -533,6 +549,36 @@ function DeleteUserButton({ onConfirm, onCancel }: DeleteUserButtonProps): React
 
 ---
 
+## Prefer inline over premature dispatchers
+
+A `Record<K, V>` lookup table, a helper function, or a config object is worth its abstraction only when it removes real duplication. A 2-entry dispatcher for two mutually-exclusive branches is not real duplication — it is ceremony.
+
+```typescript
+// ❌ — two entries, two lookups, two indirections for two cases
+const REASON_TOASTS: Record<string, { message: string; id: string }> = {
+  'invalid-link': { message: 'This reset link is invalid…', id: 'reset-link-invalid' },
+  'expired-link': { message: 'This reset link has expired…', id: 'reset-link-expired' },
+}
+const entry = REASON_TOASTS[reason ?? '']
+if (entry) notify.error(entry.message, { persistent: true, id: entry.id })
+
+// ✅ — inline the pair, or better: encode the message directly in the URL and read it back
+const message = searchParams.get('notice')
+if (message) notify.error(message, { persistent: true, id: message })
+```
+
+Prefer the direct form until the case count justifies the table (typically 4+ genuinely-similar cases). "We might add more later" is not a reason.
+
+---
+
+## Delete unused exports — do not hoard scaffolding
+
+An export with no consumer is dead code, even if it looks like it *might* be needed later. Delete it; recreate it when the actual consumer arrives. Git history is the scaffolding archive — the working tree is not.
+
+The exception is a public API surface with external consumers outside the repo (this project has none).
+
+---
+
 ## Private helpers — ordering within the private section
 
 Within the private section of a file (after all exported functions and components), order helpers in the order they are first called — top to bottom mirrors the call flow.
@@ -614,6 +660,19 @@ export function useUsers(page: number): ReturnType<typeof useQuery<PaginatedResp
   })
 }
 ```
+
+## One form component for create + update
+
+When a resource needs both a create and an edit form, write a **single component** with a `mode: 'create' | 'edit'` discriminated union prop. Never split into two parallel components — the shared shell (`<Form>`, `handleSubmit`, dirty-state effect, root-error rendering, submit button) and the shared field JSX dwarf the mode-specific parts. Splitting also doubles the surface for later drift.
+
+- Type the internal `useForm` on the **create shape** (the superset). In edit mode, `defaultValues` come from the resource prop; extract the subset at submit (`{ role: submitted.role }`).
+- Use the create schema as the resolver so field-level validation still runs. Gate the submit button by picking the appropriate schema in the `isFormValid` computation (`isEdit ? updateSchema.safeParse({ role }).success : createSchema.safeParse(values).success`).
+- Render create-only fields under `{isEdit ? null : (<>...</>)}`; edit-only affordances (like a role-change warning) under `{isEdit && isDirty ? ... : null}`.
+- Inline the submit label ternary in the button JSX — don't extract a `resolveSubmitLabel` helper (see the "Prefer inline over premature dispatchers" rule above).
+
+Reference implementations: `src/features/users/components/user-form/user-form.tsx` and `src/features/occasion-types/components/occasion-type-form/occasion-type-form.tsx`.
+
+---
 
 ## `data-access/` never touches React
 

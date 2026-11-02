@@ -50,30 +50,36 @@ npx shadcn add <component-name>
 | Theme | [next-themes](https://github.com/pacocoursey/next-themes) — light / dark / system |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com) |
 | Font | [Inter](https://fonts.google.com/specimen/Inter) via `next/font` |
+| HTTP client | [axios](https://axios-http.com) — shared instance with auth + `Accept-Language` interceptors |
 | Data fetching | [TanStack Query v5](https://tanstack.com/query) |
+| Client state | [Zustand](https://zustand-demo.pmnd.rs) — locale store |
 | Validation | [Zod](https://zod.dev) |
+| Tests | [Vitest](https://vitest.dev) + [React Testing Library](https://testing-library.com/react) — jsdom |
 
 ---
 
 ## Design system
 
-Design tokens live in `src/app/globals.css` as Tailwind v4 `@theme` variables, with `.dark` overrides for dark mode.
+Design tokens live in **`src/styles/_tokens.scss`** as the single source of truth — brand palette, neutral scale (stone), semantic maps for light + dark modes, and notification variant colors. `src/styles/theme.scss` reads those maps and emits `:root {}` + `.dark {}` CSS custom properties, which Tailwind consumes via `@theme inline` in `src/app/globals.css`. Component SCSS files (`sonner.scss`, etc.) `@use` the partial to reference the same SCSS values (e.g. `$variants` map for toast colors) — one place to change a color, everything downstream stays in sync.
 
 ### Brand palette (Refreshing Summer Fun)
 
 | Token | Hex | Usage |
 |---|---|---|
-| `brand-sky` | `#8ecae6` | Light accent |
-| `brand-teal` | `#219ebc` | Secondary accent |
 | `brand-navy` | `#023047` | Deep accent — used as `--primary-foreground` |
 | `brand-amber` | `#ffb703` | **Primary** — buttons, active states, focus rings |
-| `brand-tiger` | `#fb8500` | Warm accent |
 
-Use semantic tokens for interactive elements — `bg-primary`, `text-primary-foreground`, `border-border`, `bg-destructive`, etc. — and the raw brand tokens (`bg-brand-teal`, `text-brand-navy`…) for one-off accents.
+The full 5-color palette (adding `brand-sky #8ecae6`, `brand-teal #219ebc`, `brand-tiger #fb8500`) is available in the design system doc — re-expose as CSS vars + `@theme inline` when a use case appears.
+
+Use semantic tokens for interactive elements — `bg-primary`, `text-primary-foreground`, `border-border`, `bg-destructive`, etc. — and the raw brand tokens (`bg-brand-amber`, `text-brand-navy`) for one-off accents.
 
 ### Dark mode
 
 Toggle in the topbar swaps light ↔ dark via the [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) (cross-fade) with a CSS fallback for Firefox. Default is `system`.
+
+### Internationalization
+
+Locale picker in the topbar (🇫🇷 Français / 🇬🇧 English). Selection is persisted to `localStorage['keimelion.locale']` and exposed via a Zustand store consumed both by React components and by the shared axios instance, which attaches `Accept-Language: <locale>` to every outbound request. TanStack Query keys include the locale so switching languages triggers automatic refetches. Initial locale resolves from storage first, then `navigator.language`, falling back to `en`. Supported locales are defined once in the API (`@keimelion/api/shared/enums/locale`) and re-exported from `src/lib/i18n/locale.ts`.
 
 ---
 
@@ -82,22 +88,36 @@ Toggle in the topbar swaps light ↔ dark via the [View Transitions API](https:/
 ```
 src/
 ├── app/                    # Next.js App Router — pages and layouts only
-│   ├── (auth)/             # Route group: unauthenticated pages (login…)
-│   └── (dashboard)/        # Route group: dashboard, lists, products, users
+│   ├── (auth)/             # Route group: unauthenticated pages (login, register, reset-password)
+│   └── (dashboard)/        # Route group: authenticated pages with sidebar
 ├── components/
 │   ├── ui/                 # shadcn/ui generated components (do not edit)
-│   └── shared/             # sidebar, theme-toggle, user-menu…
-├── data-access/            # All API calls — one folder per resource
-│   ├── auth/               # loginApi, logoutApi, registerApi
+│   └── shared/             # sidebar, user-menu, theme-toggle, locale-picker, page-header, data-table…
+├── data-access/            # All API calls — mirrors db/ in the API
+│   ├── _shared/            # Shared infra (the `_` prefix marks non-resource helpers)
+│   │   ├── axios/          # Shared axios instance — auth bearer + Accept-Language interceptors, 401 refresh retry
+│   │   ├── auth-storage/   # Access token, refresh token, current user, session cookie
+│   │   ├── api-error.ts    # ApiRequestError class thrown by the axios response interceptor
+│   │   ├── parse-response/ # Zod-validated response parser
+│   │   ├── query-params/   # buildListSearchParams — pagination + filter serialization
+│   │   └── user.ts         # Shared ApiUser type (mirrors API BaseUser with string dates)
+│   ├── auth/               # loginApi, logoutApi, registerApi, refresh
+│   ├── occasion-types/     # fetchOccasionTypes
 │   └── users/              # fetchUsers, fetchUser, updateUser, deleteUser
-├── features/               # Feature modules (hooks + feature-specific components)
+├── features/               # Feature modules — TanStack Query hooks + feature-specific components
 │   ├── auth/
+│   ├── occasion-types/
 │   └── users/
 ├── lib/
-│   ├── api-client.ts       # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
-│   ├── query-client.ts     # TanStack Query client configuration
+│   ├── i18n/               # Locale primitives, resolver, Zustand store (see Internationalization above)
+│   ├── query-client.ts     # TanStack Query client + global mutation error toast
+│   ├── notify.ts           # Shared toast helpers (success / error / info)
+│   ├── format-date.ts      # Locale-aware date formatting
 │   └── utils.ts            # cn() — class-merge helper for shadcn components
-└── types/                  # Local-only types (navigation, UI state…)
+├── middleware.ts           # Edge middleware entry (Next.js requires this path); composes helpers from middlewares/
+├── middlewares/            # Individual middleware helpers (require-session.ts, …) — each returns NextResponse | null
+├── styles/                 # Design tokens (SCSS) → CSS custom properties consumed by Tailwind
+└── test/                   # Vitest setup + shared testing utilities (query-test-utils, …)
 ```
 
 ### data-access/ vs features/
@@ -125,25 +145,47 @@ Only import files with no Drizzle ORM dependencies (enums, `shared/types/api`). 
 ## Commands
 
 ```bash
-npm run dev       # Development server (hot reload)
-npm run build     # Production build
-npm run start     # Start production server
-npm run lint      # ESLint
-npm run format    # Prettier
+npm run dev         # Development server (hot reload, port 3001)
+npm run build       # Production build
+npm run start       # Start production server
+npm run lint        # ESLint
+npm run format      # Prettier
+npm test            # Vitest — single pass
+npm run test:watch  # Vitest — watch mode
 ```
 
 ---
 
 ## Commit convention
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/) — same convention as the API.
+Every commit — and every PR title — follows this pattern:
 
 ```
-<type>(<scope>): <message>
+<type>: <identifier> <short description> (<TICKET-ID>)
+```
 
-feat(users): add user detail page
-fix(auth): handle expired token redirect
-chore: update dependencies
+- `<type>` — [Conventional Commits](https://www.conventionalcommits.org/) type: `feat` / `fix` / `refactor` / `chore` / `docs` / `perf` / `test` / `style` / `build` / `ci`. **No scope in parens.**
+- `<identifier>` — the primary thing the commit touches. Pick the most specific form:
+  - Route path for page work: `/login`, `/users`, `/occasion-types`
+  - Component or feature name when no dedicated route: `LoginForm`, `Sidebar`, `LocalePicker`
+  - Folder or module path for infra work, prefixed with `_` when it lives under a `_shared` folder: `_i18n`, `_client`, `_auth-storage`, `styles/tokens`
+- `<short description>` — plain sentence, no period, no filler words
+- `<TICKET-ID>` — always at the end in parens: `(KEI-N)`
+
+Examples (from the git log):
+
+```
+feat: /login wire login form + client-side auth guard (KEI-41)
+feat: /occasion-types wire non-paginated list page (KEI-57)
+refactor: _client switch fetch wrapper to axios (KEI-56)
+feat: _auth-storage silent refresh token rotation (KEI-42)
+feat: _i18n send Accept-Language + user language picker (KEI-59)
+```
+
+Follow-up commits inside the same PR keep the parent identifier:
+
+```
+fix: _i18n hide active locale from picker dropdown (KEI-59)
 ```
 
 | Type | Usage |
@@ -154,4 +196,42 @@ chore: update dependencies
 | `chore` | Maintenance, dependencies, config |
 | `docs` | Documentation only |
 | `perf` | Performance improvement |
+| `test` | Adding or updating tests only |
+| `style` | Formatting / whitespace only |
+| `build` | Build system, dependencies |
 | `ci` | CI/CD |
+
+---
+
+## Claude Code — agent workflow
+
+Repo-tracked Claude Code configuration lives under `.claude/`. Feature tickets flow through a **single senior Dev agent** that owns the ticket end-to-end: implementation, architecture self-review, security audit, browser smoke test, PR, and Notion status updates. There is no separate Lead Dev / DevOps / Tester agent.
+
+| File | Purpose |
+|---|---|
+| `.claude/agents/dev.md` | The single dev agent — merged Dev + Lead Dev + DevOps + Tester responsibilities, with a self-review checklist |
+| `.claude/agents/po.md` | Product Owner — grooms Notion tickets from specs |
+| `.claude/agents/doc-writer.md` | Updates Notion spec pages after a feature is Validated |
+| `.claude/skills/build-feature/` | `/build-feature <ticket>` — delegates to the Dev end-to-end |
+| `.claude/skills/refine-ticket/` | `/refine-ticket <ticket>` — PO + Dev collaborative refinement |
+| `.claude/skills/apply-pr-review/` | `/apply-pr-review` — Dev applies (or pushes back on) PR review comments |
+| `.claude/skills/document-feature/` | `/document-feature` — sync Notion specs with the implementation |
+| `.claude/coding-standards.md` | Single source of truth for style rules the Dev follows and enforces |
+
+### Notion access — local REST wrapper
+
+The Dev agent does **not** use the Notion MCP server. All Notion interactions go through `scripts/notion/notion.mjs`, a zero-dependency Node ESM wrapper around the Notion REST API — cheaper per call and lighter on tool-definition context:
+
+```bash
+node scripts/notion/notion.mjs get-page <page-id>
+node scripts/notion/notion.mjs set-status <page-id> "In Progress"
+node scripts/notion/notion.mjs set-property <page-id> "PR URL" "https://…"
+node scripts/notion/notion.mjs add-comment <page-id> "…"
+```
+
+**Setup** (one time):
+1. Create an internal Notion integration at https://www.notion.so/profile/integrations
+2. Share every Notion database the agent reads or writes (backlog, features spec, MVP scope, architecture, conventions) with the integration
+3. Add `NOTION_TOKEN=secret_…` to `.env.local` — the wrapper auto-loads it from the CWD, no `export` needed
+
+The PO agent keeps its Notion MCP tools (used rarely, benefits from MCP's ergonomic search + create). Only the Dev is on the wrapper.

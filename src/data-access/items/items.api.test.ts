@@ -1,0 +1,389 @@
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+import MockAdapter from 'axios-mock-adapter'
+import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { axiosInstance } from '@/data-access/_shared/axios'
+import { ApiRequestError } from '@/data-access/_shared/api-error'
+import {
+  apiAdminItemSchema,
+  adminItemListResponseSchema,
+  createItemInputSchema,
+  listItemsQuerySchema,
+  updateItemInputSchema,
+} from './items.schemas'
+import {
+  createItem,
+  deleteItem,
+  fetchAdminItem,
+  listAdminItems,
+  updateItem,
+} from './items.api'
+
+const MOCK_SOURCE = {
+  id: 'src-1',
+  itemId: 'item-1',
+  shopId: null,
+  shop: null,
+  sourceUrl: 'https://example.com/p',
+  price: '19.99',
+  currency: 'EUR',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+}
+
+const MOCK_CATEGORY = {
+  id: '11111111-1111-4111-8111-111111111111',
+  parentId: null,
+  name: 'Food',
+  slug: 'food',
+  depth: 0,
+}
+
+const MOCK_ITEM = {
+  id: 'item-1',
+  name: 'Blanket',
+  description: null,
+  imageUrl: null,
+  createdByUserId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+  sources: [MOCK_SOURCE],
+  categories: [MOCK_CATEGORY],
+}
+
+describe('apiAdminItemSchema', () => {
+  it('parses a full item with sources and categories', () => {
+    const result = apiAdminItemSchema.safeParse(MOCK_ITEM)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.categories).toHaveLength(1)
+    expect(result.data.categories[0]?.slug).toBe('food')
+  })
+
+  it('fails when sources is missing', () => {
+    const result = apiAdminItemSchema.safeParse({ ...MOCK_ITEM, sources: undefined })
+    expect(result.success).toBe(false)
+  })
+
+  it('defaults categories to an empty array when the API omits it', () => {
+    const partialItem: Record<string, unknown> = { ...MOCK_ITEM }
+    delete partialItem.categories
+    const result = apiAdminItemSchema.safeParse(partialItem)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.categories).toEqual([])
+  })
+})
+
+describe('adminItemListResponseSchema', () => {
+  it('parses a valid list response', () => {
+    const raw = {
+      items: [MOCK_ITEM],
+      pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+    }
+    const result = adminItemListResponseSchema.safeParse(raw)
+    expect(result.success).toBe(true)
+  })
+})
+
+describe('listItemsQuerySchema', () => {
+  it('applies defaults for page and limit', () => {
+    const result = listItemsQuerySchema.safeParse({})
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.page).toBe(1)
+    expect(result.data.limit).toBe(20)
+  })
+
+  it('accepts a valid sort', () => {
+    const result = listItemsQuerySchema.safeParse({ sort: 'name:asc' })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects an unknown sort field', () => {
+    const result = listItemsQuerySchema.safeParse({ sort: 'description:asc' })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe('createItemInputSchema', () => {
+  const VALID_SOURCE = {
+    shopId: null,
+    sourceUrl: 'https://example.com/p',
+    price: '19.99',
+    currency: 'EUR',
+  }
+
+  const VALID_INPUT = {
+    name: 'Blanket',
+    description: null,
+    imageUrl: null,
+    sources: [VALID_SOURCE],
+  }
+
+  it('parses a valid input', () => {
+    const result = createItemInputSchema.safeParse(VALID_INPUT)
+    expect(result.success).toBe(true)
+  })
+
+  it('requires at least one source', () => {
+    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, sources: [] })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects an HTTP-only image URL', () => {
+    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, imageUrl: 'http://example.com/x.jpg' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects an HTTP-only source URL', () => {
+    const result = createItemInputSchema.safeParse({
+      ...VALID_INPUT,
+      sources: [{ ...VALID_SOURCE, sourceUrl: 'http://insecure.com/p' }],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects an unknown field (strict)', () => {
+    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, unknown: 'x' })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts up to two valid UUID categories', () => {
+    const result = createItemInputSchema.safeParse({
+      ...VALID_INPUT,
+      categories: [
+        '11111111-1111-4111-8111-111111111111',
+        '22222222-2222-4222-8222-222222222222',
+      ],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects more than two categories', () => {
+    const result = createItemInputSchema.safeParse({
+      ...VALID_INPUT,
+      categories: [
+        '11111111-1111-4111-8111-111111111111',
+        '22222222-2222-4222-8222-222222222222',
+        '33333333-3333-4333-8333-333333333333',
+      ],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects non-UUID category ids', () => {
+    const result = createItemInputSchema.safeParse({
+      ...VALID_INPUT,
+      categories: ['not-a-uuid'],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts an empty categories array', () => {
+    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, categories: [] })
+    expect(result.success).toBe(true)
+  })
+})
+
+describe('updateItemInputSchema', () => {
+  it('accepts partial updates', () => {
+    const result = updateItemInputSchema.safeParse({ name: 'New' })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects a sources field', () => {
+    const result = updateItemInputSchema.safeParse({
+      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts a categories-only patch', () => {
+    const result = updateItemInputSchema.safeParse({
+      categories: ['11111111-1111-4111-8111-111111111111'],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects more than two categories', () => {
+    const result = updateItemInputSchema.safeParse({
+      categories: [
+        '11111111-1111-4111-8111-111111111111',
+        '22222222-2222-4222-8222-222222222222',
+        '33333333-3333-4333-8333-333333333333',
+      ],
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe('listAdminItems', () => {
+  let mock: MockAdapter
+
+  beforeEach(() => {
+    mock = new MockAdapter(axiosInstance)
+    vi.clearAllMocks()
+  })
+
+  it('sends pagination, search and sort in the request', async () => {
+    mock.onGet('/admin/items').reply((config) => {
+      expect(config.params).toEqual({
+        page: '2',
+        limit: '10',
+        'name[ilike]': 'blanket',
+        sort: 'name:asc',
+        currency: 'EUR',
+      })
+      return [
+        HttpStatus.OK,
+        {
+          items: [MOCK_ITEM],
+          pagination: { page: 2, limit: 10, total: 1, totalPages: 1 },
+        },
+      ]
+    })
+
+    const response = await listAdminItems({
+      page: 2,
+      limit: 10,
+      search: 'blanket',
+      sort: 'name:asc',
+    })
+
+    expect(response.items).toHaveLength(1)
+  })
+
+  it('omits optional params when not set', async () => {
+    mock.onGet('/admin/items').reply((config) => {
+      expect(config.params).toEqual({ page: '1', limit: '20', currency: 'EUR' })
+      return [
+        HttpStatus.OK,
+        {
+          items: [],
+          pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+        },
+      ]
+    })
+
+    await listAdminItems({ page: 1, limit: 20 })
+  })
+})
+
+describe('fetchAdminItem', () => {
+  let mock: MockAdapter
+
+  beforeEach(() => {
+    mock = new MockAdapter(axiosInstance)
+  })
+
+  it('returns the item on success', async () => {
+    mock.onGet('/admin/items/item-1').reply(HttpStatus.OK, { item: MOCK_ITEM })
+    const item = await fetchAdminItem('item-1')
+    expect(item.id).toBe('item-1')
+  })
+})
+
+describe('createItem', () => {
+  let mock: MockAdapter
+
+  beforeEach(() => {
+    mock = new MockAdapter(axiosInstance)
+  })
+
+  it('returns the created item on success', async () => {
+    mock.onPost('/admin/items').reply(HttpStatus.CREATED, { item: MOCK_ITEM })
+    const item = await createItem({
+      name: 'Blanket',
+      description: null,
+      imageUrl: null,
+      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+    })
+    expect(item.name).toBe('Blanket')
+  })
+
+  it('forwards selected categories in the request body', async () => {
+    const CATEGORY_ONE = '11111111-1111-4111-8111-111111111111'
+    const CATEGORY_TWO = '22222222-2222-4222-8222-222222222222'
+    mock.onPost('/admin/items').reply((config) => {
+      const parsed = JSON.parse(config.data as string) as { categories?: string[] }
+      expect(parsed.categories).toEqual([CATEGORY_ONE, CATEGORY_TWO])
+      return [HttpStatus.CREATED, { item: MOCK_ITEM }]
+    })
+    await createItem({
+      name: 'Blanket',
+      description: null,
+      imageUrl: null,
+      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+      categories: [CATEGORY_ONE, CATEGORY_TWO],
+    })
+  })
+
+  it('throws ApiRequestError on 422', async () => {
+    mock.onPost('/admin/items').reply(HttpStatus.UNPROCESSABLE_ENTITY, {
+      code: 'UNPROCESSABLE_ENTITY',
+      message: 'Validation failed',
+    })
+    await expect(
+      createItem({
+        name: 'x',
+        description: null,
+        imageUrl: null,
+        sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+      }),
+    ).rejects.toBeInstanceOf(ApiRequestError)
+  })
+})
+
+describe('updateItem', () => {
+  let mock: MockAdapter
+
+  beforeEach(() => {
+    mock = new MockAdapter(axiosInstance)
+  })
+
+  it('returns the updated item on success', async () => {
+    mock.onPatch('/admin/items/item-1').reply(HttpStatus.OK, {
+      item: { ...MOCK_ITEM, name: 'Renamed' },
+    })
+    const item = await updateItem('item-1', { name: 'Renamed' })
+    expect(item.name).toBe('Renamed')
+  })
+
+  it('throws ApiRequestError on 404', async () => {
+    mock.onPatch('/admin/items/missing').reply(HttpStatus.NOT_FOUND, {
+      code: 'NOT_FOUND',
+      message: 'Not found',
+    })
+    await expect(updateItem('missing', { name: 'x' })).rejects.toBeInstanceOf(ApiRequestError)
+  })
+
+  it('forwards an empty categories array for "remove all"', async () => {
+    mock.onPatch('/admin/items/item-1').reply((config) => {
+      const parsed = JSON.parse(config.data as string) as { categories?: string[] }
+      expect(parsed.categories).toEqual([])
+      return [HttpStatus.OK, { item: MOCK_ITEM }]
+    })
+    await updateItem('item-1', { categories: [] })
+  })
+})
+
+describe('deleteItem', () => {
+  let mock: MockAdapter
+
+  beforeEach(() => {
+    mock = new MockAdapter(axiosInstance)
+  })
+
+  it('resolves on 200', async () => {
+    mock.onDelete('/admin/items/item-1').reply(HttpStatus.OK, { message: 'Item deleted' })
+    await expect(deleteItem('item-1')).resolves.toBeUndefined()
+  })
+
+  it('throws ApiRequestError on 409', async () => {
+    mock.onDelete('/admin/items/item-1').reply(HttpStatus.CONFLICT, {
+      code: 'CONFLICT',
+      message: 'Item referenced by list_items',
+    })
+    await expect(deleteItem('item-1')).rejects.toBeInstanceOf(ApiRequestError)
+  })
+})

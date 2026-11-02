@@ -1,0 +1,36 @@
+import type { MessageId } from './en'
+import auth from './fr/auth.json'
+import categories from './fr/categories.json'
+import common from './fr/common.json'
+import dashboard from './fr/dashboard.json'
+import errorMessages from './fr/error.json'
+import feedback from './fr/feedback.json'
+import items from './fr/items.json'
+import lists from './fr/lists.json'
+import occasionTypes from './fr/occasion-types.json'
+import profile from './fr/profile.json'
+import query from './fr/query.json'
+import reservations from './fr/reservations.json'
+import shops from './fr/shops.json'
+import sidebar from './fr/sidebar.json'
+import tags from './fr/tags.json'
+import users from './fr/users.json'
+
+export const frMessages = {
+  ...common,
+  ...auth,
+  ...dashboard,
+  ...users,
+  ...items,
+  ...occasionTypes,
+  ...lists,
+  ...shops,
+  ...categories,
+  ...tags,
+  ...profile,
+  ...sidebar,
+  ...feedback,
+  ...reservations,
+  ...errorMessages,
+  ...query,
+} satisfies Record<MessageId, string>

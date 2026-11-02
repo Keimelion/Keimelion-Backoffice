@@ -1,0 +1,5 @@
+{
+  "error.title": "Une erreur est survenue",
+  "error.description": "Une erreur inattendue s'est produite lors du chargement de cette page. Vous pouvez réessayer ou revenir plus tard.",
+  "error.try_again": "Réessayer"
+}

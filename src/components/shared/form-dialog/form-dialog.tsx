@@ -1,0 +1,78 @@
+'use client'
+
+import { useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { DiscardChangesDialog } from '@/components/shared/discard-changes-dialog'
+import { useTranslate } from '@/lib/i18n/use-translate'
+
+interface FormDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: string
+  isFormDirty: boolean
+  children: React.ReactNode
+}
+
+export function FormDialog({
+  open,
+  onOpenChange,
+  title,
+  isFormDirty,
+  children,
+}: FormDialogProps): React.JSX.Element {
+  const t = useTranslate()
+  const [isDiscardOpen, setIsDiscardOpen] = useState<boolean>(false)
+
+  function handleDialogOpenChange(nextOpen: boolean): void {
+    if (nextOpen) {
+      onOpenChange(true)
+      return
+    }
+    if (isFormDirty) {
+      setIsDiscardOpen(true)
+      return
+    }
+    onOpenChange(false)
+  }
+
+  function handleDiscard(): void {
+    onOpenChange(false)
+  }
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+        <DialogContent
+          className="flex max-h-[calc(100vh-2rem)] max-w-xl flex-col"
+          onInteractOutside={(event) => {
+            const originalEvent = event.detail.originalEvent
+            const target = originalEvent.target as HTMLElement | null
+            if (target !== null && target.closest('[data-radix-popper-content-wrapper]') !== null) {
+              event.preventDefault()
+            }
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+          <div className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6">{children}</div>
+        </DialogContent>
+      </Dialog>
+
+      <DiscardChangesDialog
+        open={isDiscardOpen}
+        onOpenChange={setIsDiscardOpen}
+        title={t('common.discard_changes.title')}
+        description={t('common.discard_changes.description')}
+        discardLabel={t('common.discard_changes.discard')}
+        keepLabel={t('common.discard_changes.keep')}
+        onDiscard={handleDiscard}
+      />
+    </>
+  )
+}

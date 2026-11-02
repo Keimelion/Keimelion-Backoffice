@@ -1,0 +1,28 @@
+name: Release
+
+# main only moves through release PRs (dev → main, merge commit): CI → semantic-release → deploy.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: Keimelion/Keimelion-Infra/.github/workflows/node-ci.yml@main
+
+  release:
+    needs: ci
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    uses: Keimelion/Keimelion-Infra/.github/workflows/release.yml@main
+    secrets: inherit
+
+  deploy:
+    needs: release
+    if: needs.release.outputs.published == 'true'
+    uses: Keimelion/Keimelion-Infra/.github/workflows/deploy.yml@main
