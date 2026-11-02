@@ -4,6 +4,7 @@
 
 FROM node:24-alpine AS deps
 WORKDIR /build/Keimelion-Backoffice
+ENV HUSKY=0
 COPY package.json package-lock.json ./
 RUN npm ci
 
