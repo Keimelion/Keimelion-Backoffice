@@ -167,9 +167,9 @@ function renderDataRows(
       <TableRow key={listItem.id} className="hover:bg-transparent">
         <TableCell className="w-14">
           <ImageThumbnail
-            src={listItem.image?.urls.sm ?? listItem.item.imageUrl}
+            src={listItem.item.image?.urls.sm ?? listItem.item.imageUrl}
             alt={listItem.item.name}
-            fullSrc={listItem.image?.urls.lg ?? listItem.item.imageUrl}
+            fullSrc={listItem.item.image?.urls.lg ?? listItem.item.imageUrl}
           />
         </TableCell>
         <TableCell>

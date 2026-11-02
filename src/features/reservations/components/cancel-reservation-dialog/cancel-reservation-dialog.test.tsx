@@ -30,7 +30,10 @@ const RESERVATION: ApiAdminReservation = {
     itemId: '33333333-3333-4333-8333-333333333333',
     name: 'Weighted blanket',
     quantityDesired: 3,
-    image: null,
+    item: {
+      imageUrl: null,
+      image: null,
+    },
   },
   list: {
     id: 'list-1',

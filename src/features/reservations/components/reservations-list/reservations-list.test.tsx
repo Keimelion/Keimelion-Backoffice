@@ -47,7 +47,10 @@ const BASE_RESERVATION: ApiAdminReservation = {
     itemId: ITEM_ID,
     name: 'Weighted blanket',
     quantityDesired: 3,
-    image: null,
+    item: {
+      imageUrl: null,
+      image: null,
+    },
   },
   list: {
     id: LIST_ID,

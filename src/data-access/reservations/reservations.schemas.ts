@@ -15,12 +15,17 @@ const SORT_VALUES = SORTABLE_FIELDS.flatMap((field) =>
   ...`${AdminReservationSortField}:${(typeof SORT_DIRECTIONS)[number]}`[],
 ]
 
+const reservationListItemInnerItemSchema = z.object({
+  imageUrl: z.string().nullable().optional(),
+  image: apiImageDetailSchema.nullable().optional(),
+})
+
 const reservationListItemSummarySchema = z.object({
   id: z.string(),
   itemId: z.string(),
   name: z.string(),
   quantityDesired: z.number().int(),
-  image: apiImageDetailSchema.nullable(),
+  item: reservationListItemInnerItemSchema.optional(),
 })
 
 const reservationListSummarySchema = z.object({

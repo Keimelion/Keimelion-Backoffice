@@ -124,8 +124,8 @@ function buildColumns(
       cell: (reservation) => (
         <div className="flex items-center gap-2">
           <ImageThumbnail
-            src={reservation.listItem.image?.urls.sm ?? null}
-            fullSrc={reservation.listItem.image?.urls.lg ?? null}
+            src={reservation.listItem.item?.image?.urls.sm ?? reservation.listItem.item?.imageUrl ?? null}
+            fullSrc={reservation.listItem.item?.image?.urls.lg ?? reservation.listItem.item?.imageUrl ?? null}
             alt={reservation.listItem.name}
           />
           <Link href={`/items?id=${reservation.listItem.itemId}`} className={LINK_CLASS}>
