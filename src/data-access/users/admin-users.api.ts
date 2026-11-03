@@ -17,9 +17,12 @@ export const ADMIN_USERS_QUERY_KEY = ['users'] as const
 export async function listUsers(
   input: Partial<ListUsersQuery>,
 ): Promise<PaginatedResponse<AdminApiUser>> {
-  const { id, ...rest } = input
+  const { id, email, username, role, ...rest } = input
   const params: Record<string, unknown> = buildQueryParams(rest)
   if (id !== undefined) params['id[eq]'] = id
+  if (email !== undefined && email.length > 0) params['email[ilike]'] = email
+  if (username !== undefined && username.length > 0) params['username[ilike]'] = username
+  if (role !== undefined) params['role[eq]'] = role
   const response = await axiosInstance.get<unknown>('/admin/users', { params })
   return parseApiResponse(listUsersResponseSchema, response, 'users')
 }
