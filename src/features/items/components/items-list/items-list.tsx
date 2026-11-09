@@ -14,7 +14,7 @@ import { ImageThumbnail } from '@/components/shared/image-thumbnail'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { listItemsQuerySchema, type ApiAdminItem } from '@/data-access/items/items.schemas'
+import { listItemsQuerySchema } from '@/features/items/items.input-schemas'
 import { useAdminItems } from '@/features/items/hooks/use-admin-items'
 import { CreateItemDialog } from '@/features/items/components/create-item-dialog'
 import { EditItemDialog } from '@/features/items/components/edit-item-dialog'
@@ -22,6 +22,7 @@ import { DeleteItemDialog } from '@/features/items/components/delete-item-dialog
 import { ItemSourcesManager } from '@/features/items/components/item-sources-manager'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminItemDetailParsed } from '@keimelion/sdk/schemas'
 
 const SEARCH_PARAM = 'search'
 const SORT_PARAM = 'sort'
@@ -34,8 +35,8 @@ export function ItemsList(): React.JSX.Element {
   const filters = useListSearchParams(listItemsQuerySchema)
 
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
-  const [editTarget, setEditTarget] = useState<ApiAdminItem | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<ApiAdminItem | null>(null)
+  const [editTarget, setEditTarget] = useState<AdminItemDetailParsed | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminItemDetailParsed | null>(null)
   const [expandedItemIds, setExpandedItemIds] = useState<Set<string>>(() => new Set())
 
   function toggleExpanded(itemId: string): void {
@@ -80,7 +81,7 @@ export function ItemsList(): React.JSX.Element {
     },
   ]
 
-  const columns = useMemo<DataTableColumn<ApiAdminItem>[]>(
+  const columns = useMemo<DataTableColumn<AdminItemDetailParsed>[]>(
     () => [
       {
         key: 'image',
@@ -88,8 +89,8 @@ export function ItemsList(): React.JSX.Element {
         className: 'w-14',
         cell: (item) => (
           <ImageThumbnail
-            src={item.image?.urls.sm ?? item.imageUrl}
-            fullSrc={item.image?.urls.lg ?? item.imageUrl}
+            src={item.image?.urls.sm ?? null}
+            fullSrc={item.image?.urls.lg ?? null}
             alt={item.name}
           />
         ),
@@ -165,12 +166,12 @@ export function ItemsList(): React.JSX.Element {
   )
 
   const renderExpandedRow = useMemo(
-    () => (item: ApiAdminItem) => <ItemSourcesManager item={item} />,
+    () => (item: AdminItemDetailParsed) => <ItemSourcesManager item={item} />,
     [],
   )
 
   const isRowExpanded = useMemo(
-    () => (item: ApiAdminItem) => expandedItemIds.has(item.id),
+    () => (item: AdminItemDetailParsed) => expandedItemIds.has(item.id),
     [expandedItemIds],
   )
 

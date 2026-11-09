@@ -5,7 +5,7 @@ import type { UseQueryResult } from '@tanstack/react-query'
 import { fetchOccasionTypes } from '@/data-access/occasion-types/occasion-types.api'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 import type { Locale } from '@/lib/i18n/locale'
-import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-types.schemas'
+import type { OccasionTypeSummaryParsed } from '@keimelion/sdk/schemas'
 
 export function buildOccasionTypesQueryKey(locale: Locale): ['occasion-types', 'list', Locale] {
   return ['occasion-types', 'list', locale]
@@ -17,7 +17,7 @@ interface UseOccasionTypesOptions {
 
 export function useOccasionTypes(
   options: UseOccasionTypesOptions = {},
-): UseQueryResult<ApiOccasionType[]> {
+): UseQueryResult<OccasionTypeSummaryParsed[]> {
   const locale = useLocaleStore((state) => state.locale)
   return useQuery({
     queryKey: buildOccasionTypesQueryKey(locale),

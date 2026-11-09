@@ -1,41 +1,51 @@
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { parseApiResponse } from '@/data-access/_shared/parse-response'
-import {
-  adminShopListResponseSchema,
-  adminShopMutationResponseSchema,
-  type AdminShop,
-  type CreateShopInput,
-  type ListShopsQuery,
-  type UpdateShopInput,
-} from './admin-shops.schemas'
+import type {
+  AdminShopsCreateRequestInput,
+  AdminShopsListResponseParsed,
+  AdminShopsUpdateRequestInput,
+  ShopDetailParsed,
+} from '@keimelion/sdk/schemas'
+import { apiClient } from '@/data-access/_shared/client'
+import { emptyToUndefined } from '@/data-access/_shared/query-params'
 
 export const SHOPS_QUERY_KEY = ['shops'] as const
 
-function buildListParams(input: Partial<ListShopsQuery>): Record<string, string> {
-  const params: Record<string, string> = {}
-  if (input.page !== undefined) params.page = String(input.page)
-  if (input.limit !== undefined) params.limit = String(input.limit)
-  if (typeof input.search === 'string' && input.search.length > 0) {
-    params['name[ilike]'] = input.search
-  }
-  if (input.isActive !== undefined) {
-    params['isActive[eq]'] = String(input.isActive)
-  }
-  if (input.isAffiliated !== undefined) {
-    params['isAffiliated[eq]'] = String(input.isAffiliated)
-  }
-  if (input.sort !== undefined) params.sort = input.sort
-  return params
+export interface ListAdminShopsParams {
+  page?: number | undefined
+  limit?: number | undefined
+  search?: string | undefined
+  isActive?: boolean | undefined
+  isAffiliated?: boolean | undefined
+  sort?: string | undefined
 }
 
 export async function listAdminShops(
-  input: Partial<ListShopsQuery>,
-): Promise<PaginatedResponse<AdminShop>> {
-  const response = await axiosInstance.get<unknown>('/admin/shops', {
-    params: buildListParams(input),
+  input: ListAdminShopsParams,
+): Promise<AdminShopsListResponseParsed> {
+  return apiClient.admin.shops.list({
+    page: input.page,
+    limit: input.limit,
+    sort: input.sort,
+    'name[ilike]': emptyToUndefined(input.search),
+    'isActive[eq]': input.isActive,
+    'isAffiliated[eq]': input.isAffiliated,
   })
-  return parseApiResponse(adminShopListResponseSchema, response, 'admin shops')
+}
+
+export async function createShop(input: AdminShopsCreateRequestInput): Promise<ShopDetailParsed> {
+  const { shop } = await apiClient.admin.shops.create(normalizeCreatePayload(input))
+  return shop
+}
+
+export async function updateShop(
+  id: string,
+  input: AdminShopsUpdateRequestInput,
+): Promise<ShopDetailParsed> {
+  const { shop } = await apiClient.admin.shops.update(id, normalizeUpdatePayload(input))
+  return shop
+}
+
+export async function deleteShop(id: string): Promise<void> {
+  await apiClient.admin.shops.delete(id)
 }
 
 function normalizeNullableString(value: string | null | undefined): string | null | undefined {
@@ -45,7 +55,7 @@ function normalizeNullableString(value: string | null | undefined): string | nul
   return trimmed.length > 0 ? trimmed : null
 }
 
-function normalizeCreatePayload(input: CreateShopInput): CreateShopInput {
+function normalizeCreatePayload(input: AdminShopsCreateRequestInput): AdminShopsCreateRequestInput {
   return {
     ...input,
     domain: input.domain === null ? null : normalizeNullableString(input.domain) ?? null,
@@ -53,8 +63,8 @@ function normalizeCreatePayload(input: CreateShopInput): CreateShopInput {
   }
 }
 
-function normalizeUpdatePayload(input: UpdateShopInput): UpdateShopInput {
-  const payload: UpdateShopInput = { ...input }
+function normalizeUpdatePayload(input: AdminShopsUpdateRequestInput): AdminShopsUpdateRequestInput {
+  const payload: AdminShopsUpdateRequestInput = { ...input }
   if ('domain' in input) {
     const normalized = normalizeNullableString(input.domain)
     if (normalized === undefined) delete payload.domain
@@ -66,20 +76,4 @@ function normalizeUpdatePayload(input: UpdateShopInput): UpdateShopInput {
     else payload.logoUrl = normalized
   }
   return payload
-}
-
-export async function createShop(input: CreateShopInput): Promise<AdminShop> {
-  const response = await axiosInstance.post<unknown>('/admin/shops', normalizeCreatePayload(input))
-  const parsed = parseApiResponse(adminShopMutationResponseSchema, response, 'admin shop')
-  return parsed.shop
-}
-
-export async function updateShop(id: string, input: UpdateShopInput): Promise<AdminShop> {
-  const response = await axiosInstance.patch<unknown>(`/admin/shops/${id}`, normalizeUpdatePayload(input))
-  const parsed = parseApiResponse(adminShopMutationResponseSchema, response, 'admin shop')
-  return parsed.shop
-}
-
-export async function deleteShop(id: string): Promise<void> {
-  await axiosInstance.delete<unknown>(`/admin/shops/${id}`)
 }

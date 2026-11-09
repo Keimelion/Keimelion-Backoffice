@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import {
   buildCategoryForest,
   buildParentPathLabel,
@@ -11,16 +10,17 @@ import {
   getSubtreeMaxDepth,
   type CategoryNode,
 } from './category-tree'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
-function makeCategory(id: string, parentId: string | null, name: string, depth: number): ApiCategory {
+function makeCategory(id: string, parentId: string | null, name: string, depth: number): AdminCategoryDetailParsed {
   return {
     id,
     parentId,
     translations: { en: name },
     slug: name.toLowerCase(),
     depth,
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
+    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   }
 }
 
@@ -30,7 +30,7 @@ const CHILD_B = makeCategory('child-b', 'root', 'Laptops', 1)
 const GRANDCHILD = makeCategory('grandchild', 'child-a', 'Smartphones', 2)
 const UNRELATED = makeCategory('unrelated', null, 'Books', 0)
 
-const CATEGORIES: ApiCategory[] = [ROOT, CHILD_A, CHILD_B, GRANDCHILD, UNRELATED]
+const CATEGORIES: AdminCategoryDetailParsed[] = [ROOT, CHILD_A, CHILD_B, GRANDCHILD, UNRELATED]
 
 describe('collectDescendantIds', () => {
   it('returns an empty set for a leaf category', () => {

@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input'
 import {
   forgotPasswordInputSchema,
   type ForgotPasswordInput,
-} from '@/data-access/auth/forgot-password'
+} from '@/features/auth/auth.input-schemas'
 import { NOTICE_PARAM, resolveNoticeMessageId } from '@/data-access/auth/notices'
 import { useForgotPassword } from '@/features/auth/hooks/use-forgot-password'
 import { useTranslate } from '@/lib/i18n/use-translate'

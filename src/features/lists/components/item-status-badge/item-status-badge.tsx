@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Clock, PackageCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ItemStatus } from '@keimelion/api/shared/enums/item-status'
+import type { ItemStatus } from '@keimelion/sdk/enums'
 import { Badge } from '@/components/ui/badge'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'

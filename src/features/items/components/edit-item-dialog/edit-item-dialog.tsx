@@ -2,27 +2,27 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { ErrorCode } from '@keimelion/sdk/enums'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { ItemForm } from '@/features/items/components/item-form'
 import type { ItemFormEditValues } from '@/features/items/components/item-form'
 import { ItemSourcesManager } from '@/features/items/components/item-sources-manager'
 import { useUpdateItem } from '@/features/items/hooks/use-admin-items'
 import { ItemReservationsSection } from '@/features/reservations/components/item-reservations-section'
-import type { ApiAdminItem, UpdateItemInput } from '@/data-access/items/items.schemas'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
+import { resolveImageUploadErrorMessageId } from '@/lib/resolve-image-upload-error'
 import { collapseTagsIssuePaths } from '@/lib/collapse-tags-issue-paths'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { ApiError } from '@keimelion/sdk/client'
+import type { AdminItemDetailParsed, AdminItemsUpdateRequestInput } from '@keimelion/sdk/schemas'
 
 const UPDATE_ITEM_ISSUE_PATHS = [
   'name',
   'description',
-  'imageUrl',
   'categories',
   'tags',
 ] as const
@@ -30,10 +30,10 @@ const UPDATE_ITEM_ISSUE_PATHS = [
 interface EditItemDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  item: ApiAdminItem
+  item: AdminItemDetailParsed
 }
 
-const EDITABLE_ITEM_FIELDS = ['name', 'description', 'imageUrl'] as const satisfies readonly (keyof ItemFormEditValues)[]
+const EDITABLE_ITEM_FIELDS = ['name', 'description'] as const satisfies readonly (keyof ItemFormEditValues)[]
 
 function haveSameUnorderedValues(
   before: readonly string[],
@@ -58,12 +58,12 @@ export function EditItemDialog({
     values: ItemFormEditValues,
     setError: UseFormSetError<ItemFormEditValues>,
   ): void {
-    const originalScalarFields: Pick<ItemFormEditValues, 'name' | 'description' | 'imageUrl'> = {
+    const originalScalarFields: Pick<ItemFormEditValues, 'name' | 'description'> = {
       name: item.name,
       description: item.description,
-      imageUrl: item.imageUrl,
     }
-    const patch: UpdateItemInput = pickChangedFields(
+    const image = values.image ?? null
+    const patch: AdminItemsUpdateRequestInput = pickChangedFields(
       originalScalarFields,
       values,
       EDITABLE_ITEM_FIELDS,
@@ -78,37 +78,44 @@ export function EditItemDialog({
     if (!haveSameUnorderedValues(originalTagNames, submittedTagNames)) {
       patch.tags = submittedTagNames
     }
+    if (values.clearImage === true && image === null) {
+      patch.clearImage = true
+    }
 
     mutation.mutate(
-      { id: item.id, input: patch },
+      { id: item.id, input: patch, image },
       {
         onSuccess: (updated) => {
           notifySuccess({ title: translate('items.mutation.updated_toast', { name: updated.name }) })
           onOpenChange(false)
         },
         onError: (error) => {
-          if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
+          if (error instanceof ApiError && error.status === HttpStatus.CONFLICT) {
             setError('name', { message: t('items.form.error.conflict') })
             return
           }
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && error.code === ErrorCode.CATEGORY_NOT_FOUND
           ) {
             setError('categories', { message: t('items.form.error.category_not_found') })
             return
           }
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && error.code === ErrorCode.TAG_INVALID_NAME
           ) {
             setError('tags', { message: t('items.form.error.tag_invalid_name') })
             return
           }
+          const imageErrorMessageId = resolveImageUploadErrorMessageId(error)
+          if (imageErrorMessageId !== null) {
+            setError('image', { message: t(imageErrorMessageId) })
+            return
+          }
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && error.code === ErrorCode.UNPROCESSABLE_ENTITY
-            && error.issues !== null
           ) {
             const appliedCount = applyApiValidationIssues(
               collapseTagsIssuePaths(error.issues),

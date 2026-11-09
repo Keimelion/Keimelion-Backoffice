@@ -1,37 +1,27 @@
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { parseApiResponse } from '@/data-access/_shared/parse-response'
-import {
-  itemSourceMutationResponseSchema,
-  type ApiItemSource,
-  type CreateItemSourceInput,
-  type UpdateItemSourceInput,
-} from './item-sources.schemas'
+import type {
+  AdminItemsCreateSourceRequestInput,
+  AdminItemsUpdateSourceRequestInput,
+  ItemSourceDetailParsed,
+} from '@keimelion/sdk/schemas'
+import { apiClient } from '@/data-access/_shared/client'
 
 export async function createItemSource(
   itemId: string,
-  input: CreateItemSourceInput,
-): Promise<ApiItemSource> {
-  const response = await axiosInstance.post<unknown>(
-    `/admin/items/${itemId}/sources`,
-    input,
-  )
-  const parsed = parseApiResponse(itemSourceMutationResponseSchema, response, 'item source')
-  return parsed.source
+  input: AdminItemsCreateSourceRequestInput,
+): Promise<ItemSourceDetailParsed> {
+  const { source } = await apiClient.admin.items.createSource(itemId, input)
+  return source
 }
 
 export async function updateItemSource(
   itemId: string,
   sourceId: string,
-  input: UpdateItemSourceInput,
-): Promise<ApiItemSource> {
-  const response = await axiosInstance.patch<unknown>(
-    `/admin/items/${itemId}/sources/${sourceId}`,
-    input,
-  )
-  const parsed = parseApiResponse(itemSourceMutationResponseSchema, response, 'item source')
-  return parsed.source
+  input: AdminItemsUpdateSourceRequestInput,
+): Promise<ItemSourceDetailParsed> {
+  const { source } = await apiClient.admin.items.updateSource(itemId, sourceId, input)
+  return source
 }
 
 export async function deleteItemSource(itemId: string, sourceId: string): Promise<void> {
-  await axiosInstance.delete<unknown>(`/admin/items/${itemId}/sources/${sourceId}`)
+  await apiClient.admin.items.deleteSource(itemId, sourceId)
 }

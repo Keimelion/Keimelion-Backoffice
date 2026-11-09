@@ -1,47 +1,52 @@
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { parseApiResponse } from '@/data-access/_shared/parse-response'
-import { buildQueryParams } from '@/data-access/_shared/query-params'
-import {
-  adminUserMutationResponseSchema,
-  listUsersResponseSchema,
-  type AdminApiUser,
-  type AdminUserMutationUser,
-  type CreateAdminUserInput,
-  type ListUsersQuery,
-  type UpdateAdminUserInput,
-} from './admin-users.schemas'
+import type { UserRole } from '@keimelion/sdk/enums'
+import type {
+  AdminUserDetailParsed,
+  AdminUsersCreateRequestInput,
+  AdminUsersListResponseParsed,
+  AdminUsersUpdateRequestInput,
+} from '@keimelion/sdk/schemas'
+import { apiClient } from '@/data-access/_shared/client'
+import { emptyToUndefined } from '@/data-access/_shared/query-params'
 
 export const ADMIN_USERS_QUERY_KEY = ['users'] as const
 
-export async function listUsers(
-  input: Partial<ListUsersQuery>,
-): Promise<PaginatedResponse<AdminApiUser>> {
-  const { id, email, username, role, ...rest } = input
-  const params: Record<string, unknown> = buildQueryParams(rest)
-  if (id !== undefined) params['id[eq]'] = id
-  if (email !== undefined && email.length > 0) params['email[ilike]'] = email
-  if (username !== undefined && username.length > 0) params['username[ilike]'] = username
-  if (role !== undefined) params['role[eq]'] = role
-  const response = await axiosInstance.get<unknown>('/admin/users', { params })
-  return parseApiResponse(listUsersResponseSchema, response, 'users')
+export interface ListUsersParams {
+  page?: number | undefined
+  limit?: number | undefined
+  id?: string | undefined
+  email?: string | undefined
+  username?: string | undefined
+  role?: UserRole | undefined
+  sort?: string | undefined
 }
 
-export async function createAdminUser(input: CreateAdminUserInput): Promise<AdminUserMutationUser> {
-  const response = await axiosInstance.post<unknown>('/admin/users', input)
-  const parsed = parseApiResponse(adminUserMutationResponseSchema, response, 'admin user')
-  return parsed.user
+export async function listUsers(input: ListUsersParams): Promise<AdminUsersListResponseParsed> {
+  return apiClient.admin.users.list({
+    page: input.page,
+    limit: input.limit,
+    sort: input.sort,
+    'id[eq]': input.id,
+    'email[ilike]': emptyToUndefined(input.email),
+    'username[ilike]': emptyToUndefined(input.username),
+    'role[eq]': input.role,
+  })
+}
+
+export async function createAdminUser(
+  input: AdminUsersCreateRequestInput,
+): Promise<AdminUserDetailParsed> {
+  const { user } = await apiClient.admin.users.create(input)
+  return user
 }
 
 export async function updateAdminUser(
   id: string,
-  input: UpdateAdminUserInput,
-): Promise<AdminUserMutationUser> {
-  const response = await axiosInstance.patch<unknown>(`/admin/users/${id}`, input)
-  const parsed = parseApiResponse(adminUserMutationResponseSchema, response, 'admin user')
-  return parsed.user
+  input: AdminUsersUpdateRequestInput,
+): Promise<AdminUserDetailParsed> {
+  const { user } = await apiClient.admin.users.update(id, input)
+  return user
 }
 
 export async function deleteAdminUser(id: string): Promise<void> {
-  await axiosInstance.delete<unknown>(`/admin/users/${id}`)
+  await apiClient.admin.users.delete(id)
 }

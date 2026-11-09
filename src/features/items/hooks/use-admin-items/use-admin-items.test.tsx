@@ -33,10 +33,11 @@ const MOCK_ITEM = {
   id: 'item-1',
   name: 'Blanket',
   description: null,
-  imageUrl: null,
+  imageId: null,
+  image: null,
   createdByUserId: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   sources: [],
   categories: [],
   tags: [],
@@ -102,10 +103,12 @@ describe('useCreateItem', () => {
       wrapper: createQueryClientWrapper(),
     })
     result.current.mutate({
-      name: 'New',
-      description: null,
-      imageUrl: null,
-      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+      input: {
+        name: 'New',
+        description: null,
+        sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+      },
+      image: null,
     })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
@@ -120,7 +123,7 @@ describe('useUpdateItem', () => {
     const { result } = renderHook(() => useUpdateItem(), {
       wrapper: createQueryClientWrapper(),
     })
-    result.current.mutate({ id: 'item-1', input: { name: 'Renamed' } })
+    result.current.mutate({ id: 'item-1', input: { name: 'Renamed' }, image: null })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })

@@ -10,10 +10,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useAdminReservations } from '@/features/reservations/hooks/use-admin-reservations'
-import type { ApiAdminReservation } from '@/data-access/reservations/reservations.schemas'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
+import type { AdminReservationDetailParsed } from '@keimelion/sdk/schemas'
+import { resolveReserverName } from '@/features/reservations/lib/resolve-reserver-name'
 
 const ITEM_RESERVATIONS_LIMIT = 50
 const SKELETON_ROW_COUNT = 2
@@ -78,7 +79,7 @@ function renderSkeletonRows(): React.ReactNode {
 }
 
 function renderRows(
-  reservations: ApiAdminReservation[],
+  reservations: AdminReservationDetailParsed[],
   t: TranslateFn,
 ): React.ReactNode {
   if (reservations.length === 0) {
@@ -96,11 +97,13 @@ function renderRows(
       <TableCell>
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-medium">
-            {reservation.user.username ?? reservation.user.email}
+            {resolveReserverName(reservation)}
           </span>
-          <span className="font-mono text-[10px] text-muted-foreground">
-            {reservation.user.id}
-          </span>
+          {reservation.user === null ? null : (
+            <span className="font-mono text-[10px] text-muted-foreground">
+              {reservation.user.id}
+            </span>
+          )}
         </div>
       </TableCell>
       <TableCell className="w-24 text-sm">{reservation.quantityBooked}</TableCell>

@@ -27,10 +27,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IconButton } from '@/components/shared/icon-button'
-import {
-  CATEGORY_MAX_ALLOWED_DEPTH,
-  type ApiCategory,
-} from '@/data-access/categories/categories.schemas'
+import { CATEGORY_MAX_ALLOWED_DEPTH } from '@/features/categories/categories.input-schemas'
 import {
   buildCategoryForest,
   collectAncestorIds,
@@ -51,12 +48,13 @@ import { notifyError, notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 const ROOT_DROP_ID = '__root__'
 const DRAG_ACTIVATION_DISTANCE_PX = 4
 
 interface CategoriesTreeProps {
-  categories: readonly ApiCategory[]
+  categories: readonly AdminCategoryDetailParsed[]
   isLoading: boolean
   error: Error | null
   revealParentId: string | null
@@ -64,8 +62,8 @@ interface CategoriesTreeProps {
   onRetry: () => void
   onCreate: () => void
   onAddChild: (parentId: string) => void
-  onEditCategory: (category: ApiCategory) => void
-  onDeleteCategory: (category: ApiCategory) => void
+  onEditCategory: (category: AdminCategoryDetailParsed) => void
+  onDeleteCategory: (category: AdminCategoryDetailParsed) => void
 }
 
 export function CategoriesTree({
@@ -303,7 +301,7 @@ export function CategoriesTree({
 }
 
 interface PendingMove {
-  category: ApiCategory
+  category: AdminCategoryDetailParsed
   newParentId: string | null
   currentParentName: string | null
   newParentName: string | null
@@ -377,8 +375,8 @@ interface TreeNodeProps {
   activeSubtreeMaxDepth: number
   activeOriginalDepth: number
   onAddChild: (parentId: string) => void
-  onEditCategory: (category: ApiCategory) => void
-  onDeleteCategory: (category: ApiCategory) => void
+  onEditCategory: (category: AdminCategoryDetailParsed) => void
+  onDeleteCategory: (category: AdminCategoryDetailParsed) => void
   isMutating: boolean
 }
 
@@ -547,7 +545,7 @@ function TreeNode({
   )
 }
 
-function DragGhost({ category }: { category: ApiCategory }): React.JSX.Element {
+function DragGhost({ category }: { category: AdminCategoryDetailParsed }): React.JSX.Element {
   const locale = useLocaleStore((state) => state.locale)
   return (
     <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-background px-3 py-1.5 shadow-lg">

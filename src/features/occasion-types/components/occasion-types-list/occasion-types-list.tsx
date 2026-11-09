@@ -4,9 +4,9 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { DataTable } from '@/components/shared/data-table'
 import type { DataTableColumn } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
-import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-types.schemas'
 import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-types'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { OccasionTypeSummaryParsed } from '@keimelion/sdk/schemas'
 
 const SKELETON_ROW_COUNT = 5
 
@@ -15,7 +15,7 @@ export function OccasionTypesList(): React.JSX.Element {
   const occasionTypesQuery = useOccasionTypes()
   const data = occasionTypesQuery.data ?? []
 
-  const occasionTypesColumns: DataTableColumn<ApiOccasionType>[] = [
+  const occasionTypesColumns: DataTableColumn<OccasionTypeSummaryParsed>[] = [
     {
       key: 'emoji',
       header: t('occasion_types.table.column.emoji'),

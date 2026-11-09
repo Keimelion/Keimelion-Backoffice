@@ -1,14 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest'
-import MockAdapter from 'axios-mock-adapter'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
-import {
-  apiAdminListSchema,
-  adminListListResponseSchema,
-  listListsQuerySchema,
-  updateListInputSchema,
-} from './lists.schemas'
+import { afterEach, describe, expect, it, beforeEach } from 'vitest'
+import { useCurrencyStore } from '@/lib/i18n/currency-store'
+import { createApiMock, type ApiMock } from '@/test/api-mock'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import {
   deleteList,
   fetchAdminList,
@@ -17,6 +10,7 @@ import {
   restoreList,
   updateList,
 } from './lists.api'
+import { ApiError } from '@keimelion/sdk/client'
 
 const LIST_ID = '11111111-1111-4111-8111-111111111111'
 const OWNER_ID = '22222222-2222-4222-8222-222222222222'
@@ -28,7 +22,9 @@ const MOCK_OWNER = {
   username: 'owner',
   authProvider: 'email' as const,
   role: 'user' as const,
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
+  defaultCurrency: 'EUR' as const,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
@@ -56,8 +52,8 @@ const MOCK_LIST = {
 }
 
 const MOCK_SOURCE = {
-  id: 'src-1',
-  itemId: 'item-1',
+  id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+  itemId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   shopId: null,
   shop: null,
   sourceUrl: 'https://example.com/p',
@@ -68,9 +64,9 @@ const MOCK_SOURCE = {
 }
 
 const MOCK_LIST_ITEM = {
-  id: 'li-1',
+  id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
   listId: LIST_ID,
-  itemId: 'item-1',
+  itemId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   quantityDesired: 1,
   quantityReservedTotal: 0,
   itemStatus: 'available' as const,
@@ -79,133 +75,72 @@ const MOCK_LIST_ITEM = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   item: {
-    id: 'item-1',
+    id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     name: 'Blanket',
     description: null,
-    imageUrl: null,
+    imageId: null,
+    image: null,
     createdByUserId: null,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
+    sources: [],
+    categories: [],
+    tags: [],
   },
   sources: [MOCK_SOURCE],
   averagePrice: '19.99',
   displayCurrency: 'EUR' as const,
 }
 
-describe('apiAdminListSchema', () => {
-  it('parses a full list with aggregates', () => {
-    const result = apiAdminListSchema.safeParse(MOCK_LIST)
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.itemCount).toBe(3)
-    expect(result.data.totalEstimatedPrice).toBe('42.00')
+describe('display currency', () => {
+  let mock: ApiMock
+
+  beforeEach(() => {
+    useCurrencyStore.setState({ currency: 'JPY' })
+    mock = createApiMock()
   })
 
-  it('fails when itemCount is missing', () => {
-    const result = apiAdminListSchema.safeParse({ ...MOCK_LIST, itemCount: undefined })
-    expect(result.success).toBe(false)
+  afterEach(() => {
+    useCurrencyStore.setState({ currency: 'EUR' })
+    mock.restore()
   })
 
-  it('accepts a null totalEstimatedPrice', () => {
-    const result = apiAdminListSchema.safeParse({ ...MOCK_LIST, totalEstimatedPrice: null })
-    expect(result.success).toBe(true)
-  })
-
-  it('defaults tags to an empty array when the API omits it', () => {
-    const payload: Record<string, unknown> = { ...MOCK_LIST }
-    delete payload.tags
-    const result = apiAdminListSchema.safeParse(payload)
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.tags).toEqual([])
-  })
-})
-
-describe('adminListListResponseSchema', () => {
-  it('parses a valid list response', () => {
-    const raw = {
-      items: [MOCK_LIST],
-      pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
-    }
-    const result = adminListListResponseSchema.safeParse(raw)
-    expect(result.success).toBe(true)
-  })
-})
-
-describe('listListsQuerySchema', () => {
-  it('applies defaults for page and limit', () => {
-    const result = listListsQuerySchema.safeParse({})
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.page).toBe(1)
-    expect(result.data.limit).toBe(20)
-  })
-
-  it('accepts a valid sort', () => {
-    const result = listListsQuerySchema.safeParse({ sort: 'createdAt:desc' })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects a sort on a non-sortable field', () => {
-    const result = listListsQuerySchema.safeParse({ sort: 'listStatus:asc' })
-    expect(result.success).toBe(false)
-  })
-
-  it('accepts a listStatus filter', () => {
-    const result = listListsQuerySchema.safeParse({ listStatus: 'active' })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects an unknown listStatus', () => {
-    const result = listListsQuerySchema.safeParse({ listStatus: 'unknown' })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects a non-UUID ownerUserId', () => {
-    const result = listListsQuerySchema.safeParse({ ownerUserId: 'not-a-uuid' })
-    expect(result.success).toBe(false)
-  })
-})
-
-describe('updateListInputSchema', () => {
-  it('accepts a partial update', () => {
-    const result = updateListInputSchema.safeParse({ title: 'Renamed' })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects an unknown field (strict)', () => {
-    const result = updateListInputSchema.safeParse({ title: 'x', unknown: 'y' })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects a title that is too long', () => {
-    const result = updateListInputSchema.safeParse({ title: 'x'.repeat(201) })
-    expect(result.success).toBe(false)
-  })
-
-  it('accepts a null occasionTypeId', () => {
-    const result = updateListInputSchema.safeParse({ occasionTypeId: null })
-    expect(result.success).toBe(true)
-  })
-
-  it('accepts a tags array', () => {
-    const result = updateListInputSchema.safeParse({ tags: ['family', 'birthday'] })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects more than the max number of tags', () => {
-    const result = updateListInputSchema.safeParse({
-      tags: Array.from({ length: 21 }, (_, index) => `tag-${String(index)}`),
+  it('sends the store currency on the admin lists list route', async () => {
+    mock.onGet('/admin/lists').reply(HttpStatus.OK, {
+      items: [],
+      pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
     })
-    expect(result.success).toBe(false)
+
+    await listAdminLists({ page: 1, limit: 20 })
+
+    expect(mock.history.get[0]?.params.currency).toBe('JPY')
+  })
+
+  it('sends the store currency on the admin list detail route', async () => {
+    mock.onGet(`/admin/lists/${LIST_ID}`).reply(HttpStatus.OK, { list: MOCK_LIST })
+
+    await fetchAdminList(LIST_ID)
+
+    expect(mock.history.get[0]?.params.currency).toBe('JPY')
+  })
+
+  it('sends the store currency on the admin list items route', async () => {
+    mock.onGet(`/admin/lists/${LIST_ID}/items`).reply(HttpStatus.OK, {
+      items: [],
+      pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+    })
+
+    await listAdminListItems(LIST_ID, { page: 1, limit: 20 })
+
+    expect(mock.history.get[0]?.params.currency).toBe('JPY')
   })
 })
 
 describe('listAdminLists', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('sends pagination, search, filters and sort in the request', async () => {
@@ -259,10 +194,10 @@ describe('listAdminLists', () => {
 })
 
 describe('fetchAdminList', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('returns the list on success', async () => {
@@ -271,20 +206,20 @@ describe('fetchAdminList', () => {
     expect(list.id).toBe(LIST_ID)
   })
 
-  it('throws ApiRequestError on 404', async () => {
+  it('throws ApiError on 404', async () => {
     mock.onGet(`/admin/lists/${LIST_ID}`).reply(HttpStatus.NOT_FOUND, {
       code: 'NOT_FOUND',
       message: 'Not found',
     })
-    await expect(fetchAdminList(LIST_ID)).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(fetchAdminList(LIST_ID)).rejects.toBeInstanceOf(ApiError)
   })
 })
 
 describe('updateList', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('returns the updated list on success', async () => {
@@ -304,21 +239,21 @@ describe('updateList', () => {
     await updateList(LIST_ID, { title: 'Renamed', tags: ['family'] })
   })
 
-  it('throws ApiRequestError on 422', async () => {
+  it('throws ApiError on 422', async () => {
     mock.onPatch(`/admin/lists/${LIST_ID}`).reply(HttpStatus.UNPROCESSABLE_ENTITY, {
       code: 'UNPROCESSABLE_ENTITY',
       message: 'Validation failed',
       metadata: { issues: [{ path: 'title', message: 'Required', code: 'invalid_type' }] },
     })
-    await expect(updateList(LIST_ID, { title: '' })).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(updateList(LIST_ID, { title: '' })).rejects.toBeInstanceOf(ApiError)
   })
 })
 
 describe('deleteList', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('resolves on 204', async () => {
@@ -326,20 +261,20 @@ describe('deleteList', () => {
     await expect(deleteList(LIST_ID)).resolves.toBeUndefined()
   })
 
-  it('throws ApiRequestError on 404', async () => {
+  it('throws ApiError on 404', async () => {
     mock.onDelete(`/admin/lists/${LIST_ID}`).reply(HttpStatus.NOT_FOUND, {
       code: 'NOT_FOUND',
       message: 'Not found',
     })
-    await expect(deleteList(LIST_ID)).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(deleteList(LIST_ID)).rejects.toBeInstanceOf(ApiError)
   })
 })
 
 describe('restoreList', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('returns the restored list on success', async () => {
@@ -348,20 +283,20 @@ describe('restoreList', () => {
     expect(list.id).toBe(LIST_ID)
   })
 
-  it('throws ApiRequestError on 404', async () => {
+  it('throws ApiError on 404', async () => {
     mock.onPost(`/admin/lists/${LIST_ID}/restore`).reply(HttpStatus.NOT_FOUND, {
       code: 'NOT_FOUND',
       message: 'Not found',
     })
-    await expect(restoreList(LIST_ID)).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(restoreList(LIST_ID)).rejects.toBeInstanceOf(ApiError)
   })
 })
 
 describe('listAdminListItems', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('sends the pagination params and parses the response', async () => {
@@ -382,13 +317,13 @@ describe('listAdminListItems', () => {
     expect(response.items[0]?.sources).toHaveLength(1)
   })
 
-  it('throws ApiRequestError on 404', async () => {
+  it('throws ApiError on 404', async () => {
     mock.onGet(`/admin/lists/${LIST_ID}/items`).reply(HttpStatus.NOT_FOUND, {
       code: 'NOT_FOUND',
       message: 'Not found',
     })
     await expect(listAdminListItems(LIST_ID, { page: 1, limit: 20 })).rejects.toBeInstanceOf(
-      ApiRequestError,
+      ApiError,
     )
   })
 })

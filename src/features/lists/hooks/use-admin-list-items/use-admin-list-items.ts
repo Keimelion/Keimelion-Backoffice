@@ -2,14 +2,11 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { LISTS_QUERY_KEY, listAdminListItems } from '@/data-access/lists/lists.api'
-import type {
-  ApiAdminListItem,
-  ListItemsPaginationQuery,
-} from '@/data-access/lists/lists.schemas'
+import type { ListItemsPaginationQuery } from '@/features/lists/lists.input-schemas'
 import { useCurrencyStore } from '@/lib/i18n/currency-store'
 import type { Currency } from '@/lib/i18n/currency'
+import type { AdminListItemDetailParsed, PaginatedResponse } from '@keimelion/sdk/schemas'
 
 export function buildAdminListItemsKey(
   listId: string,
@@ -24,7 +21,7 @@ const DISABLED_ADMIN_LIST_ITEMS_KEY = [...LISTS_QUERY_KEY, 'items', null] as con
 export function useAdminListItems(
   listId: string | null,
   pagination: ListItemsPaginationQuery,
-): UseQueryResult<PaginatedResponse<ApiAdminListItem>> {
+): UseQueryResult<PaginatedResponse<AdminListItemDetailParsed>> {
   const currency = useCurrencyStore((state) => state.currency)
   return useQuery({
     queryKey: listId === null ? DISABLED_ADMIN_LIST_ITEMS_KEY : buildAdminListItemsKey(listId, pagination, currency),

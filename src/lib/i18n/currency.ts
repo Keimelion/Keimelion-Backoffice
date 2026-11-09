@@ -1,8 +1,5 @@
-import {
-  SUPPORTED_CURRENCY_VALUES,
-  SupportedCurrencies,
-} from '@keimelion/api/shared/enums/currency'
-import type { SupportedCurrency } from '@keimelion/api/shared/enums/currency'
+import { SUPPORTED_CURRENCY_VALUES, SupportedCurrencies } from '@keimelion/sdk/enums'
+import type { SupportedCurrency } from '@keimelion/sdk/enums'
 
 export const CURRENCIES = SUPPORTED_CURRENCY_VALUES
 export type Currency = SupportedCurrency

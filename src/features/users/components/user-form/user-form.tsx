@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import type { UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { USER_ROLE_VALUES, UserRoles } from '@keimelion/api/shared/enums/user-role'
+import { USER_ROLE_VALUES, UserRoles } from '@keimelion/sdk/enums'
 import { UserAvatar } from '@/components/shared/user-avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,15 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  createAdminUserInputSchema,
-  updateAdminUserInputSchema,
-  type CreateAdminUserInput,
-  type UpdateAdminUserInput,
-} from '@/data-access/users/admin-users.schemas'
-import type { AdminApiUser } from '@/data-access/users/admin-users.schemas'
+import { createAdminUserInputSchema, updateAdminUserInputSchema, type CreateAdminUserInput, type UpdateAdminUserInput } from '@/features/users/users.input-schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { RoleBadge } from '@/features/users/components/role-badge'
+import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
 
 const DEFAULT_ROLE = UserRoles.USER
 
@@ -48,7 +43,7 @@ type UserFormProps =
     }
   | {
       mode: 'edit'
-      user: AdminApiUser
+      user: AdminUserDetailParsed
       onSubmit: (values: UserFormEditValues, setError: UseFormSetError<UserFormEditValues>) => void
       onDirtyChange: (isDirty: boolean) => void
       isPending: boolean
@@ -108,7 +103,7 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
         {editUser !== null ? (
           <div className="flex items-center gap-3 rounded-md border border-border bg-muted/20 p-3">
             <UserAvatar
-              src={editUser.avatar?.urls.md ?? editUser.avatarUrl}
+              src={editUser.avatar?.urls.md ?? null}
               name={editUser.username ?? editUser.email}
               size="md"
             />

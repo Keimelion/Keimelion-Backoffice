@@ -1,9 +1,9 @@
-import type { ApiValidationIssue } from '@/data-access/_shared/api-error'
+import type { ValidationIssueParsed } from '@keimelion/sdk/schemas'
 
 type SetFieldError = (path: string, error: { message: string }) => void
 
 export function applyApiValidationIssues(
-  issues: readonly ApiValidationIssue[],
+  issues: readonly ValidationIssueParsed[],
   setError: SetFieldError,
   allowedPaths: readonly string[],
 ): number {

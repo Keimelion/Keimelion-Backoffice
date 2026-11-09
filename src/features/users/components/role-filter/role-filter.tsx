@@ -1,7 +1,7 @@
 'use client'
 
-import { USER_ROLE_VALUES } from '@keimelion/api/shared/enums/user-role'
-import type { UserRole } from '@keimelion/api/shared/enums/user-role'
+import { USER_ROLE_VALUES } from '@keimelion/sdk/enums'
+import type { UserRole } from '@keimelion/sdk/enums'
 import { BadgeToggleFilter } from '@/components/shared/badge-toggle-filter'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { useTranslate } from '@/lib/i18n/use-translate'

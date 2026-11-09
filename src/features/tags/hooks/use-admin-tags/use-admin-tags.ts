@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { normalizeFilters } from '@/data-access/_shared/normalize-filters'
 import {
   TAGS_QUERY_KEY,
@@ -12,12 +11,8 @@ import {
   listAdminTags,
   updateTag,
 } from '@/data-access/tags/tags.api'
-import type {
-  ApiTag,
-  CreateTagInput,
-  ListTagsQuery,
-  UpdateTagInput,
-} from '@/data-access/tags/tags.schemas'
+import type { ListTagsQuery } from '@/features/tags/tags.input-schemas'
+import type { AdminTagsCreateRequestInput, AdminTagsUpdateRequestInput, PaginatedResponse, TagSummaryParsed } from '@keimelion/sdk/schemas'
 
 type TagsListFilters = Partial<ListTagsQuery>
 
@@ -36,14 +31,14 @@ const DISABLED_ADMIN_TAG_KEY = [...TAGS_QUERY_KEY, 'detail', null] as const
 
 export function useAdminTags(
   filters: TagsListFilters,
-): UseQueryResult<PaginatedResponse<ApiTag>> {
+): UseQueryResult<PaginatedResponse<TagSummaryParsed>> {
   return useQuery({
     queryKey: buildAdminTagsKey(filters),
     queryFn: () => listAdminTags(filters),
   })
 }
 
-export function useAdminTag(id: string | null): UseQueryResult<ApiTag> {
+export function useAdminTag(id: string | null): UseQueryResult<TagSummaryParsed> {
   return useQuery({
     queryKey: id === null ? DISABLED_ADMIN_TAG_KEY : buildAdminTagKey(id),
     queryFn: () => fetchAdminTag(id ?? ''),
@@ -51,7 +46,7 @@ export function useAdminTag(id: string | null): UseQueryResult<ApiTag> {
   })
 }
 
-export function useCreateTag(): UseMutationResult<ApiTag, Error, CreateTagInput> {
+export function useCreateTag(): UseMutationResult<TagSummaryParsed, Error, AdminTagsCreateRequestInput> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createTag,
@@ -64,10 +59,10 @@ export function useCreateTag(): UseMutationResult<ApiTag, Error, CreateTagInput>
 
 interface UpdateTagVariables {
   id: string
-  input: UpdateTagInput
+  input: AdminTagsUpdateRequestInput
 }
 
-export function useUpdateTag(): UseMutationResult<ApiTag, Error, UpdateTagVariables> {
+export function useUpdateTag(): UseMutationResult<TagSummaryParsed, Error, UpdateTagVariables> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }) => updateTag(id, input),

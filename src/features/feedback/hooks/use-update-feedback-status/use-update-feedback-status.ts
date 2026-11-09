@@ -2,9 +2,9 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
-import type { FeedbackStatus } from '@keimelion/api/shared/enums/feedback-status'
+import type { FeedbackStatus } from '@keimelion/sdk/enums'
 import { FEEDBACK_QUERY_KEY, updateAdminFeedback } from '@/data-access/feedback/feedback.api'
-import type { ApiAdminFeedback } from '@/data-access/feedback/feedback.schemas'
+import type { AdminFeedbackDetailParsed } from '@keimelion/sdk/schemas'
 
 export interface UpdateFeedbackStatusVariables {
   id: string
@@ -12,7 +12,7 @@ export interface UpdateFeedbackStatusVariables {
 }
 
 export function useUpdateFeedbackStatus(): UseMutationResult<
-  ApiAdminFeedback,
+  AdminFeedbackDetailParsed,
   Error,
   UpdateFeedbackStatusVariables
 > {

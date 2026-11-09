@@ -47,8 +47,8 @@ const MOCK_SOURCE = {
   sourceUrl: 'https://example.com/p',
   price: '19.99',
   currency: 'EUR',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 interface ImageFixture {
@@ -58,7 +58,7 @@ interface ImageFixture {
   sizeBytes: number
   width: number
   height: number
-  createdAt: string
+  createdAt: Date
   urls: { sm: string; md: string; lg: string }
 }
 
@@ -66,21 +66,21 @@ const MOCK_ITEM: {
   id: string
   name: string
   description: string | null
-  imageUrl: string | null
+  imageId: string | null
   image: ImageFixture | null
   createdByUserId: string | null
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
   sources: typeof MOCK_SOURCE[]
 } = {
   id: 'item-1',
   name: 'Weighted blanket',
   description: 'Cozy and warm',
-  imageUrl: null,
+  imageId: null,
   image: null,
   createdByUserId: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-02T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-02T00:00:00.000Z'),
   sources: [MOCK_SOURCE],
 }
 
@@ -138,7 +138,7 @@ describe('ItemsList', () => {
               sizeBytes: 1024,
               width: 300,
               height: 300,
-              createdAt: '2024-01-01T00:00:00.000Z',
+              createdAt: new Date('2024-01-01T00:00:00.000Z'),
               urls: {
                 sm: 'https://cdn.example.com/a-300.webp',
                 md: 'https://cdn.example.com/a-800.webp',

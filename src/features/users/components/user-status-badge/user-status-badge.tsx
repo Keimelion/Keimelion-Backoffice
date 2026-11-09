@@ -3,8 +3,8 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 import type { MessageId } from '@/lib/i18n/messages/en'
 
 interface UserStatusBadgeProps {
-  deletedAt: string | null
-  bannedAt: string | null
+  deletedAt: Date | null
+  bannedAt: Date | null
 }
 
 type UserStatus = 'active' | 'deleted' | 'banned'
@@ -21,7 +21,7 @@ const STATUS_MESSAGE_IDS: Record<UserStatus, MessageId> = {
   banned: 'users.status.banned',
 }
 
-function resolveUserStatus(deletedAt: string | null, bannedAt: string | null): UserStatus {
+function resolveUserStatus(deletedAt: Date | null, bannedAt: Date | null): UserStatus {
   if (deletedAt !== null) return 'deleted'
   if (bannedAt !== null) return 'banned'
   return 'active'

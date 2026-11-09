@@ -13,9 +13,9 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { ApiTag } from '@/data-access/tags/tags.schemas'
 import { useAdminTags } from '@/features/tags/hooks/use-admin-tags'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { TagSummaryParsed } from '@keimelion/sdk/schemas'
 
 const CREATE_ITEM_PREFIX = '__create__:'
 
@@ -49,7 +49,7 @@ export function TagsPicker({
   )
 
   const trimmedSearch = searchText.trim()
-  const availableTags = useMemo<ApiTag[]>(
+  const availableTags = useMemo<TagSummaryParsed[]>(
     () =>
       existingTags.filter(
         (tag) => !selectedKeySet.has(normalizeTagKey(tag.name)),
@@ -207,7 +207,7 @@ export function TagsPicker({
 }
 
 interface TagOptionRowProps {
-  tag: ApiTag
+  tag: TagSummaryParsed
   onSelect: (value: string) => void
 }
 

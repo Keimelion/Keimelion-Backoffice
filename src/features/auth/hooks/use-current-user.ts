@@ -1,12 +1,12 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import type { ApiUser } from '@/data-access/_shared/user'
+import type { UserDetailParsed } from '@keimelion/sdk/schemas'
 
 export const CURRENT_USER_QUERY_KEY = ['currentUser'] as const
 
-export function useCurrentUser(): ApiUser | null {
-  const { data } = useQuery<ApiUser | null>({
+export function useCurrentUser(): UserDetailParsed | null {
+  const { data } = useQuery<UserDetailParsed | null>({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => Promise.resolve(null),
     enabled: false,

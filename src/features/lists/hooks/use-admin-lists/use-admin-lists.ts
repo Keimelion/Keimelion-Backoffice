@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { normalizeFilters } from '@/data-access/_shared/normalize-filters'
 import {
   LISTS_QUERY_KEY,
@@ -12,13 +11,10 @@ import {
   restoreList,
   updateList,
 } from '@/data-access/lists/lists.api'
-import type {
-  ApiAdminList,
-  ListListsQuery,
-  UpdateListInput,
-} from '@/data-access/lists/lists.schemas'
+import type { ListListsQuery } from '@/features/lists/lists.input-schemas'
 import { useCurrencyStore } from '@/lib/i18n/currency-store'
 import type { Currency } from '@/lib/i18n/currency'
+import type { AdminListDetailParsed, AdminListsUpdateRequestInput, PaginatedResponse } from '@keimelion/sdk/schemas'
 
 type ListsFilters = Partial<ListListsQuery>
 
@@ -43,7 +39,7 @@ interface UseAdminListsOptions {
 export function useAdminLists(
   filters: ListsFilters,
   options: UseAdminListsOptions = {},
-): UseQueryResult<PaginatedResponse<ApiAdminList>> {
+): UseQueryResult<PaginatedResponse<AdminListDetailParsed>> {
   const currency = useCurrencyStore((state) => state.currency)
   return useQuery({
     queryKey: buildAdminListsKey(filters, currency),
@@ -52,7 +48,7 @@ export function useAdminLists(
   })
 }
 
-export function useAdminList(id: string | null): UseQueryResult<ApiAdminList> {
+export function useAdminList(id: string | null): UseQueryResult<AdminListDetailParsed> {
   return useQuery({
     queryKey: id === null ? DISABLED_ADMIN_LIST_KEY : buildAdminListKey(id),
     queryFn: () => fetchAdminList(id ?? ''),
@@ -62,10 +58,10 @@ export function useAdminList(id: string | null): UseQueryResult<ApiAdminList> {
 
 interface UpdateListVariables {
   id: string
-  input: UpdateListInput
+  input: AdminListsUpdateRequestInput
 }
 
-export function useUpdateList(): UseMutationResult<ApiAdminList, Error, UpdateListVariables> {
+export function useUpdateList(): UseMutationResult<AdminListDetailParsed, Error, UpdateListVariables> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }) => updateList(id, input),
@@ -89,7 +85,7 @@ export function useDeleteList(): UseMutationResult<void, Error, string> {
   })
 }
 
-export function useRestoreList(): UseMutationResult<ApiAdminList, Error, string> {
+export function useRestoreList(): UseMutationResult<AdminListDetailParsed, Error, string> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: restoreList,

@@ -2,14 +2,14 @@
 
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
 import { useDeleteList } from '@/features/lists/hooks/use-admin-lists'
-import type { ApiAdminList } from '@/data-access/lists/lists.schemas'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
+import type { AdminListDetailParsed } from '@keimelion/sdk/schemas'
 
 interface DeleteListDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  list: ApiAdminList
+  list: AdminListDetailParsed
 }
 
 export function DeleteListDialog({

@@ -6,15 +6,15 @@ import { FormDialog } from '@/components/shared/form-dialog'
 import { UserForm } from '@/features/users/components/user-form'
 import type { UserFormEditValues } from '@/features/users/components/user-form'
 import { useUpdateAdminUser } from '@/features/users/hooks/use-users'
-import type { AdminApiUser } from '@/data-access/users/admin-users.schemas'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
 
 interface EditUserDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  user: AdminApiUser
+  user: AdminUserDetailParsed
 }
 
 export function EditUserDialog({

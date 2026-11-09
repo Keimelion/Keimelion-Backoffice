@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { UseFormSetError } from 'react-hook-form'
 import { renderWithQueryClient } from '@/test/test-utils'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { CategoryForm } from './category-form'
 import type { CategoryFormValues } from './category-form'
 
@@ -26,21 +25,22 @@ vi.mock('@/data-access/categories/categories.api', () => ({
 }))
 
 import { listAdminCategories } from '@/data-access/categories/categories.api'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 function makeCategory(
   id: string,
   parentId: string | null,
   name: string,
   depth: number,
-): ApiCategory {
+): AdminCategoryDetailParsed {
   return {
     id,
     parentId,
     translations: { en: name, fr: name },
     slug: name.toLowerCase().replace(/\s+/g, '-'),
     depth,
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
+    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   }
 }
 

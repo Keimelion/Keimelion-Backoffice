@@ -2,21 +2,21 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { FormDialog } from '@/components/shared/form-dialog'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
-import type { ApiTag } from '@/data-access/tags/tags.schemas'
 import { TagForm } from '@/features/tags/components/tag-form'
 import type { TagFormValues } from '@/features/tags/components/tag-form'
 import { useUpdateTag } from '@/features/tags/hooks/use-admin-tags'
 import { translate } from '@/lib/i18n/translate'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { notifySuccess } from '@/lib/notify'
+import { ApiError } from '@keimelion/sdk/client'
+import type { TagSummaryParsed } from '@keimelion/sdk/schemas'
 
 interface EditTagDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  tag: ApiTag
+  tag: TagSummaryParsed
 }
 
 export function EditTagDialog({
@@ -51,7 +51,7 @@ export function EditTagDialog({
           onOpenChange(false)
         },
         onError: (error) => {
-          if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
+          if (error instanceof ApiError && error.status === HttpStatus.CONFLICT) {
             setError('slug', { message: t('tags.form.error.slug_conflict') })
             return
           }

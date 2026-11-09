@@ -5,19 +5,16 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
-import {
-  itemSourceInputSchema,
-  type ItemSourceInput,
-  type ItemSourceShop,
-} from '@/data-access/items/item-sources.schemas'
+import { itemSourceInputSchema, type ItemSourceInput } from '@/features/items/items.input-schemas'
 import { ItemSourceFields } from '@/features/items/components/item-source-fields'
 import { ItemSourceEditorRowShell } from './item-source-editor-row-shell'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { ShopSummaryParsed } from '@keimelion/sdk/schemas'
 
 interface ItemSourceEditorRowProps {
   title: string
   defaultValues: ItemSourceInput
-  shops: readonly ItemSourceShop[]
+  shops: readonly ShopSummaryParsed[]
   isShopsLoading: boolean
   disabledShopIds: ReadonlySet<string> | undefined
   isPending: boolean

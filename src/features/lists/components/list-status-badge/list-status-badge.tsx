@@ -2,7 +2,7 @@
 
 import { Archive, CircleDot, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ListStatus } from '@keimelion/api/shared/enums/list-status'
+import type { ListStatus } from '@keimelion/sdk/enums'
 import { Badge } from '@/components/ui/badge'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'

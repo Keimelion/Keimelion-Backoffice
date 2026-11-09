@@ -36,6 +36,9 @@ const MOCK_TAG = {
   id: '11111111-1111-4111-8111-111111111111',
   name: 'gaming',
   slug: 'gaming',
+  createdByUserId: null,
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 const MOCK_RESPONSE = {

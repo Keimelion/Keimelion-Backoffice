@@ -17,17 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  SUPPORTED_CURRENCIES,
-  type ItemSourceShop,
-} from '@/data-access/items/item-sources.schemas'
+import { SUPPORTED_CURRENCY_VALUES } from '@keimelion/sdk/enums'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { ShopSummaryParsed } from '@keimelion/sdk/schemas'
 
 const NO_SHOP_VALUE = '__none__'
 
 interface ItemSourceFieldsProps<TValues extends FieldValues> {
   namePrefix: Path<TValues> | ''
-  shops: readonly ItemSourceShop[]
+  shops: readonly ShopSummaryParsed[]
   isShopsLoading: boolean
   disabled: boolean
   disabledShopIds?: ReadonlySet<string> | undefined
@@ -120,7 +118,7 @@ export function ItemSourceFields<TValues extends FieldValues>({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {SUPPORTED_CURRENCIES.map((currency) => (
+                {SUPPORTED_CURRENCY_VALUES.map((currency) => (
                   <SelectItem key={currency} value={currency}>
                     {currency}
                   </SelectItem>

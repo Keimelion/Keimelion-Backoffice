@@ -15,16 +15,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  createCategoryInputSchema,
-  type ApiCategory,
-  type CreateCategoryInput,
-} from '@/data-access/categories/categories.schemas'
+import { createCategoryInputSchema, type CreateCategoryInput } from '@/features/categories/categories.input-schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
 import { ParentCategorySelect } from '@/features/categories/components/parent-category-select'
 import { collectDescendantIds } from '@/features/categories/lib/category-tree'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useAutoSlug } from '@/lib/use-auto-slug'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 export type CategoryFormValues = CreateCategoryInput
 
@@ -38,7 +35,7 @@ type CategoryFormProps =
     }
   | {
       mode: 'edit'
-      category: ApiCategory
+      category: AdminCategoryDetailParsed
       onSubmit: (values: CategoryFormValues, setError: UseFormSetError<CategoryFormValues>) => void
       onDirtyChange: (isDirty: boolean) => void
       isPending: boolean

@@ -1,12 +1,12 @@
 'use client'
 
-import type { ApiAdminFeedback } from '@/data-access/feedback/feedback.schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminFeedbackDetailParsed } from '@keimelion/sdk/schemas'
 
 const JSON_INDENT = 2
 
 interface FeedbackDetailsRowProps {
-  feedback: ApiAdminFeedback
+  feedback: AdminFeedbackDetailParsed
 }
 
 export function FeedbackDetailsRow({ feedback }: FeedbackDetailsRowProps): React.JSX.Element {

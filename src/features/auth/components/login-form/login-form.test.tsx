@@ -41,20 +41,21 @@ import { login } from '@/data-access/auth/login'
 import { LoginForm } from '@/features/auth/components/login-form'
 
 const ADMIN_USER = {
-  id: 'u1',
+  id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
   email: 'admin@keimelion.app',
   username: 'admin',
   authProvider: 'email' as const,
   role: 'admin' as const,
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR' as const,
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 function renderLoginForm(): void {

@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { normalizeFilters } from '@/data-access/_shared/normalize-filters'
 import { useReorderMutation } from '@/components/shared/data-table'
 import type { ReorderUpdate } from '@/components/shared/data-table'
@@ -13,12 +12,8 @@ import {
   listAdminShops,
   updateShop,
 } from '@/data-access/shops/admin-shops.api'
-import type {
-  AdminShop,
-  CreateShopInput,
-  ListShopsQuery,
-  UpdateShopInput,
-} from '@/data-access/shops/admin-shops.schemas'
+import type { ListShopsQuery } from '@/features/shops/shops.input-schemas'
+import type { AdminShopsCreateRequestInput, AdminShopsUpdateRequestInput, PaginatedResponse, ShopDetailParsed } from '@keimelion/sdk/schemas'
 
 type ShopsListFilters = Partial<ListShopsQuery>
 
@@ -31,14 +26,14 @@ export function buildAdminShopsKey(
 
 export function useAdminShops(
   filters: ShopsListFilters,
-): UseQueryResult<PaginatedResponse<AdminShop>> {
+): UseQueryResult<PaginatedResponse<ShopDetailParsed>> {
   return useQuery({
     queryKey: buildAdminShopsKey(filters),
     queryFn: () => listAdminShops(filters),
   })
 }
 
-export function useCreateShop(): UseMutationResult<AdminShop, Error, CreateShopInput> {
+export function useCreateShop(): UseMutationResult<ShopDetailParsed, Error, AdminShopsCreateRequestInput> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createShop,
@@ -51,10 +46,10 @@ export function useCreateShop(): UseMutationResult<AdminShop, Error, CreateShopI
 
 interface UpdateShopVariables {
   id: string
-  input: UpdateShopInput
+  input: AdminShopsUpdateRequestInput
 }
 
-export function useUpdateShop(): UseMutationResult<AdminShop, Error, UpdateShopVariables> {
+export function useUpdateShop(): UseMutationResult<ShopDetailParsed, Error, UpdateShopVariables> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }) => updateShop(id, input),
@@ -75,12 +70,12 @@ export function useDeleteShop(): UseMutationResult<void, Error, string> {
   })
 }
 
-function reorderShops(updates: ReorderUpdate[]): Promise<AdminShop[]> {
+function reorderShops(updates: ReorderUpdate[]): Promise<ShopDetailParsed[]> {
   return Promise.all(updates.map(({ id, sortOrder }) => updateShop(id, { sortOrder })))
 }
 
-export function useReorderShops(filters: ShopsListFilters): ReturnType<typeof useReorderMutation<AdminShop>> {
-  return useReorderMutation<AdminShop>({
+export function useReorderShops(filters: ShopsListFilters): ReturnType<typeof useReorderMutation<ShopDetailParsed>> {
+  return useReorderMutation<ShopDetailParsed>({
     queryKey: buildAdminShopsKey(filters),
     invalidateKey: SHOPS_QUERY_KEY,
     mutationFn: reorderShops,

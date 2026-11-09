@@ -2,15 +2,15 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { ShopForm } from '@/features/shops/components/shop-form'
 import type { ShopFormValues } from '@/features/shops/components/shop-form'
 import { useCreateShop } from '@/features/shops/hooks/use-admin-shops'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { ApiError } from '@keimelion/sdk/client'
 
 interface CreateShopDialogProps {
   open: boolean
@@ -39,7 +39,7 @@ export function CreateShopDialog({
         onOpenChange(false)
       },
       onError: (error) => {
-        if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
+        if (error instanceof ApiError && error.status === HttpStatus.CONFLICT) {
           if (isDomainConflictMessage(error.message)) {
             setError('domain', { message: t('shops.form.error.domain_conflict') })
             return
