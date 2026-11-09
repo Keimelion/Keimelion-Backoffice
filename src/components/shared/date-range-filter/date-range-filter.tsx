@@ -4,13 +4,16 @@ import { useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { PAGE_PARAM } from '@/lib/url-params'
-import { useTranslate } from '@/lib/i18n/use-translate'
 
 export const CREATED_FROM_PARAM = 'createdFrom'
 export const CREATED_TO_PARAM = 'createdTo'
 
-export function FeedbackDateRangeFilter(): React.JSX.Element {
-  const t = useTranslate()
+interface DateRangeFilterProps {
+  fromLabel: string
+  toLabel: string
+}
+
+export function DateRangeFilter({ fromLabel, toLabel }: DateRangeFilterProps): React.JSX.Element {
   const router = useRouter()
   const searchParams = useSearchParams()
   const fromValue = searchParams.get(CREATED_FROM_PARAM) ?? ''
@@ -47,7 +50,7 @@ export function FeedbackDateRangeFilter(): React.JSX.Element {
           htmlFor={CREATED_FROM_PARAM}
           className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
         >
-          {t('feedback.filters.created_from_label')}
+          {fromLabel}
         </label>
         <Input
           id={CREATED_FROM_PARAM}
@@ -62,7 +65,7 @@ export function FeedbackDateRangeFilter(): React.JSX.Element {
           htmlFor={CREATED_TO_PARAM}
           className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
         >
-          {t('feedback.filters.created_to_label')}
+          {toLabel}
         </label>
         <Input
           id={CREATED_TO_PARAM}
