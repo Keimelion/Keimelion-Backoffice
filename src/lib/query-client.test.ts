@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 import type * as QueryClientModule from './query-client'
-import type * as ApiErrorModule from '@/data-access/_shared/api-error'
+import { ApiError } from '@keimelion/sdk/client'
 import type * as AuthStorageModule from '@/data-access/_shared/auth-storage'
 import type * as NotifyModule from '@/lib/notify'
 
@@ -11,7 +11,6 @@ vi.mock('@/lib/notify', () => ({
 
 interface FreshModules {
   createQueryClient: typeof QueryClientModule.createQueryClient
-  ApiRequestError: typeof ApiErrorModule.ApiRequestError
   saveSession: typeof AuthStorageModule.saveSession
   notifyError: typeof NotifyModule.notifyError
 }
@@ -19,12 +18,10 @@ interface FreshModules {
 async function freshQueryClientModule(): Promise<FreshModules> {
   vi.resetModules()
   const queryClientModule = await import('./query-client')
-  const apiErrorModule = await import('@/data-access/_shared/api-error')
   const storageModule = await import('@/data-access/_shared/auth-storage')
   const notifyModule = await import('@/lib/notify')
   return {
     createQueryClient: queryClientModule.createQueryClient,
-    ApiRequestError: apiErrorModule.ApiRequestError,
     saveSession: storageModule.saveSession,
     notifyError: notifyModule.notifyError,
   }
@@ -53,20 +50,21 @@ afterEach(() => {
 })
 
 const TEST_USER = {
-  id: 'u1',
+  id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
   email: 'admin@keimelion.app',
   username: 'admin',
   authProvider: 'email' as const,
   role: 'admin' as const,
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR' as const,
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 describe('QueryClient MutationCache onError', () => {
@@ -117,7 +115,7 @@ describe('QueryClient MutationCache onError', () => {
   })
 
   it('redirects to /login on 401 and clears storage + cache', async () => {
-    const { createQueryClient, ApiRequestError, saveSession } =
+    const { createQueryClient, saveSession } =
       await freshQueryClientModule()
     const client = createQueryClient()
     saveSession('doomed-token', 'refresh-doomed', TEST_USER)
@@ -127,7 +125,7 @@ describe('QueryClient MutationCache onError', () => {
       .getMutationCache()
       .build(client, {
         mutationFn: () =>
-          Promise.reject(new ApiRequestError('UNAUTHORIZED', 'Unauthorized', 401)),
+          Promise.reject(new ApiError({ code: 'UNAUTHORIZED', message: 'Unauthorized', status: 401, metadata: {} })),
       })
       .execute(undefined)
       .catch(() => undefined)
@@ -139,14 +137,14 @@ describe('QueryClient MutationCache onError', () => {
   })
 
   it('does NOT call notifyError when a 401 triggers a redirect', async () => {
-    const { createQueryClient, ApiRequestError, notifyError } = await freshQueryClientModule()
+    const { createQueryClient, notifyError } = await freshQueryClientModule()
     const client = createQueryClient()
 
     await client
       .getMutationCache()
       .build(client, {
         mutationFn: () =>
-          Promise.reject(new ApiRequestError('UNAUTHORIZED', 'Unauthorized', 401)),
+          Promise.reject(new ApiError({ code: 'UNAUTHORIZED', message: 'Unauthorized', status: 401, metadata: {} })),
       })
       .execute(undefined)
       .catch(() => undefined)
@@ -155,14 +153,14 @@ describe('QueryClient MutationCache onError', () => {
   })
 
   it('skips the redirect when meta.skipUnauthorizedRedirect is true and calls notifyError', async () => {
-    const { createQueryClient, ApiRequestError, notifyError } = await freshQueryClientModule()
+    const { createQueryClient, notifyError } = await freshQueryClientModule()
     const client = createQueryClient()
 
     await client
       .getMutationCache()
       .build(client, {
         mutationFn: () =>
-          Promise.reject(new ApiRequestError('INVALID_CREDENTIALS', 'Invalid credentials', 401)),
+          Promise.reject(new ApiError({ code: 'INVALID_CREDENTIALS', message: 'Invalid credentials', status: 401, metadata: {} })),
         meta: { skipUnauthorizedRedirect: true },
       })
       .execute(undefined)
@@ -170,7 +168,7 @@ describe('QueryClient MutationCache onError', () => {
 
     expect(mockAssign).not.toHaveBeenCalled()
     expect(notifyError).toHaveBeenCalledWith(
-      new ApiRequestError('INVALID_CREDENTIALS', 'Invalid credentials', 401),
+      new ApiError({ code: 'INVALID_CREDENTIALS', message: 'Invalid credentials', status: 401, metadata: {} }),
     )
   })
 })

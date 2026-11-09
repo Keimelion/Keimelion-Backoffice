@@ -2,17 +2,17 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { CategoryForm } from '@/features/categories/components/category-form'
 import type { CategoryFormValues } from '@/features/categories/components/category-form'
 import { useCreateCategory } from '@/features/categories/hooks/use-admin-categories'
 import { pickTranslation } from '@/features/categories/lib/resolve-category-name'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { ApiError } from '@keimelion/sdk/client'
 
 const CODE_MAX_DEPTH = 'CATEGORY_MAX_DEPTH_EXCEEDED'
 
@@ -48,7 +48,7 @@ export function CreateCategoryDialog({
         onOpenChange(false)
       },
       onError: (error) => {
-        if (!(error instanceof ApiRequestError)) {
+        if (!(error instanceof ApiError)) {
           setError('root', { message: error.message })
           return
         }

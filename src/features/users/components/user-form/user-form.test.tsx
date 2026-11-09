@@ -5,7 +5,7 @@ import { renderWithQueryClient } from '@/test/test-utils'
 import type { UseFormSetError } from 'react-hook-form'
 import { UserForm } from './user-form'
 import type { UserFormCreateValues, UserFormEditValues } from './user-form'
-import type { AdminApiUser } from '@/data-access/users/admin-users.schemas'
+import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
@@ -16,24 +16,26 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }))
 
-const MOCK_USER: AdminApiUser = {
+const MOCK_USER: AdminUserDetailParsed = {
   id: 'u-1',
   email: 'user@keimelion.app',
   username: 'testuser',
   authProvider: 'email' as const,
   role: 'user' as const,
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR' as const,
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   bannedAt: null,
   banReason: null,
   deletedAt: null,
+  reservationsCount: 0,
 }
 
 const EMAIL_PLACEHOLDER = 'name@example.com'
@@ -50,7 +52,7 @@ function renderCreateForm(onSubmit = vi.fn(), onDirtyChange = vi.fn()): void {
 }
 
 function renderEditForm(
-  user: AdminApiUser = MOCK_USER,
+  user: AdminUserDetailParsed = MOCK_USER,
   onSubmit = vi.fn(),
   onDirtyChange = vi.fn(),
 ): void {
@@ -165,7 +167,7 @@ describe('UserForm (edit mode)', () => {
         sizeBytes: 1024,
         width: 800,
         height: 800,
-        createdAt: '2024-01-01T00:00:00.000Z',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
         urls: {
           sm: 'https://cdn.example.com/avatar-sm.webp',
           md: 'https://cdn.example.com/avatar-md.webp',

@@ -2,7 +2,6 @@ import { screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-types.schemas'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn() }),
@@ -15,6 +14,7 @@ vi.mock('@/features/occasion-types/hooks/use-occasion-types', () => ({
 
 import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-types'
 import { OccasionTypesList } from './occasion-types-list'
+import type { OccasionTypeSummaryParsed } from '@keimelion/sdk/schemas'
 
 function renderList(): void {
   renderWithQueryClient(
@@ -31,7 +31,7 @@ beforeEach(() => {
 describe('OccasionTypesList', () => {
   it('renders column headers', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
-      mockUseQueryResult<ApiOccasionType[]>({ data: [] }),
+      mockUseQueryResult<OccasionTypeSummaryParsed[]>({ data: [] }),
     )
     renderList()
     expect(screen.getByText('Emoji')).toBeInTheDocument()
@@ -42,7 +42,7 @@ describe('OccasionTypesList', () => {
 
   it('renders occasion type rows with data', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
-      mockUseQueryResult<ApiOccasionType[]>({
+      mockUseQueryResult<OccasionTypeSummaryParsed[]>({
         data: [
           { id: '1', slug: 'birthday', label: 'Birthday', emoji: '🎂' },
           { id: '2', slug: 'wedding', label: 'Wedding', emoji: '💍' },
@@ -58,7 +58,7 @@ describe('OccasionTypesList', () => {
 
   it('renders row-specific edit and delete action buttons', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
-      mockUseQueryResult<ApiOccasionType[]>({
+      mockUseQueryResult<OccasionTypeSummaryParsed[]>({
         data: [
           { id: '1', slug: 'birthday', label: 'Birthday', emoji: '🎂' },
           { id: '2', slug: 'wedding', label: 'Wedding', emoji: '💍' },
@@ -74,7 +74,7 @@ describe('OccasionTypesList', () => {
 
   it('renders — for null emoji', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
-      mockUseQueryResult<ApiOccasionType[]>({
+      mockUseQueryResult<OccasionTypeSummaryParsed[]>({
         data: [{ id: '1', slug: 'other', label: 'Other', emoji: null }],
       }),
     )
@@ -84,7 +84,7 @@ describe('OccasionTypesList', () => {
 
   it('shows empty state message when list is empty', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
-      mockUseQueryResult<ApiOccasionType[]>({ data: [] }),
+      mockUseQueryResult<OccasionTypeSummaryParsed[]>({ data: [] }),
     )
     renderList()
     expect(screen.getByText('No occasion types found.')).toBeInTheDocument()
@@ -92,7 +92,7 @@ describe('OccasionTypesList', () => {
 
   it('renders skeleton rows while loading', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
-      mockUseQueryResult<ApiOccasionType[]>({ isLoading: true }),
+      mockUseQueryResult<OccasionTypeSummaryParsed[]>({ isLoading: true }),
     )
     renderList()
     expect(screen.queryByText('No occasion types found.')).not.toBeInTheDocument()
@@ -101,7 +101,7 @@ describe('OccasionTypesList', () => {
 
   it('renders error message on fetch failure', () => {
     vi.mocked(useOccasionTypes).mockReturnValue(
-      mockUseQueryResult<ApiOccasionType[]>({ error: new Error('Failed to load') }),
+      mockUseQueryResult<OccasionTypeSummaryParsed[]>({ error: new Error('Failed to load') }),
     )
     renderList()
     expect(screen.getByText('Failed to load')).toBeInTheDocument()

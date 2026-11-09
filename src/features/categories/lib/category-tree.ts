@@ -1,12 +1,10 @@
-import {
-  CATEGORY_MAX_ALLOWED_DEPTH,
-  type ApiCategory,
-} from '@/data-access/categories/categories.schemas'
+import { CATEGORY_MAX_ALLOWED_DEPTH } from '@/features/categories/categories.input-schemas'
 import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
 import type { Locale } from '@/lib/i18n/locale'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 export interface CategoryNode {
-  category: ApiCategory
+  category: AdminCategoryDetailParsed
   children: CategoryNode[]
 }
 
@@ -44,7 +42,7 @@ export interface EvaluateDropArgs {
   dragged: CategoryNode
   newParentId: string | null
   nodeById: ReadonlyMap<string, CategoryNode>
-  categories: readonly ApiCategory[]
+  categories: readonly AdminCategoryDetailParsed[]
 }
 
 export function evaluateDrop({
@@ -70,7 +68,7 @@ export function evaluateDrop({
 
 export function collectDescendantIds(
   rootId: string,
-  categories: readonly ApiCategory[],
+  categories: readonly AdminCategoryDetailParsed[],
 ): Set<string> {
   const descendants = new Set<string>()
   const stack: string[] = [rootId]
@@ -89,14 +87,14 @@ export function collectDescendantIds(
 
 export function countDescendants(
   rootId: string,
-  categories: readonly ApiCategory[],
+  categories: readonly AdminCategoryDetailParsed[],
 ): number {
   return collectDescendantIds(rootId, categories).size
 }
 
 export function collectAncestorIds(
   categoryId: string,
-  categories: readonly ApiCategory[],
+  categories: readonly AdminCategoryDetailParsed[],
 ): Set<string> {
   const byId = new Map(categories.map((candidate) => [candidate.id, candidate]))
   const ancestors = new Set<string>()
@@ -113,8 +111,8 @@ export function collectAncestorIds(
 }
 
 export function buildParentPathLabel(
-  category: ApiCategory,
-  categories: readonly ApiCategory[],
+  category: AdminCategoryDetailParsed,
+  categories: readonly AdminCategoryDetailParsed[],
   locale: Locale,
 ): string {
   const byId = new Map(categories.map((candidate) => [candidate.id, candidate]))
@@ -130,10 +128,10 @@ export function buildParentPathLabel(
 }
 
 export function orderCategoriesTree(
-  categories: readonly ApiCategory[],
+  categories: readonly AdminCategoryDetailParsed[],
   locale: Locale,
-): ApiCategory[] {
-  const byParent = new Map<string | null, ApiCategory[]>()
+): AdminCategoryDetailParsed[] {
+  const byParent = new Map<string | null, AdminCategoryDetailParsed[]>()
   for (const category of categories) {
     const bucket = byParent.get(category.parentId) ?? []
     bucket.push(category)
@@ -144,7 +142,7 @@ export function orderCategoriesTree(
       resolveCategoryName(a, locale).localeCompare(resolveCategoryName(b, locale)),
     )
   }
-  const ordered: ApiCategory[] = []
+  const ordered: AdminCategoryDetailParsed[] = []
   const walk = (parentId: string | null): void => {
     const bucket = byParent.get(parentId) ?? []
     for (const category of bucket) {
@@ -157,7 +155,7 @@ export function orderCategoriesTree(
 }
 
 export function buildCategoryForest(
-  categories: readonly ApiCategory[],
+  categories: readonly AdminCategoryDetailParsed[],
   locale: Locale,
 ): CategoryNode[] {
   const nodeById = new Map<string, CategoryNode>()

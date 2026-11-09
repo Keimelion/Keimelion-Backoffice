@@ -12,17 +12,16 @@ import {
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { UserRefCell } from '@/components/shared/user-ref-cell'
+import { resolveReserverName } from '@/features/reservations/lib/resolve-reserver-name'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
-import {
-  listAdminReservationsQuerySchema,
-  type ApiAdminReservation,
-} from '@/data-access/reservations/reservations.schemas'
+import { listAdminReservationsQuerySchema } from '@/features/reservations/reservations.input-schemas'
 import { useAdminReservations } from '@/features/reservations/hooks/use-admin-reservations'
 import { CancelReservationDialog } from '@/features/reservations/components/cancel-reservation-dialog'
 import { ImageThumbnail } from '@/components/shared/image-thumbnail'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
+import type { AdminReservationDetailParsed } from '@keimelion/sdk/schemas'
 
 const USER_ID_PARAM = 'userId'
 const LIST_ID_PARAM = 'listId'
@@ -35,7 +34,7 @@ export function ReservationsList(): React.JSX.Element {
   const t = useTranslate()
   const filters = useListSearchParams(listAdminReservationsQuerySchema)
 
-  const [cancelTarget, setCancelTarget] = useState<ApiAdminReservation | null>(null)
+  const [cancelTarget, setCancelTarget] = useState<AdminReservationDetailParsed | null>(null)
 
   const reservationsQuery = useAdminReservations(filters)
   const items = reservationsQuery.data?.items ?? []
@@ -65,7 +64,7 @@ export function ReservationsList(): React.JSX.Element {
     [t],
   )
 
-  const columns = useMemo<DataTableColumn<ApiAdminReservation>[]>(
+  const columns = useMemo<DataTableColumn<AdminReservationDetailParsed>[]>(
     () => buildColumns(t, (reservation) => { setCancelTarget(reservation) }),
     [t],
   )
@@ -110,13 +109,15 @@ const LINK_CLASS = 'text-sm font-medium hover:underline'
 
 function buildColumns(
   t: TranslateFn,
-  onCancel: (reservation: ApiAdminReservation) => void,
-): DataTableColumn<ApiAdminReservation>[] {
+  onCancel: (reservation: AdminReservationDetailParsed) => void,
+): DataTableColumn<AdminReservationDetailParsed>[] {
   return [
     {
       key: 'reserver',
       header: t('reservations.table.column.reserver'),
-      cell: (reservation) => <UserRefCell user={reservation.user} />,
+      cell: (reservation) => (
+        <UserRefCell user={reservation.user} fallback={resolveReserverName(reservation)} />
+      ),
     },
     {
       key: 'item',
@@ -124,8 +125,8 @@ function buildColumns(
       cell: (reservation) => (
         <div className="flex items-center gap-2">
           <ImageThumbnail
-            src={reservation.listItem.item.image?.urls.sm ?? reservation.listItem.item.imageUrl}
-            fullSrc={reservation.listItem.item.image?.urls.lg ?? reservation.listItem.item.imageUrl}
+            src={reservation.listItem.item.image?.urls.sm ?? null}
+            fullSrc={reservation.listItem.item.image?.urls.lg ?? null}
             alt={reservation.listItem.item.name}
           />
           <Link href={`/items?id=${reservation.listItem.item.id}`} className={LINK_CLASS}>
@@ -185,7 +186,7 @@ function buildColumns(
   ]
 }
 
-function resolveOwnerLabel(reservation: ApiAdminReservation, t: TranslateFn): string {
+function resolveOwnerLabel(reservation: AdminReservationDetailParsed, t: TranslateFn): string {
   if (reservation.list.owner === null) return t('reservations.table.list_owner_none')
   const owner = reservation.list.owner.username ?? reservation.list.owner.email
   return t('reservations.table.list_owner', { owner })

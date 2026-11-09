@@ -15,8 +15,7 @@ import {
 import type { DataTableColumn } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
-import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
+import { basePaginationShape } from '@/lib/list-query-input-schema'
 import { CreateOccasionTypeDialog } from '@/features/occasion-types/components/create-occasion-type-dialog'
 import { EditOccasionTypeDialog } from '@/features/occasion-types/components/edit-occasion-type-dialog'
 import { DeleteOccasionTypeDialog } from '@/features/occasion-types/components/delete-occasion-type-dialog'
@@ -29,17 +28,18 @@ import { LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/locale'
 import type { Locale } from '@/lib/i18n/locale'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminOccasionTypeDetailParsed } from '@keimelion/sdk/schemas'
 
 const adminOccasionTypesQuerySchema = z.object({
   ...basePaginationShape,
 })
 
-function resolveLabel(item: AdminOccasionType, locale: Locale): string {
+function resolveLabel(item: AdminOccasionTypeDetailParsed, locale: Locale): string {
   const translation = item.translations.find((tr) => tr.locale === locale)
   return translation?.label ?? item.slug
 }
 
-function buildEditFormValues(item: AdminOccasionType): OccasionTypeFormValues {
+function buildEditFormValues(item: AdminOccasionTypeDetailParsed): OccasionTypeFormValues {
   const translations = Object.fromEntries(
     LOCALES.map((locale) => {
       const translation = item.translations.find((tr) => tr.locale === locale)
@@ -56,7 +56,7 @@ function buildEditFormValues(item: AdminOccasionType): OccasionTypeFormValues {
   }
 }
 
-function resolveRowClassName(item: AdminOccasionType): string | undefined {
+function resolveRowClassName(item: AdminOccasionTypeDetailParsed): string | undefined {
   if (!item.isActive) return 'opacity-50'
   return undefined
 }
@@ -66,9 +66,9 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
   const filters = useListSearchParams(adminOccasionTypesQuerySchema)
   const { isReorderMode, enterReorderMode, exitReorderMode } = useReorderMode()
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
-  const [editTarget, setEditTarget] = useState<AdminOccasionType | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<AdminOccasionType | null>(null)
-  const [pendingOrder, setPendingOrder] = useState<AdminOccasionType[] | null>(null)
+  const [editTarget, setEditTarget] = useState<AdminOccasionTypeDetailParsed | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminOccasionTypeDetailParsed | null>(null)
+  const [pendingOrder, setPendingOrder] = useState<AdminOccasionTypeDetailParsed[] | null>(null)
 
   const query = useAdminOccasionTypes({ page: filters.page, limit: filters.limit })
   const data = query.data?.items ?? []
@@ -93,7 +93,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
     }
   }
 
-  const columns: DataTableColumn<AdminOccasionType>[] = [
+  const columns: DataTableColumn<AdminOccasionTypeDetailParsed>[] = [
     {
       key: 'emoji',
       header: t('occasion_types.admin.column.emoji'),
@@ -135,7 +135,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
             key: 'actions',
             header: t('occasion_types.admin.column.actions'),
             className: 'w-28 text-right',
-            cell: (item: AdminOccasionType) => (
+            cell: (item: AdminOccasionTypeDetailParsed) => (
               <div className="flex justify-end gap-1">
                 <IconButton
                   label={t('common.actions.update', { name: resolveLabel(item, DEFAULT_LOCALE) })}
@@ -152,7 +152,7 @@ export function OccasionTypesAdminContent(): React.JSX.Element {
                 </IconButton>
               </div>
             ),
-          } satisfies DataTableColumn<AdminOccasionType>,
+          } satisfies DataTableColumn<AdminOccasionTypeDetailParsed>,
         ]),
   ]
 

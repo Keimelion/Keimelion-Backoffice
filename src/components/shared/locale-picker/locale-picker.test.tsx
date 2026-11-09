@@ -1,20 +1,20 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import MockAdapter from 'axios-mock-adapter'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApiMock, type ApiMock } from '@/test/api-mock'
 import { renderWithIntl } from '@/test/test-utils'
 
 vi.stubEnv('NEXT_PUBLIC_API_URL', 'http://localhost:3000')
 
 const { LocalePicker } = await import('./locale-picker')
 const { useLocaleStore } = await import('@/lib/i18n/locale-store')
-const { axiosInstance } = await import('@/data-access/_shared/axios')
+const { apiClient } = await import('@/data-access/_shared/client')
 
-let mock: MockAdapter
+let mock: ApiMock
 
 beforeEach(() => {
   useLocaleStore.setState({ locale: 'en' })
-  mock = new MockAdapter(axiosInstance)
+  mock = createApiMock()
 })
 
 afterEach(() => {
@@ -44,7 +44,7 @@ describe('LocalePicker', () => {
     expect(useLocaleStore.getState().locale).toBe('fr')
   })
 
-  it('propagates the selected locale to the axios Accept-Language header', async () => {
+  it('propagates the selected locale to the SDK Accept-Language header', async () => {
     const user = userEvent.setup()
     mock.onGet('/occasion-types').reply(200, [])
 
@@ -52,8 +52,8 @@ describe('LocalePicker', () => {
     await user.click(screen.getByRole('button', { name: /select language/i }))
     await user.click(screen.getByText(/Français/))
 
-    await axiosInstance.get('/occasion-types')
+    await apiClient.occasionTypes.list()
 
-    expect(mock.history.get[0]?.headers?.['Accept-Language']).toBe('fr')
+    expect(mock.history.get[0]?.headers['accept-language']).toBe('fr')
   })
 })

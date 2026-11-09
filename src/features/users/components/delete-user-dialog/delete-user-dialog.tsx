@@ -2,14 +2,14 @@
 
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
 import { useDeleteAdminUser } from '@/features/users/hooks/use-users'
-import type { AdminApiUser } from '@/data-access/users/admin-users.schemas'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
+import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
 
 interface DeleteUserDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  user: AdminApiUser
+  user: AdminUserDetailParsed
 }
 
 export function DeleteUserDialog({

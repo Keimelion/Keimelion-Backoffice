@@ -7,14 +7,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  CATEGORY_MAX_ALLOWED_DEPTH,
-  type ApiCategory,
-} from '@/data-access/categories/categories.schemas'
+import { CATEGORY_MAX_ALLOWED_DEPTH } from '@/features/categories/categories.input-schemas'
 import { orderCategoriesTree } from '@/features/categories/lib/category-tree'
 import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 export const PARENT_CATEGORY_NONE_VALUE = '__none__'
 const CHILD_LEVEL_INDENT = '    '
@@ -22,7 +20,7 @@ const CHILD_LEVEL_INDENT = '    '
 interface ParentCategorySelectProps {
   value: string | null
   onChange: (next: string | null) => void
-  categories: readonly ApiCategory[]
+  categories: readonly AdminCategoryDetailParsed[]
   isLoading: boolean
   disabled?: boolean
   excludedIds?: ReadonlySet<string>

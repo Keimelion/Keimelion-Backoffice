@@ -30,8 +30,8 @@ const CATEGORY_FOOD = {
   translations: { en: 'Food', fr: 'Alimentation' },
   slug: 'food',
   depth: 0,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 const CATEGORY_FASHION_ID = '22222222-2222-4222-8222-222222222222'
 const CATEGORY_FASHION = {
@@ -40,8 +40,8 @@ const CATEGORY_FASHION = {
   translations: { en: 'Fashion', fr: 'Mode' },
   slug: 'fashion',
   depth: 0,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 vi.mock('@/features/categories/hooks/use-admin-categories', () => ({
@@ -75,10 +75,11 @@ const MOCK_ITEM = {
   id: 'item-1',
   name: 'Blanket',
   description: 'Warm',
-  imageUrl: null,
+  imageId: null,
+  image: null,
   createdByUserId: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   sources: [],
   categories: [],
   tags: [],
@@ -90,7 +91,7 @@ beforeEach(() => {
 })
 
 describe('ItemForm (create mode)', () => {
-  it('renders name, description, image URL and one source row by default', () => {
+  it('renders name, description, image upload and one source row by default', () => {
     render(
       <ItemForm
         mode="create"
@@ -101,7 +102,7 @@ describe('ItemForm (create mode)', () => {
     )
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Description')).toBeInTheDocument()
-    expect(screen.getByText('Image URL')).toBeInTheDocument()
+    expect(screen.getByLabelText('Image')).toHaveAttribute('type', 'file')
     expect(screen.getByText('Sources')).toBeInTheDocument()
     expect(screen.getByText('Source 1')).toBeInTheDocument()
   })
@@ -237,8 +238,8 @@ describe('ItemForm (edit mode)', () => {
       sourceUrl: 'https://example.com/p',
       price: '19.99',
       currency: 'EUR',
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     }
     render(
       <ItemForm

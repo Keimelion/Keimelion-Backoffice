@@ -1,26 +1,26 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { ApiValidationIssue } from '@/data-access/_shared/api-error'
 import { applyApiValidationIssues } from './apply-api-validation-issues'
+import type { ValidationIssueParsed } from '@keimelion/sdk/schemas'
 
-const ISSUE_NAME: ApiValidationIssue = {
+const ISSUE_NAME: ValidationIssueParsed = {
   path: 'name',
   message: 'Name must be at least 1 character.',
   code: 'too_small',
 }
 
-const ISSUE_IMAGE_URL: ApiValidationIssue = {
-  path: 'imageUrl',
+const ISSUE_IMAGE_URL: ValidationIssueParsed = {
+  path: 'shopId',
   message: 'Image URL must use HTTPS.',
   code: 'custom',
 }
 
-const ISSUE_UNKNOWN: ApiValidationIssue = {
+const ISSUE_UNKNOWN: ValidationIssueParsed = {
   path: 'nonExistentField',
   message: 'Unknown field.',
   code: 'custom',
 }
 
-const ALLOWED_PATHS = ['name', 'description', 'imageUrl', 'categories'] as const
+const ALLOWED_PATHS = ['name', 'description', 'shopId', 'categories'] as const
 
 describe('applyApiValidationIssues', () => {
   it('maps every issue whose path is in the allowed list', () => {
@@ -34,7 +34,7 @@ describe('applyApiValidationIssues', () => {
 
     expect(count).toBe(2)
     expect(setError).toHaveBeenCalledWith('name', { message: ISSUE_NAME.message })
-    expect(setError).toHaveBeenCalledWith('imageUrl', { message: ISSUE_IMAGE_URL.message })
+    expect(setError).toHaveBeenCalledWith('shopId', { message: ISSUE_IMAGE_URL.message })
   })
 
   it('skips issues whose path is not in the allowed list', () => {

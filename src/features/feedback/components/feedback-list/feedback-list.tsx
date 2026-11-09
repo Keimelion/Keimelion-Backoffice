@@ -10,10 +10,7 @@ import {
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { UserRefCell } from '@/components/shared/user-ref-cell'
-import {
-  listFeedbackQuerySchema,
-  type ApiAdminFeedback,
-} from '@/data-access/feedback/feedback.schemas'
+import { listFeedbackQuerySchema } from '@/features/feedback/feedback.input-schemas'
 import { useAdminFeedback } from '@/features/feedback/hooks/use-admin-feedback'
 import { FeedbackDetailsRow } from '@/features/feedback/components/feedback-details-row'
 import { FeedbackStatusActions } from '@/features/feedback/components/feedback-status-actions'
@@ -30,6 +27,7 @@ import {
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
+import type { AdminFeedbackDetailParsed } from '@keimelion/sdk/schemas'
 
 const TITLE_PARAM = 'title'
 const USER_ID_PARAM = 'userId'
@@ -50,7 +48,7 @@ function truncatePreview(description: string): string {
   return `${description.slice(0, DESCRIPTION_PREVIEW_LENGTH)}…`
 }
 
-function buildColumns(t: TranslateFn): DataTableColumn<ApiAdminFeedback>[] {
+function buildColumns(t: TranslateFn): DataTableColumn<AdminFeedbackDetailParsed>[] {
   return [
     {
       key: 'title',
@@ -157,15 +155,15 @@ export function FeedbackList(): React.JSX.Element {
     [t],
   )
 
-  const columns = useMemo<DataTableColumn<ApiAdminFeedback>[]>(() => buildColumns(t), [t])
+  const columns = useMemo<DataTableColumn<AdminFeedbackDetailParsed>[]>(() => buildColumns(t), [t])
 
   const renderExpandedRow = useMemo(
-    () => (feedback: ApiAdminFeedback) => <FeedbackDetailsRow feedback={feedback} />,
+    () => (feedback: AdminFeedbackDetailParsed) => <FeedbackDetailsRow feedback={feedback} />,
     [],
   )
 
   const isRowExpanded = useMemo(
-    () => (feedback: ApiAdminFeedback) => expandedIds.has(feedback.id),
+    () => (feedback: AdminFeedbackDetailParsed) => expandedIds.has(feedback.id),
     [expandedIds],
   )
 

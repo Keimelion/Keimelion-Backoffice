@@ -18,7 +18,7 @@ import type { DataTableColumn, FilterDefinition } from '@/components/shared/data
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
-import { listShopsQuerySchema, type AdminShop } from '@/data-access/shops/admin-shops.schemas'
+import { listShopsQuerySchema } from '@/features/shops/shops.input-schemas'
 import { useAdminShops, useReorderShops } from '@/features/shops/hooks/use-admin-shops'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import { CreateShopDialog } from '@/features/shops/components/create-shop-dialog'
@@ -27,6 +27,7 @@ import { DeleteShopDialog } from '@/features/shops/components/delete-shop-dialog
 import { IsAffiliatedBadge } from '@/features/shops/components/is-affiliated-badge'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { ShopDetailParsed } from '@keimelion/sdk/schemas'
 
 const SEARCH_PARAM = 'search'
 const IS_ACTIVE_PARAM = 'isActive'
@@ -41,14 +42,14 @@ const CLEARABLE_PARAMS = [
   SORT_PARAM,
 ]
 
-function resolveLogoUrl(shop: AdminShop): string | null {
+function resolveLogoUrl(shop: ShopDetailParsed): string | null {
   if (typeof shop.logoUrl === 'string' && shop.logoUrl.startsWith(HTTPS_PREFIX)) {
     return shop.logoUrl
   }
   return null
 }
 
-function resolveRowClassName(shop: AdminShop): string | undefined {
+function resolveRowClassName(shop: ShopDetailParsed): string | undefined {
   if (!shop.isActive) return 'opacity-50'
   return undefined
 }
@@ -62,9 +63,9 @@ export function ShopsPageContent(): React.JSX.Element {
   const showActions = isCurrentUserAdmin && !isReorderMode
 
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
-  const [editTarget, setEditTarget] = useState<AdminShop | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<AdminShop | null>(null)
-  const [pendingOrder, setPendingOrder] = useState<AdminShop[] | null>(null)
+  const [editTarget, setEditTarget] = useState<ShopDetailParsed | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<ShopDetailParsed | null>(null)
+  const [pendingOrder, setPendingOrder] = useState<ShopDetailParsed[] | null>(null)
 
   const shopsQuery = useAdminShops(filters)
   const shops = shopsQuery.data?.items ?? []
@@ -118,7 +119,7 @@ export function ShopsPageContent(): React.JSX.Element {
     },
   ]
 
-  const columns: DataTableColumn<AdminShop>[] = [
+  const columns: DataTableColumn<ShopDetailParsed>[] = [
     {
       key: 'logo',
       header: '',
@@ -186,7 +187,7 @@ export function ShopsPageContent(): React.JSX.Element {
             key: 'actions',
             header: t('shops.table.column.actions'),
             className: 'w-28 text-right',
-            cell: (shop: AdminShop) => (
+            cell: (shop: ShopDetailParsed) => (
               <div className="flex justify-end gap-1">
                 <IconButton
                   label={t('common.actions.update', { name: shop.name })}
@@ -203,7 +204,7 @@ export function ShopsPageContent(): React.JSX.Element {
                 </IconButton>
               </div>
             ),
-          } satisfies DataTableColumn<AdminShop>,
+          } satisfies DataTableColumn<ShopDetailParsed>,
         ]
       : []),
   ]

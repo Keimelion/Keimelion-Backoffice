@@ -1,5 +1,5 @@
-import { axiosInstance } from '@/data-access/_shared/axios'
+import { apiClient } from '@/data-access/_shared/client'
 
 export async function logout(): Promise<void> {
-  await axiosInstance.post('/auth/logout', {})
+  await apiClient.auth.logout()
 }

@@ -2,13 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { normalizeFilters } from '@/data-access/_shared/normalize-filters'
 import { FEEDBACK_QUERY_KEY, listAdminFeedback } from '@/data-access/feedback/feedback.api'
-import type {
-  ApiAdminFeedback,
-  ListFeedbackQuery,
-} from '@/data-access/feedback/feedback.schemas'
+import type { ListFeedbackQuery } from '@/features/feedback/feedback.input-schemas'
+import type { AdminFeedbackDetailParsed, PaginatedResponse } from '@keimelion/sdk/schemas'
 
 type FeedbackFilters = Partial<ListFeedbackQuery>
 
@@ -26,7 +23,7 @@ interface UseAdminFeedbackOptions {
 export function useAdminFeedback(
   filters: FeedbackFilters,
   options: UseAdminFeedbackOptions = {},
-): UseQueryResult<PaginatedResponse<ApiAdminFeedback>> {
+): UseQueryResult<PaginatedResponse<AdminFeedbackDetailParsed>> {
   return useQuery({
     queryKey: buildAdminFeedbackKey(filters),
     queryFn: () => listAdminFeedback(filters),

@@ -7,10 +7,8 @@ import {
   RESERVATIONS_QUERY_KEY,
   listAdminReservations,
 } from '@/data-access/reservations/reservations.api'
-import type {
-  AdminReservationsListResponse,
-  ListAdminReservationsQuery,
-} from '@/data-access/reservations/reservations.schemas'
+import type { ListAdminReservationsQuery } from '@/features/reservations/reservations.input-schemas'
+import type { AdminReservationsListResponseParsed } from '@keimelion/sdk/schemas'
 
 type ReservationsFilters = Partial<ListAdminReservationsQuery>
 
@@ -28,7 +26,7 @@ interface UseAdminReservationsOptions {
 export function useAdminReservations(
   filters: ReservationsFilters,
   options: UseAdminReservationsOptions = {},
-): UseQueryResult<AdminReservationsListResponse> {
+): UseQueryResult<AdminReservationsListResponseParsed> {
   return useQuery({
     queryKey: buildAdminReservationsKey(filters),
     queryFn: () => listAdminReservations(filters),

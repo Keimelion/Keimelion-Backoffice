@@ -86,7 +86,7 @@ src/
   components/
     ui/                       # shadcn/ui generated — DO NOT edit manually
     shared/                   # App-level reusable components (sidebar, page-header, data-table…)
-  data-access/                # Direct API calls — no React, no hooks, no TanStack Query
+  data-access/                # Direct API calls through apiClient (@keimelion/sdk) — no React, no hooks, no TanStack Query
     users/
       users.api.ts            # fetchUsers(), fetchUser(), updateUser(), deleteUser()
   features/                   # Feature logic
@@ -94,7 +94,6 @@ src/
       components/             # Feature-specific components (UsersTable, UserForm…)
       hooks/                  # TanStack Query hooks (useUsers, useUpdateUser…)
   lib/
-    api-client.ts             # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
     query-client.ts           # TanStack Query client configuration
     utils.ts                  # cn() and other shared helpers
 scripts/
@@ -108,26 +107,20 @@ Do not follow templates — read existing feature code before writing anything. 
 **Server Components by default** — add `'use client'` only where genuinely needed (hooks, events, browser APIs). Push the client boundary as low as possible.
 
 **data-access → hooks → components** — the layered flow is strict:
-- `data-access/*.api.ts` — pure async functions, no React, call `apiGet`/`apiPost` from `lib/api-client`
+- `data-access/*.api.ts` — pure async functions, no React, call `apiClient` from `data-access/_shared/client`
 - `features/<feature>/hooks/*.ts` — TanStack Query wrappers (`useQuery`, `useMutation`)
 - `features/<feature>/components/*.tsx` — read from hooks, never call `data-access` directly
 
-**Never call `fetch` directly** — everything goes through `lib/api-client`.
+**Never call `fetch` directly** — everything goes through `apiClient`.
 
-### Type sharing with the API
+### API contract: `@keimelion/sdk`
 
-Import shared enums and DTOs from the Keimelion API via the `@keimelion/api/*` path alias:
+The Backoffice depends on the API only through HTTP and the published `@keimelion/sdk` package, the single source of truth. The repo must clone and run on its own, with no filesystem link to another repo.
 
-Safe to import:
-- `@keimelion/api/shared/enums/*` (`UserRole`, `AuthProvider`, `ErrorCode`, `HttpStatus`…)
-- `@keimelion/api/shared/types/api` (`ApiError`, `PaginatedResponse`)
-
-Do NOT import — these pull in Drizzle ORM types:
-- `@keimelion/api/shared/types/user`
-- `@keimelion/api/features/*/mapper`
-- `@keimelion/api/db/**`
-
-`ApiUser` is defined in `src/data-access/auth/auth.api.ts` and mirrors the API's `BaseUser` with string dates (accurate JSON representation).
+- Enums and shared types: `@keimelion/sdk/enums`, `@keimelion/sdk/schemas`
+- HTTP client and `ApiError`: `@keimelion/sdk/client`, used only through `apiClient` from `src/data-access/_shared/client`
+- Contract changes go SDK first, then consumers: never redeclare a request or response shape locally. If the SDK is missing something, stop and report it.
+- Form and URL validation with UI copy lives in `src/features/<feature>/<feature>.input-schemas.ts`, reusing SDK constants.
 
 ### Loading, empty, and error states
 
@@ -222,10 +215,10 @@ Walk this before pushing. A blocker is a blocker whether or not anyone else will
 - [ ] Pages in `src/app/` contain no business logic — they compose feature components
 - [ ] Feature components in `src/features/<feature>/components/`, hooks in `src/features/<feature>/hooks/`
 - [ ] API calls in `src/data-access/<entity>/<entity>.api.ts` — no React, no hooks, no TanStack Query
-- [ ] All network calls go through `src/lib/api-client.ts` — no raw `fetch`
+- [ ] All network calls go through `apiClient` from `src/data-access/_shared/client` — no raw `fetch`
 - [ ] shadcn files under `src/components/ui/` untouched — variants live in `components/shared/` or the feature folder
 - [ ] Reuse over duplication — no logic copied from another feature with minor tweaks
-- [ ] Shared types imported from the API via `@keimelion/api/*` where possible; never redeclare an API enum locally
+- [ ] Shared enums, schemas and types imported from `@keimelion/sdk`; never redeclare an API enum or contract shape locally
 
 ### Server / Client boundaries
 - [ ] `'use client'` sits as low in the tree as possible — a `'use client'` on a page or layout is a blocker unless the entire subtree is genuinely interactive

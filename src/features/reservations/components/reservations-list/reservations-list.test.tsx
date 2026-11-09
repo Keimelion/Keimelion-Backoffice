@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react'
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import type { ApiAdminReservation } from '@/data-access/reservations/reservations.schemas'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { renderWithQueryClient } from '@/test/test-utils'
 import { ReservationsList } from './reservations-list'
@@ -30,6 +29,7 @@ vi.mock('@/features/reservations/hooks/use-delete-admin-reservation', () => ({
 }))
 
 import { useAdminReservations } from '@/features/reservations/hooks/use-admin-reservations'
+import type { AdminReservationDetailParsed } from '@keimelion/sdk/schemas'
 
 type UseAdminReservationsReturn = ReturnType<typeof useAdminReservations>
 
@@ -38,10 +38,12 @@ const USER_ID = '22222222-2222-4222-8222-222222222222'
 const ITEM_ID = '33333333-3333-4333-8333-333333333333'
 const LIST_ID = '44444444-4444-4444-8444-444444444444'
 
-const BASE_RESERVATION: ApiAdminReservation = {
+const BASE_RESERVATION: AdminReservationDetailParsed = {
   id: RESERVATION_ID,
   quantityBooked: 2,
-  createdAt: '2024-02-01T00:00:00.000Z',
+  reserverName: null,
+  reserverEmail: null,
+  createdAt: new Date('2024-02-01T00:00:00.000Z'),
   listItem: {
     id: 'li-1',
     quantityDesired: 3,
@@ -49,12 +51,11 @@ const BASE_RESERVATION: ApiAdminReservation = {
       id: ITEM_ID,
       name: 'Weighted blanket',
       description: null,
-      imageUrl: null,
       imageId: null,
       image: null,
       createdByUserId: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     },
   },
   list: {
@@ -69,20 +70,21 @@ const BASE_RESERVATION: ApiAdminReservation = {
     username: 'reserver',
     authProvider: 'email',
     role: 'user',
-    avatarUrl: null,
+    avatarImageId: null,
+    avatar: null,
     isCgvAccepted: true,
-    cgvAcceptedAt: '2024-01-01T00:00:00.000Z',
+    cgvAcceptedAt: new Date('2024-01-01T00:00:00.000Z'),
     isMarketingOptedIn: false,
     defaultCurrency: 'EUR',
-    emailVerifiedAt: '2024-01-01T00:00:00.000Z',
-    lastActiveAt: '2024-02-01T00:00:00.000Z',
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
+    emailVerifiedAt: new Date('2024-01-01T00:00:00.000Z'),
+    lastActiveAt: new Date('2024-02-01T00:00:00.000Z'),
+    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   },
 }
 
 function mockReservationsResult(
-  data: ApiAdminReservation[] | null,
+  data: AdminReservationDetailParsed[] | null,
   overrides: Partial<UseAdminReservationsReturn> = {},
 ): void {
   const response =
@@ -112,6 +114,13 @@ beforeEach(() => {
 })
 
 describe('ReservationsList', () => {
+  it('shows the guest reserver name when the reservation has no user', () => {
+    mockReservationsResult([{ ...BASE_RESERVATION, user: null, reserverName: 'Alice' }])
+    render(<ReservationsList />)
+
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+  })
+
   it('renders reserver, item and list as links to their respective pages', () => {
     mockReservationsResult([BASE_RESERVATION])
     render(<ReservationsList />)
@@ -125,7 +134,9 @@ describe('ReservationsList', () => {
   })
 
   it('renders the owner suffix when the list has an owner', () => {
-    const ownerUser = { ...BASE_RESERVATION.user, id: 'owner-1', username: 'owner_user' }
+    const reserver = BASE_RESERVATION.user
+    if (reserver === null) throw new Error('BASE_RESERVATION must have a user')
+    const ownerUser = { ...reserver, id: 'owner-1', username: 'owner_user' }
     mockReservationsResult([
       {
         ...BASE_RESERVATION,

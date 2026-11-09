@@ -13,9 +13,6 @@
   "profile.personal_info.username_label": "Nom d'utilisateur",
   "profile.personal_info.username_placeholder": "jane_doe",
   "profile.personal_info.username_help": "1 à 100 caractères. Lettres, chiffres, tirets bas ou traits d'union.",
-  "profile.personal_info.avatar_url_label": "URL de l'avatar",
-  "profile.personal_info.avatar_url_placeholder": "https://exemple.com/avatar.png",
-  "profile.personal_info.avatar_url_help": "Optionnel. Doit être une URL valide.",
   "profile.personal_info.marketing_opt_in_label": "E-mails marketing",
   "profile.personal_info.marketing_opt_in_description": "Recevez occasionnellement des mises à jour et annonces produit.",
   "profile.personal_info.submit": "Enregistrer les modifications",
@@ -33,5 +30,8 @@
   "profile.currency.title": "Devise par défaut",
   "profile.currency.description": "Choisissez la devise utilisée pour les vues normalisées en change et le nouveau contenu.",
   "profile.currency.label": "Devise par défaut",
-  "profile.currency.submit_success": "Devise par défaut mise à jour."
+  "profile.currency.submit_success": "Devise par défaut mise à jour.",
+  "profile.personal_info.avatar_label": "Avatar",
+  "profile.personal_info.avatar_help": "Optionnel. JPEG, PNG ou WebP.",
+  "profile.personal_info.avatar_preview_alt": "Aperçu de l'avatar"
 }

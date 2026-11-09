@@ -1,9 +1,9 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import type { ApiAdminReservation } from '@/data-access/reservations/reservations.schemas'
 import { renderWithQueryClient } from '@/test/test-utils'
 import { CancelReservationDialog } from './cancel-reservation-dialog'
+import type { AdminReservationDetailParsed } from '@keimelion/sdk/schemas'
 
 vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
@@ -21,10 +21,12 @@ vi.mock('@/features/reservations/hooks/use-delete-admin-reservation', () => ({
 const USER_ID = '22222222-2222-4222-8222-222222222222'
 const RESERVATION_ID = '11111111-1111-4111-8111-111111111111'
 
-const RESERVATION: ApiAdminReservation = {
+const RESERVATION: AdminReservationDetailParsed = {
   id: RESERVATION_ID,
   quantityBooked: 2,
-  createdAt: '2024-02-01T00:00:00.000Z',
+  reserverName: null,
+  reserverEmail: null,
+  createdAt: new Date('2024-02-01T00:00:00.000Z'),
   listItem: {
     id: 'li-1',
     quantityDesired: 3,
@@ -32,12 +34,11 @@ const RESERVATION: ApiAdminReservation = {
       id: '33333333-3333-4333-8333-333333333333',
       name: 'Weighted blanket',
       description: null,
-      imageUrl: null,
       imageId: null,
       image: null,
       createdByUserId: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     },
   },
   list: {
@@ -52,15 +53,16 @@ const RESERVATION: ApiAdminReservation = {
     username: 'reserver',
     authProvider: 'email',
     role: 'user',
-    avatarUrl: null,
+    avatarImageId: null,
+    avatar: null,
     isCgvAccepted: true,
-    cgvAcceptedAt: '2024-01-01T00:00:00.000Z',
+    cgvAcceptedAt: new Date('2024-01-01T00:00:00.000Z'),
     isMarketingOptedIn: false,
     defaultCurrency: 'EUR',
-    emailVerifiedAt: '2024-01-01T00:00:00.000Z',
-    lastActiveAt: '2024-02-01T00:00:00.000Z',
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
+    emailVerifiedAt: new Date('2024-01-01T00:00:00.000Z'),
+    lastActiveAt: new Date('2024-02-01T00:00:00.000Z'),
+    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   },
 }
 

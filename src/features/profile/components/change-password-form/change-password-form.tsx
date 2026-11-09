@@ -3,8 +3,8 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { ErrorCode } from '@keimelion/sdk/enums'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -22,14 +22,11 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { PasswordInput } from '@/components/ui/password-input'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
-import {
-  changePasswordInputSchema,
-  type ChangePasswordFormInput,
-} from '@/data-access/users/profile.schemas'
+import { changePasswordInputSchema, type ChangePasswordFormInput } from '@/features/profile/profile.input-schemas'
 import { useChangePassword } from '@/features/profile/hooks/use-change-password'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { ApiError } from '@keimelion/sdk/client'
 
 const CHANGE_PASSWORD_ISSUE_PATHS = ['currentPassword', 'newPassword'] as const
 const WRONG_CURRENT_PASSWORD_CODES: readonly string[] = [
@@ -70,7 +67,7 @@ export function ChangePasswordForm(): React.JSX.Element {
       {
         onError: (error) => {
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && WRONG_CURRENT_PASSWORD_CODES.includes(error.code)
           ) {
             form.setError('currentPassword', {
@@ -80,9 +77,8 @@ export function ChangePasswordForm(): React.JSX.Element {
             return
           }
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && error.status === HttpStatus.UNPROCESSABLE_ENTITY
-            && error.issues !== null
           ) {
             const appliedCount = applyApiValidationIssues(
               error.issues,

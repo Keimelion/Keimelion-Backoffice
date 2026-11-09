@@ -1,16 +1,18 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { ErrorCode } from '@keimelion/sdk/enums'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { renderWithQueryClient } from '@/test/test-utils'
-import type { ApiUser } from '@/data-access/_shared/user'
 
 vi.mock('@/data-access/users/profile.api', () => ({
   updateMe: vi.fn(),
 }))
 
 vi.mock('@/data-access/_shared/auth-storage', () => ({
+  getAccessToken: vi.fn(() => null),
+  getRefreshToken: vi.fn(() => null),
+  rotateTokens: vi.fn(),
   updateStoredUser: vi.fn(),
 }))
 
@@ -28,27 +30,29 @@ vi.mock('sonner', () => ({
 }))
 
 import { updateMe } from '@/data-access/users/profile.api'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { PersonalInfoForm } from '@/features/profile/components/personal-info-form'
+import { ApiError } from '@keimelion/sdk/client'
+import type { UserDetailParsed } from '@keimelion/sdk/schemas'
 
-const BASE_USER: ApiUser = {
+const BASE_USER: UserDetailParsed = {
   id: 'u-1',
   email: 'admin@keimelion.app',
   username: 'adminuser',
   authProvider: 'email',
   role: 'admin',
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR',
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
-function renderForm(user: ApiUser = BASE_USER): void {
+function renderForm(user: UserDetailParsed = BASE_USER): void {
   renderWithQueryClient(<PersonalInfoForm user={user} />)
 }
 
@@ -64,10 +68,40 @@ describe('PersonalInfoForm', () => {
     expect(emailInput).toHaveAttribute('readonly')
   })
 
-  it('prefills the username and avatar fields with the user values', () => {
-    renderForm({ ...BASE_USER, avatarUrl: 'https://example.com/a.png' })
+  it('prefills the username and shows the avatar file input', () => {
+    renderForm(BASE_USER)
     expect(screen.getByLabelText('Username')).toHaveValue('adminuser')
-    expect(screen.getByLabelText('Avatar URL')).toHaveValue('https://example.com/a.png')
+    expect(screen.getByLabelText('Avatar')).toHaveAttribute('type', 'file')
+  })
+
+  it('uploads the selected avatar file through updateMe', async () => {
+    vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:avatar'), revokeObjectURL: vi.fn() }))
+    vi.mocked(updateMe).mockResolvedValue(BASE_USER)
+    const avatar = new File(['content'], 'avatar.png', { type: 'image/png' })
+
+    renderForm()
+    await userEvent.upload(screen.getByLabelText('Avatar'), avatar)
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+
+    await waitFor(() => {
+      expect(updateMe).toHaveBeenCalledWith({}, avatar)
+    })
+  })
+
+  it('surfaces a rejected image type as an inline avatar error', async () => {
+    vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:avatar'), revokeObjectURL: vi.fn() }))
+    vi.mocked(updateMe).mockRejectedValue(
+      new ApiError({ code: ErrorCode.INVALID_IMAGE_TYPE, message: 'Invalid image type', status: 400, metadata: {} }),
+    )
+    const avatar = new File(['content'], 'avatar.png', { type: 'image/png' })
+
+    renderForm()
+    await userEvent.upload(screen.getByLabelText('Avatar'), avatar)
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Only JPEG, PNG and WebP images are accepted.')).toBeInTheDocument()
+    })
   })
 
   it('keeps the submit button disabled while the form is pristine', () => {
@@ -85,13 +119,13 @@ describe('PersonalInfoForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
 
     await waitFor(() => {
-      expect(updateMe).toHaveBeenCalledWith({ username: 'newname' })
+      expect(updateMe).toHaveBeenCalledWith({ username: 'newname' }, null)
     })
   })
 
   it('surfaces a 409 as a username conflict error', async () => {
     vi.mocked(updateMe).mockRejectedValue(
-      new ApiRequestError(ErrorCode.CONFLICT, 'Conflict', HttpStatus.CONFLICT),
+      new ApiError({ code: ErrorCode.CONFLICT, message: 'Conflict', status: HttpStatus.CONFLICT, metadata: {} }),
     )
 
     renderForm()
@@ -107,12 +141,7 @@ describe('PersonalInfoForm', () => {
 
   it('maps API 422 issues to the matching fields', async () => {
     vi.mocked(updateMe).mockRejectedValue(
-      new ApiRequestError(
-        ErrorCode.UNPROCESSABLE_ENTITY,
-        'Validation failed',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        [{ path: 'username', message: 'Not allowed.', code: 'custom' }],
-      ),
+      new ApiError({ code: ErrorCode.UNPROCESSABLE_ENTITY, message: 'Validation failed', status: HttpStatus.UNPROCESSABLE_ENTITY, metadata: { issues: [{ path: 'username', message: 'Not allowed.', code: 'custom' }] } }),
     )
 
     renderForm()

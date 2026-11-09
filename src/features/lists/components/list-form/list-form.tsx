@@ -16,30 +16,25 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  editListFormResolverSchema,
-  LIST_TAGS_MAX,
-  LIST_TAG_NAME_MAX_LENGTH,
-  updateListInputSchema,
-  type ApiAdminList,
-  type UpdateListInput,
-} from '@/data-access/lists/lists.schemas'
+import { MAX_TAG_NAME_LENGTH, MAX_TAGS_PER_RESOURCE } from '@keimelion/sdk/schemas'
+import { editListFormResolverSchema, updateListInputSchema, type UpdateListInput } from '@/features/lists/lists.input-schemas'
 import { TagsPicker } from '@/features/items/components/item-form/tags-picker'
 import { OccasionTypePicker } from '@/features/occasion-types/components/occasion-type-picker'
 import { haveSameUnorderedValues } from '@/lib/have-same-unordered-values'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminListDetailParsed } from '@keimelion/sdk/schemas'
 
 export type ListFormEditValues = UpdateListInput
 
 interface ListFormProps {
   mode: 'edit'
-  list: ApiAdminList
+  list: AdminListDetailParsed
   onSubmit: (values: ListFormEditValues, setError: UseFormSetError<ListFormEditValues>) => void
   onDirtyChange: (isDirty: boolean) => void
   isPending: boolean
 }
 
-function buildDefaultValues(list: ApiAdminList): ListFormEditValues {
+function buildDefaultValues(list: AdminListDetailParsed): ListFormEditValues {
   return {
     title: list.title,
     description: list.description,
@@ -48,7 +43,7 @@ function buildDefaultValues(list: ApiAdminList): ListFormEditValues {
   }
 }
 
-function computeHasChanges(list: ApiAdminList, values: ListFormEditValues): boolean {
+function computeHasChanges(list: AdminListDetailParsed, values: ListFormEditValues): boolean {
   if (values.title !== list.title) return true
   if (values.description !== list.description) return true
   if (values.occasionTypeId !== list.occasionTypeId) return true
@@ -168,12 +163,12 @@ export function ListForm(props: ListFormProps): React.JSX.Element {
                   value={field.value ?? []}
                   onChange={(nextTags) => { field.onChange(nextTags) }}
                   disabled={isPending}
-                  max={LIST_TAGS_MAX}
-                  maxNameLength={LIST_TAG_NAME_MAX_LENGTH}
+                  max={MAX_TAGS_PER_RESOURCE}
+                  maxNameLength={MAX_TAG_NAME_LENGTH}
                 />
               </FormControl>
               <FormDescription>
-                {t('lists.form.tags_help', { max: LIST_TAGS_MAX })}
+                {t('lists.form.tags_help', { max: MAX_TAGS_PER_RESOURCE })}
               </FormDescription>
               <FormMessage />
             </FormItem>

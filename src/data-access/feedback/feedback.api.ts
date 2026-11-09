@@ -1,56 +1,51 @@
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { parseApiResponse } from '@/data-access/_shared/parse-response'
-import {
-  adminFeedbackListResponseSchema,
-  adminFeedbackMutationResponseSchema,
-  type ApiAdminFeedback,
-  type ListFeedbackQuery,
-  type UpdateFeedbackInput,
-} from './feedback.schemas'
+import type {
+  AdminFeedbackDetailParsed,
+  AdminFeedbackListResponseParsed,
+  AdminFeedbackUpdateRequestInput,
+} from '@keimelion/sdk/schemas'
+import type { FeedbackStatus } from '@keimelion/sdk/enums'
+import { apiClient } from '@/data-access/_shared/client'
+import { emptyToUndefined } from '@/data-access/_shared/query-params'
 
 export const FEEDBACK_QUERY_KEY = ['feedback'] as const
 
 const DAY_START_SUFFIX = 'T00:00:00.000Z'
 const DAY_END_SUFFIX = 'T23:59:59.999Z'
 
-function buildListParams(input: Partial<ListFeedbackQuery>): Record<string, string> {
-  const params: Record<string, string> = {}
-  if (input.page !== undefined) params.page = String(input.page)
-  if (input.limit !== undefined) params.limit = String(input.limit)
-  if (typeof input.title === 'string' && input.title.length > 0) {
-    params['title[ilike]'] = input.title
-  }
-  if (input.userId !== undefined) {
-    params['userId[eq]'] = input.userId
-  }
-  if (input.status !== undefined) {
-    params['status[eq]'] = input.status
-  }
-  if (input.createdFrom !== undefined) {
-    params['createdAt[gte]'] = `${input.createdFrom}${DAY_START_SUFFIX}`
-  }
-  if (input.createdTo !== undefined) {
-    params['createdAt[lte]'] = `${input.createdTo}${DAY_END_SUFFIX}`
-  }
-  if (input.sort !== undefined) params.sort = input.sort
-  return params
+export interface ListAdminFeedbackParams {
+  page?: number | undefined
+  limit?: number | undefined
+  title?: string | undefined
+  userId?: string | undefined
+  status?: FeedbackStatus | undefined
+  createdFrom?: string | undefined
+  createdTo?: string | undefined
+  sort?: string | undefined
 }
 
 export async function listAdminFeedback(
-  input: Partial<ListFeedbackQuery>,
-): Promise<PaginatedResponse<ApiAdminFeedback>> {
-  const response = await axiosInstance.get<unknown>('/admin/feedback', {
-    params: buildListParams(input),
+  input: ListAdminFeedbackParams,
+): Promise<AdminFeedbackListResponseParsed> {
+  return apiClient.admin.feedback.list({
+    page: input.page,
+    limit: input.limit,
+    sort: input.sort,
+    'title[ilike]': emptyToUndefined(input.title),
+    'userId[eq]': input.userId,
+    'status[eq]': input.status,
+    'createdAt[gte]': appendSuffix(input.createdFrom, DAY_START_SUFFIX),
+    'createdAt[lte]': appendSuffix(input.createdTo, DAY_END_SUFFIX),
   })
-  return parseApiResponse(adminFeedbackListResponseSchema, response, 'admin feedback')
 }
 
 export async function updateAdminFeedback(
   id: string,
-  input: UpdateFeedbackInput,
-): Promise<ApiAdminFeedback> {
-  const response = await axiosInstance.patch<unknown>(`/admin/feedback/${id}`, input)
-  const parsed = parseApiResponse(adminFeedbackMutationResponseSchema, response, 'admin feedback')
-  return parsed.feedback
+  input: AdminFeedbackUpdateRequestInput,
+): Promise<AdminFeedbackDetailParsed> {
+  const { feedback } = await apiClient.admin.feedback.update(id, input)
+  return feedback
+}
+
+function appendSuffix(day: string | undefined, suffix: string): string | undefined {
+  return day === undefined ? undefined : `${day}${suffix}`
 }

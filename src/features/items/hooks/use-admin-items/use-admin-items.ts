@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import {
   ITEMS_QUERY_KEY,
   createItem,
@@ -11,12 +10,8 @@ import {
   listAdminItems,
   updateItem,
 } from '@/data-access/items/items.api'
-import type {
-  ApiAdminItem,
-  CreateItemInput,
-  ListItemsQuery,
-  UpdateItemInput,
-} from '@/data-access/items/items.schemas'
+import type { CreateItemInput, ListItemsQuery } from '@/features/items/items.input-schemas'
+import type { AdminItemDetailParsed, AdminItemsUpdateRequestInput, ItemWithSourcesDetailParsed, PaginatedResponse } from '@keimelion/sdk/schemas'
 
 type ItemsListFilters = Partial<ListItemsQuery>
 
@@ -33,7 +28,7 @@ export function buildAdminItemKey(id: string): readonly ['items', 'detail', stri
 
 export function useAdminItems(
   filters: ItemsListFilters,
-): UseQueryResult<PaginatedResponse<ApiAdminItem>> {
+): UseQueryResult<PaginatedResponse<AdminItemDetailParsed>> {
   return useQuery({
     queryKey: buildAdminItemsKey(filters),
     queryFn: () => listAdminItems(filters),
@@ -42,7 +37,7 @@ export function useAdminItems(
 
 const DISABLED_ADMIN_ITEM_KEY = [...ITEMS_QUERY_KEY, 'detail', null] as const
 
-export function useAdminItem(id: string | null): UseQueryResult<ApiAdminItem> {
+export function useAdminItem(id: string | null): UseQueryResult<AdminItemDetailParsed> {
   return useQuery({
     queryKey: id === null ? DISABLED_ADMIN_ITEM_KEY : buildAdminItemKey(id),
     queryFn: () => fetchAdminItem(id ?? ''),
@@ -50,10 +45,15 @@ export function useAdminItem(id: string | null): UseQueryResult<ApiAdminItem> {
   })
 }
 
-export function useCreateItem(): UseMutationResult<ApiAdminItem, Error, CreateItemInput> {
+interface CreateItemVariables {
+  input: Omit<CreateItemInput, 'image'>
+  image: File | null
+}
+
+export function useCreateItem(): UseMutationResult<ItemWithSourcesDetailParsed, Error, CreateItemVariables> {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: createItem,
+    mutationFn: ({ input, image }) => createItem(input, image),
     meta: { silent: true },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ITEMS_QUERY_KEY })
@@ -63,13 +63,14 @@ export function useCreateItem(): UseMutationResult<ApiAdminItem, Error, CreateIt
 
 interface UpdateItemVariables {
   id: string
-  input: UpdateItemInput
+  input: AdminItemsUpdateRequestInput
+  image: File | null
 }
 
-export function useUpdateItem(): UseMutationResult<ApiAdminItem, Error, UpdateItemVariables> {
+export function useUpdateItem(): UseMutationResult<ItemWithSourcesDetailParsed, Error, UpdateItemVariables> {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, input }) => updateItem(id, input),
+    mutationFn: ({ id, input, image }) => updateItem(id, input, image),
     meta: { silent: true },
     onSuccess: async (_data, variables) => {
       await Promise.all([

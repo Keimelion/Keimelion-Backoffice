@@ -16,10 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import {
-  createOccasionTypeInputSchema,
-  type CreateOccasionTypeInput,
-} from '@/data-access/occasion-types/admin-occasion-types.schemas'
+import { createOccasionTypeInputSchema, type CreateOccasionTypeInput } from '@/features/occasion-types/occasion-types.input-schemas'
 import { LOCALES, DEFAULT_LOCALE, LOCALE_NATIVE_NAMES } from '@/lib/i18n/locale'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useAutoSlug } from '@/lib/use-auto-slug'

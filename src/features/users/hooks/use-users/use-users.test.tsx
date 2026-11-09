@@ -19,18 +19,20 @@ const MOCK_USER = {
   username: 'admin',
   authProvider: 'email' as const,
   role: 'admin' as const,
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR' as const,
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   bannedAt: null,
   banReason: null,
   deletedAt: null,
+  reservationsCount: 0,
 }
 
 const MOCK_RESPONSE = {

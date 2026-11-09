@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
 import {
   buildParentPathLabel,
@@ -24,6 +23,7 @@ import { useLocaleStore } from '@/lib/i18n/locale-store'
 import type { Locale } from '@/lib/i18n/locale'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 const INDENT_PER_DEPTH_PX = 16
 
@@ -35,7 +35,7 @@ interface CategoriesPickerProps {
 }
 
 interface CategoryOption {
-  category: ApiCategory
+  category: AdminCategoryDetailParsed
   name: string
   pathLabel: string
   parentLabel: string | null
@@ -53,11 +53,11 @@ export function CategoriesPicker({
   const categories = categoriesQuery.data ?? []
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
-  const selectedCategories = useMemo<ApiCategory[]>(() => {
+  const selectedCategories = useMemo<AdminCategoryDetailParsed[]>(() => {
     const byId = new Map(categories.map((category) => [category.id, category]))
     return value
       .map((id) => byId.get(id) ?? null)
-      .filter((category): category is ApiCategory => category !== null)
+      .filter((category): category is AdminCategoryDetailParsed => category !== null)
   }, [value, categories])
 
   const treeOrderedOptions = useMemo<CategoryOption[]>(
@@ -230,7 +230,7 @@ function CategoryOptionRow({
 }
 
 function buildTreeOrderedOptions(
-  categories: readonly ApiCategory[],
+  categories: readonly AdminCategoryDetailParsed[],
   locale: Locale,
 ): CategoryOption[] {
   const byId = new Map(categories.map((category) => [category.id, category]))

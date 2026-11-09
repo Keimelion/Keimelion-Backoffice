@@ -16,6 +16,9 @@ vi.mock(import('@/data-access/auth/reset-password'), async (importOriginal) => {
 })
 
 vi.mock('@/data-access/_shared/auth-storage', () => ({
+  getAccessToken: vi.fn(() => null),
+  getRefreshToken: vi.fn(() => null),
+  rotateTokens: vi.fn(),
   clearSession: vi.fn(),
 }))
 
