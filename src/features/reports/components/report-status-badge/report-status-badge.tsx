@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, Gavel, XCircle } from 'lucide-react'
+import { CircleCheck, Clock, XCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ReportStatus } from '@keimelion/sdk/enums'
 import { Badge } from '@/components/ui/badge'
@@ -18,11 +18,11 @@ const STATUS_VISUALS: Record<ReportStatus, StatusVisuals> = {
     Icon: Clock,
   },
   upheld: {
-    className: 'border-transparent bg-rose-500 text-white hover:bg-rose-500/80',
-    Icon: Gavel,
+    className: 'border-transparent bg-emerald-500 text-white hover:bg-emerald-500/80',
+    Icon: CircleCheck,
   },
   dismissed: {
-    className: 'border-transparent bg-slate-500 text-white hover:bg-slate-500/80',
+    className: 'border-transparent bg-rose-500 text-white hover:bg-rose-500/80',
     Icon: XCircle,
   },
 }
@@ -35,7 +35,7 @@ export function ReportStatusBadge({ status }: ReportStatusBadgeProps): React.JSX
   const t = useTranslate()
   const { className, Icon } = STATUS_VISUALS[status]
   return (
-    <Badge className={cn(className, 'gap-1')}>
+    <Badge className={cn(className, 'gap-1 whitespace-nowrap')}>
       <Icon className="h-3 w-3" />
       {t(`reports.status.${status}`)}
     </Badge>

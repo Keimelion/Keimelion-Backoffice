@@ -8,6 +8,8 @@ interface BadgeToggleFilterProps<V extends string> {
   label: string
   values: readonly V[]
   renderBadge: (value: V) => ReactNode
+  defaultValue?: V | null
+  clearedValue?: string | null
 }
 
 export function BadgeToggleFilter<V extends string>({
@@ -15,13 +17,16 @@ export function BadgeToggleFilter<V extends string>({
   label,
   values,
   renderBadge,
+  defaultValue = null,
+  clearedValue = null,
 }: BadgeToggleFilterProps<V>): React.JSX.Element {
   const { searchParams, setFilterParam } = useUrlParams()
-  const activeValue = searchParams.get(paramName)
+  const selectedValue = searchParams.get(paramName) ?? defaultValue
+  const activeValue = values.find((value) => value === selectedValue) ?? null
   const hasActiveValue = activeValue !== null
 
   const handleToggle = (value: V): void => {
-    setFilterParam(paramName, activeValue === value ? null : value)
+    setFilterParam(paramName, activeValue === value ? clearedValue : value)
   }
 
   return (

@@ -13,7 +13,6 @@ import {
   ReportsStatusFilter,
   STATUS_PARAM,
 } from '@/features/reports/components/reports-status-filter'
-import type { ListReportsQuery } from '@/features/reports/reports.input-schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
 const TARGET_TYPE_PARAM = 'targetType'
@@ -29,11 +28,7 @@ const CLEARABLE_PARAMS = [
   SORT_PARAM,
 ]
 
-interface ReportsFiltersProps {
-  status: ListReportsQuery['status']
-}
-
-export function ReportsFilters({ status }: ReportsFiltersProps): React.JSX.Element {
+export function ReportsFilters(): React.JSX.Element {
   const t = useTranslate()
 
   const selectFilters = useMemo<FilterDefinition[]>(
@@ -64,12 +59,13 @@ export function ReportsFilters({ status }: ReportsFiltersProps): React.JSX.Eleme
 
   return (
     <div className="flex flex-wrap items-end gap-3">
-      <ReportsStatusFilter value={status} />
       <DataTableFilters filters={selectFilters} />
       <DateRangeFilter
         fromLabel={t('reports.filters.created_from_label')}
         toLabel={t('reports.filters.created_to_label')}
       />
+      <div className="mb-1.5 h-6 w-px self-end bg-border" />
+      <ReportsStatusFilter />
       <ClearFiltersButton paramNames={CLEARABLE_PARAMS} />
     </div>
   )

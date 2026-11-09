@@ -24,7 +24,7 @@ import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-t
 import { DeleteListDialog } from '@/features/lists/components/delete-list-dialog'
 import { EditListDialog } from '@/features/lists/components/edit-list-dialog'
 import { ListItemsSubTable } from '@/features/lists/components/list-items-sub-table'
-import { ListsForbidden } from '@/features/lists/components/lists-forbidden'
+import { ForbiddenState } from '@/components/shared/forbidden-state'
 import { formatDate } from '@/lib/format-date'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
@@ -198,7 +198,7 @@ export function ListsPageContent(): React.JSX.Element {
   )
 
   if (!isCurrentUserAdmin) {
-    return <ListsForbidden />
+    return <ForbiddenState namespace="lists.admin.forbidden" />
   }
 
   return (

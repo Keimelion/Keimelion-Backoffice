@@ -13,7 +13,7 @@ import { ReportDetailsRow } from '@/features/reports/components/report-details-r
 import { ReportStatusActions } from '@/features/reports/components/report-status-actions'
 import { ReportStatusBadge } from '@/features/reports/components/report-status-badge'
 import { ReportsFilters } from '@/features/reports/components/reports-filters'
-import { ReportsForbidden } from '@/features/reports/components/reports-forbidden'
+import { ForbiddenState } from '@/components/shared/forbidden-state'
 import { useAdminReports } from '@/features/reports/hooks/use-admin-reports'
 import { listReportsQuerySchema } from '@/features/reports/reports.input-schemas'
 import { resolveReportTargetLabel } from '@/features/reports/resolve-report-target-label'
@@ -31,7 +31,7 @@ export function ReportsList(): React.JSX.Element {
   const columns = useMemo(() => buildColumns(t), [t])
 
   if (reportsQuery.error instanceof ApiError && reportsQuery.error.status === HttpStatus.FORBIDDEN) {
-    return <ReportsForbidden />
+    return <ForbiddenState namespace="reports.forbidden" />
   }
 
   return (
@@ -47,7 +47,7 @@ export function ReportsList(): React.JSX.Element {
       renderExpandedRow={(report) => <ReportDetailsRow report={report} />}
       isRowExpanded={(report) => expandedIds.has(report.id)}
       onRowClick={(report) => { toggleExpanded(report.id) }}
-      toolbar={<ReportsFilters status={filters.status} />}
+      toolbar={<ReportsFilters />}
       footer={
         <DataTablePagination
           page={filters.page}
@@ -92,7 +92,7 @@ function buildColumns(t: TranslateFn): DataTableColumn<AdminReportDetailParsed>[
       key: 'status',
       header: t('reports.table.column.status'),
       sortable: true,
-      className: 'w-28',
+      className: 'w-36',
       cell: (report) => <ReportStatusBadge status={report.status} />,
     },
     {

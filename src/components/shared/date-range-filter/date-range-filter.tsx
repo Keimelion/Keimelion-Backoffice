@@ -26,11 +26,8 @@ export function DateRangeFilter({ fromLabel, toLabel }: DateRangeFilterProps): R
 
   const updateParam = (name: string, value: string): void => {
     const current = paramsRef.current
-    if (value.length > 0) {
-      current.set(name, value)
-    } else {
-      current.delete(name)
-    }
+    current.delete(name)
+    if (value.length > 0) current.set(name, value)
     current.delete(PAGE_PARAM)
     router.replace(`?${current.toString()}`, { scroll: false })
   }

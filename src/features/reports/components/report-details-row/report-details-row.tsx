@@ -3,10 +3,9 @@
 import type { ReactNode } from 'react'
 import type { AdminReportDetailParsed } from '@keimelion/sdk/schemas'
 import { ReportAdminNoteForm } from '@/features/reports/components/report-admin-note-form'
+import { ReportTargetSnapshot } from '@/features/reports/components/report-target-snapshot'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
-
-const JSON_INDENT = 2
 
 interface ReportDetailsRowProps {
   report: AdminReportDetailParsed
@@ -28,9 +27,7 @@ export function ReportDetailsRow({ report }: ReportDetailsRowProps): React.JSX.E
         <p className="font-mono text-xs text-foreground">{report.targetId}</p>
       </DetailsSection>
       <DetailsSection title={t('reports.details.snapshot_title')}>
-        <pre className="max-h-80 overflow-auto rounded-md bg-muted/50 p-3 font-mono text-xs text-foreground">
-          {JSON.stringify(report.targetSnapshot, null, JSON_INDENT)}
-        </pre>
+        <ReportTargetSnapshot report={report} />
       </DetailsSection>
       {report.reviewedAt === null ? null : (
         <DetailsSection title={t('reports.details.review_title')}>

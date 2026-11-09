@@ -16,9 +16,10 @@ import { renderWithQueryClient } from '@/test/test-utils'
 import { ReportsList } from './reports-list'
 
 const useSearchParamsMock = vi.fn(() => new URLSearchParams())
+const routerReplaceMock = vi.fn()
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: vi.fn() }),
+  useRouter: () => ({ replace: routerReplaceMock }),
   useSearchParams: () => useSearchParamsMock(),
 }))
 
@@ -86,7 +87,14 @@ describe('ReportsList', () => {
     expect(useAdminReports).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'pending', sort: 'createdAt:desc', page: 1 }),
     )
-    expect(screen.getByLabelText('Status')).toHaveTextContent('Pending')
+    expect(screen.getByRole('button', { name: 'Pending' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('shows every status when the active status badge is toggled off', async () => {
+    mockReports([])
+    render(<ReportsList />)
+    await userEvent.click(screen.getByRole('button', { name: 'Pending' }))
+    expect(routerReplaceMock).toHaveBeenCalledWith(expect.stringContaining('status=all'), expect.anything())
   })
 
   it('reads the status from the URL', () => {
@@ -94,7 +102,9 @@ describe('ReportsList', () => {
     mockReports([])
     render(<ReportsList />)
     expect(useAdminReports).toHaveBeenCalledWith(expect.objectContaining({ status: 'all' }))
-    expect(screen.getByLabelText('Status')).toHaveTextContent('All statuses')
+    expect(screen.getByRole('button', { name: 'Pending' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Upheld' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Dismissed' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('falls back to the target id when the snapshot has no label', () => {
@@ -158,6 +168,7 @@ describe('ReportsList', () => {
 
     expect(await screen.findByText('This list is an advertisement.')).toBeInTheDocument()
     expect(screen.getByText(TARGET_ID)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'JSON' }))
     expect(screen.getByText(/"title": "Birthday wishlist"/)).toBeInTheDocument()
     expect(screen.getByLabelText('Admin note')).toHaveValue('Looks legit')
     expect(screen.queryByText(/Reviewed on/)).not.toBeInTheDocument()

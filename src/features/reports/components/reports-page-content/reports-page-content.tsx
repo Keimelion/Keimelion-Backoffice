@@ -2,7 +2,7 @@
 
 import { isAdmin } from '@/data-access/_shared/auth-storage'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
-import { ReportsForbidden } from '@/features/reports/components/reports-forbidden'
+import { ForbiddenState } from '@/components/shared/forbidden-state'
 import { ReportsList } from '@/features/reports/components/reports-list'
 
 export function ReportsPageContent(): React.JSX.Element {
@@ -10,7 +10,7 @@ export function ReportsPageContent(): React.JSX.Element {
   const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
 
   if (!isCurrentUserAdmin) {
-    return <ReportsForbidden />
+    return <ForbiddenState namespace="reports.forbidden" />
   }
 
   return <ReportsList />
