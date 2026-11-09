@@ -1,10 +1,7 @@
 import { z } from 'zod'
 import { FEEDBACK_STATUS_VALUES } from '@keimelion/sdk/enums'
 import { ADMIN_FEEDBACK_SORT_FIELDS } from '@keimelion/sdk/schemas'
-import { basePaginationShape, buildSortValues } from '@/lib/list-query-input-schema'
-
-const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-const dateInputSchema = z.string().regex(DATE_INPUT_PATTERN)
+import { basePaginationShape, buildSortValues, dateInputSchema } from '@/lib/list-query-input-schema'
 
 const SORT_VALUES = buildSortValues(ADMIN_FEEDBACK_SORT_FIELDS)
 

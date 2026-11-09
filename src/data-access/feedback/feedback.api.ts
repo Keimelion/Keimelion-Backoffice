@@ -5,12 +5,9 @@ import type {
 } from '@keimelion/sdk/schemas'
 import type { FeedbackStatus } from '@keimelion/sdk/enums'
 import { apiClient } from '@/data-access/_shared/client'
-import { emptyToUndefined } from '@/data-access/_shared/query-params'
+import { emptyToUndefined, toDayEndIso, toDayStartIso } from '@/data-access/_shared/query-params'
 
 export const FEEDBACK_QUERY_KEY = ['feedback'] as const
-
-const DAY_START_SUFFIX = 'T00:00:00.000Z'
-const DAY_END_SUFFIX = 'T23:59:59.999Z'
 
 export interface ListAdminFeedbackParams {
   page?: number | undefined
@@ -33,8 +30,8 @@ export async function listAdminFeedback(
     'title[ilike]': emptyToUndefined(input.title),
     'userId[eq]': input.userId,
     'status[eq]': input.status,
-    'createdAt[gte]': appendSuffix(input.createdFrom, DAY_START_SUFFIX),
-    'createdAt[lte]': appendSuffix(input.createdTo, DAY_END_SUFFIX),
+    'createdAt[gte]': toDayStartIso(input.createdFrom),
+    'createdAt[lte]': toDayEndIso(input.createdTo),
   })
 }
 
@@ -44,8 +41,4 @@ export async function updateAdminFeedback(
 ): Promise<AdminFeedbackDetailParsed> {
   const { feedback } = await apiClient.admin.feedback.update(id, input)
   return feedback
-}
-
-function appendSuffix(day: string | undefined, suffix: string): string | undefined {
-  return day === undefined ? undefined : `${day}${suffix}`
 }

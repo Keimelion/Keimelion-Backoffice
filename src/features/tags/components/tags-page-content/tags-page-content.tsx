@@ -19,7 +19,7 @@ import { useAdminTags } from '@/features/tags/hooks/use-admin-tags'
 import { CreateTagDialog } from '@/features/tags/components/create-tag-dialog'
 import { DeleteTagDialog } from '@/features/tags/components/delete-tag-dialog'
 import { EditTagDialog } from '@/features/tags/components/edit-tag-dialog'
-import { TagsForbidden } from '@/features/tags/components/tags-forbidden'
+import { ForbiddenState } from '@/components/shared/forbidden-state'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TagSummaryParsed } from '@keimelion/sdk/schemas'
 
@@ -43,7 +43,7 @@ export function TagsPageContent(): React.JSX.Element {
   const total = tagsQuery.data?.pagination.total ?? 0
 
   if (!isCurrentUserAdmin) {
-    return <TagsForbidden />
+    return <ForbiddenState namespace="tags.admin.forbidden" />
   }
 
   const tagsFilters: FilterDefinition[] = [

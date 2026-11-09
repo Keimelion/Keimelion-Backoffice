@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   ClearFiltersButton,
   DataTable,
@@ -9,6 +9,12 @@ import {
 } from '@/components/shared/data-table'
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
+import {
+  CREATED_FROM_PARAM,
+  CREATED_TO_PARAM,
+  DateRangeFilter,
+} from '@/components/shared/date-range-filter'
+import { useExpandedRowIds } from '@/components/shared/use-expanded-row-ids'
 import { UserRefCell } from '@/components/shared/user-ref-cell'
 import { listFeedbackQuerySchema } from '@/features/feedback/feedback.input-schemas'
 import { useAdminFeedback } from '@/features/feedback/hooks/use-admin-feedback'
@@ -19,11 +25,6 @@ import {
   STATUS_PARAM,
   FeedbackStatusFilter,
 } from '@/features/feedback/components/feedback-status-filter'
-import {
-  CREATED_FROM_PARAM,
-  CREATED_TO_PARAM,
-  FeedbackDateRangeFilter,
-} from '@/features/feedback/components/feedback-date-range-filter'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
@@ -102,40 +103,12 @@ function buildColumns(t: TranslateFn): DataTableColumn<AdminFeedbackDetailParsed
 export function FeedbackList(): React.JSX.Element {
   const t = useTranslate()
   const filters = useListSearchParams(listFeedbackQuerySchema)
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
 
   const feedbackQuery = useAdminFeedback(filters)
   const items = feedbackQuery.data?.items ?? []
   const total = feedbackQuery.data?.pagination.total ?? 0
 
-  const visibleIds = useMemo(() => new Set(items.map((item) => item.id)), [items])
-
-  useEffect(() => {
-    setExpandedIds((previous) => {
-      let changed = false
-      const next = new Set<string>()
-      for (const id of previous) {
-        if (visibleIds.has(id)) {
-          next.add(id)
-          continue
-        }
-        changed = true
-      }
-      return changed ? next : previous
-    })
-  }, [visibleIds])
-
-  function toggleExpanded(feedbackId: string): void {
-    setExpandedIds((previous) => {
-      const next = new Set(previous)
-      if (next.has(feedbackId)) {
-        next.delete(feedbackId)
-        return next
-      }
-      next.add(feedbackId)
-      return next
-    })
-  }
+  const { expandedIds, toggleExpanded } = useExpandedRowIds(items)
 
   const filtersDefinition = useMemo<FilterDefinition[]>(
     () => [
@@ -183,7 +156,10 @@ export function FeedbackList(): React.JSX.Element {
       toolbar={
         <div className="flex flex-wrap items-end gap-3">
           <DataTableFilters filters={filtersDefinition} />
-          <FeedbackDateRangeFilter />
+          <DateRangeFilter
+            fromLabel={t('feedback.filters.created_from_label')}
+            toLabel={t('feedback.filters.created_to_label')}
+          />
           <div className="mb-1.5 h-6 w-px self-end bg-border" />
           <FeedbackStatusFilter />
           <ClearFiltersButton paramNames={CLEARABLE_PARAMS} />
