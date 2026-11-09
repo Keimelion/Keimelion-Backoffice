@@ -57,7 +57,7 @@ Every user-facing string in the Backoffice is rendered through `react-intl`. The
 - **Rendering**: use the typed `useTranslate()` hook — `const t = useTranslate(); t('auth.login.title')`. The `id` parameter is typed as `MessageId` (derived from the catalog), so typos fail typecheck. Never call `useIntl()` directly outside `src/lib/i18n/`.
 - **Outside React**: for imperative contexts that have no `IntlProvider` (mutation callbacks, `queryClient` handlers, toast helpers), use `translate(id, values)` from `src/lib/i18n/translate.ts` — it reads the current locale from the Zustand store and runs a one-shot `createIntl()`.
 - **Tests**: wrap components in `IntlProvider` via `renderWithIntl` / `renderWithQueryClient` from `src/test/query-test-utils.tsx` — both already include the English catalog.
-- **Locale switching**: the `LocalePicker` in the dashboard header drives `useLocaleStore` (KEI-59). The `I18nProvider` re-reads the store, so switching locale re-renders the whole tree instantly. The persisted locale also flows to the API via the `Accept-Language` axios interceptor.
+- **Locale switching**: the `LocalePicker` in the dashboard header drives `useLocaleStore` (KEI-59). The `I18nProvider` re-reads the store, so switching locale re-renders the whole tree instantly. The persisted locale also flows to the API via the `Accept-Language` header set in `src/data-access/_shared/client/`.
 - **Enforcement**: no ESLint rule is wired today. Reviewers must reject any PR that introduces a raw string in JSX or a hardcoded label passed to a prop — the string belongs in the catalog.
 
 ### React/Next.js additions
@@ -94,13 +94,11 @@ src/
     shared/             # Reusable app-level components (sidebar, page-header, data-table…)
   data-access/          # All API calls — mirrors db/ in the API
     _shared/            # Shared infra used across resources (not itself a resource)
-      client.ts         # Typed fetch wrapper (apiGet, apiPost, apiPatch, apiDelete)
+      client/           # apiClient: the single SDK client (locale, token, session refresh)
       auth-storage.ts   # Token + user + session-cookie storage — used by client, middleware, hooks
       list-query.ts     # buildListSearchParams helper — pagination + config-driven filter loop
-      schemas/          # Cross-resource Zod schemas (user.ts, admin-user.ts…)
     auth/
-      auth.api.ts       # loginApi(), logoutApi(), registerApi()
-      auth.schemas.ts   # Zod schemas for the auth endpoints (loginInputSchema, loginResponseSchema…)
+      login.ts, logout.ts, reset-password.ts…
     users/
       users.api.ts      # fetchUsers(), fetchUser(), updateUser(), deleteUser()
   features/             # Feature logic: TanStack Query hooks + feature-specific components
@@ -128,9 +126,8 @@ src/
 `data-access/` is the direct equivalent of `db/entities/` in the API:
 - Each file exports plain async functions that call the API — no TanStack Query, no hooks
 - Functions return the raw API response type (`Promise<PaginatedResponse<ApiUser>>`, etc.)
-- All API call logic lives here; features never call `fetch` or `_shared/client` directly
-- **Schemas colocated**: `<resource>.schemas.ts` next to `<resource>.api.ts` for the endpoint I/O Zod schemas (input + response)
-- **Shared schemas**: reused across resources go in `data-access/_shared/schemas/` (e.g. `schemas/user.ts` — used by `auth.schemas.ts`, `_shared/auth-storage.ts`, and any future admin endpoint)
+- All API call logic lives here through `apiClient`; features never call `fetch` or the SDK directly
+- **No schemas here**: endpoint request and response schemas live in `@keimelion/sdk`; form and URL validation lives in the feature (`<feature>.input-schemas.ts`)
 - **`_shared/`** groups every non-resource helper (client, storage, list-query, cross-resource schemas). The `_` prefix marks it as shared infra, not a resource
 
 ### features/ layer
@@ -138,36 +135,23 @@ src/
 - **Hooks** wrap `data-access/` functions with TanStack Query (`useQuery`, `useMutation`)
 - **Components** are feature-specific and import from hooks, never from `data-access/` directly
 
-## Type sharing with the API
+## API contract: `@keimelion/sdk`
 
-Types are shared via `tsconfig.json` path aliases:
+The Backoffice has no filesystem dependency on the API. It talks to the API over HTTP through the published [`@keimelion/sdk`](https://www.npmjs.com/package/@keimelion/sdk) package, which is the single source of truth for enums, schemas, types and the HTTP client. The repo clones and runs on its own.
 
 ```ts
-import type { AuthProvider } from '@keimelion/api/shared/enums/auth-provider'
-import type { UserRole } from '@keimelion/api/shared/enums/user-role'
-import type { PaginatedResponse, ApiError } from '@keimelion/api/shared/types/api'
+import { apiClient } from '@/data-access/_shared/client'
+import { ApiError } from '@keimelion/sdk/client'
+import { ErrorCode, UserRoles } from '@keimelion/sdk/enums'
+import type { AdminItemDetailParsed, PaginatedResponse } from '@keimelion/sdk/schemas'
 ```
 
-**Repo layout requirement**: the alias resolves to `../Keimelion-API/src/*`, so both repos must be cloned side-by-side in the same parent directory for `tsc` and Vitest to work:
-
-```
-<parent>/
-  Keimelion-API/
-  Keimelion-Backoffice/
-```
-
-If you clone the Backoffice alone, type-checking will fail on any `@keimelion/api/*` import. Clone the API alongside before running `npm install`.
-
-**Safe to import from the API** (no Drizzle/ORM dependencies):
-- `@keimelion/api/shared/enums/*`
-- `@keimelion/api/shared/types/api` (`ApiError`, `PaginatedResponse`)
-
-**Do not import** — these pull in Drizzle ORM types which don't exist in the backoffice:
-- `@keimelion/api/shared/types/user` (references DB schema)
-- `@keimelion/api/features/*/mapper` (references DB schema)
-- `@keimelion/api/db/**`
-
-`ApiUser` is defined in `src/data-access/auth/auth.api.ts` and mirrors `BaseUser` with string dates (accurate JSON representation).
+- **Contract changes go SDK first, then consumers**: publish the change in `@keimelion/sdk`, bump the pinned version here, then adapt the code. Never redeclare a response or request shape locally.
+- **Enums and types** come from `@keimelion/sdk/enums` and `@keimelion/sdk/schemas`. Parsed responses decode timestamps to `Date`.
+- **`src/data-access/_shared/client/`** creates the single `apiClient`: auth token, locale (`Accept-Language`) through the `fetch` option, and session refresh through `onUnauthorized` (refresh once, coalesced).
+- **Errors** are SDK `ApiError` instances (`status`, `code`, `issues`, including client codes `NETWORK_ERROR`, `TIMEOUT`, `ABORTED`, `INVALID_RESPONSE`).
+- **Admin filters** go through the SDK query serializer with bracket keys (`{ 'name[ilike]': value }`).
+- **Form and URL validation** that carries UI copy (messages, `catch` defaults) lives in `src/features/<feature>/<feature>.input-schemas.ts`, reusing SDK constants. It is UI validation, not contract: request and response shapes stay in the SDK.
 
 ## Commands
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { Pencil, RotateCcw, Trash2 } from 'lucide-react'
-import { LIST_STATUS_VALUES } from '@keimelion/api/shared/enums/list-status'
+import { LIST_STATUS_VALUES } from '@keimelion/sdk/enums'
 import {
   ClearFiltersButton,
   DataTable,
@@ -17,7 +17,7 @@ import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { Badge } from '@/components/ui/badge'
 import { ListStatusBadge } from '@/features/lists/components/list-status-badge'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
-import { listListsQuerySchema, type ApiAdminList } from '@/data-access/lists/lists.schemas'
+import { listListsQuerySchema } from '@/features/lists/lists.input-schemas'
 import { useAdminLists, useRestoreList } from '@/features/lists/hooks/use-admin-lists'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-types'
@@ -30,6 +30,7 @@ import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
+import type { AdminListDetailParsed } from '@keimelion/sdk/schemas'
 
 const SEARCH_PARAM = 'search'
 const LIST_STATUS_PARAM = 'listStatus'
@@ -48,7 +49,7 @@ const CLEARABLE_PARAMS = [
   ID_PARAM,
 ]
 
-function resolveRowClassName(list: ApiAdminList): string | undefined {
+function resolveRowClassName(list: AdminListDetailParsed): string | undefined {
   if (list.deletedAt !== null) return 'opacity-50'
   return undefined
 }
@@ -73,8 +74,8 @@ export function ListsPageContent(): React.JSX.Element {
     [occasionTypes],
   )
 
-  const [editTarget, setEditTarget] = useState<ApiAdminList | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<ApiAdminList | null>(null)
+  const [editTarget, setEditTarget] = useState<AdminListDetailParsed | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminListDetailParsed | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
 
   const listsQuery = useAdminLists(filters, { enabled: isCurrentUserAdmin })
@@ -114,7 +115,7 @@ export function ListsPageContent(): React.JSX.Element {
     })
   }
 
-  const handleRestore = useCallback((list: ApiAdminList): void => {
+  const handleRestore = useCallback((list: AdminListDetailParsed): void => {
     restoreMutate(list.id, {
       onSuccess: () => {
         notifySuccess({ title: translate('lists.mutation.restored_toast', { title: list.title }) })
@@ -172,7 +173,7 @@ export function ListsPageContent(): React.JSX.Element {
     [intl],
   )
 
-  const columns = useMemo<DataTableColumn<ApiAdminList>[]>(
+  const columns = useMemo<DataTableColumn<AdminListDetailParsed>[]>(
     () => buildColumns({
       t,
       occasionTypeById,
@@ -187,12 +188,12 @@ export function ListsPageContent(): React.JSX.Element {
   )
 
   const renderExpandedRow = useMemo(
-    () => (list: ApiAdminList) => <ListItemsSubTable listId={list.id} />,
+    () => (list: AdminListDetailParsed) => <ListItemsSubTable listId={list.id} />,
     [],
   )
 
   const isRowExpanded = useMemo(
-    () => (list: ApiAdminList) => expandedIds.has(list.id),
+    () => (list: AdminListDetailParsed) => expandedIds.has(list.id),
     [expandedIds],
   )
 
@@ -261,9 +262,9 @@ interface BuildColumnsArgs {
   isCurrentUserAdmin: boolean
   restoringId: string | null
   formatPrice: (amount: number, currency: string) => string
-  onEdit: (list: ApiAdminList) => void
-  onDelete: (list: ApiAdminList) => void
-  onRestore: (list: ApiAdminList) => void
+  onEdit: (list: AdminListDetailParsed) => void
+  onDelete: (list: AdminListDetailParsed) => void
+  onRestore: (list: AdminListDetailParsed) => void
 }
 
 function buildColumns({
@@ -275,8 +276,8 @@ function buildColumns({
   onEdit,
   onDelete,
   onRestore,
-}: BuildColumnsArgs): DataTableColumn<ApiAdminList>[] {
-  const baseColumns: DataTableColumn<ApiAdminList>[] = [
+}: BuildColumnsArgs): DataTableColumn<AdminListDetailParsed>[] {
+  const baseColumns: DataTableColumn<AdminListDetailParsed>[] = [
     {
       key: 'title',
       header: t('lists.table.column.title'),
@@ -376,7 +377,7 @@ function buildColumns({
 
   if (!isCurrentUserAdmin) return baseColumns
 
-  const actionsColumn: DataTableColumn<ApiAdminList> = {
+  const actionsColumn: DataTableColumn<AdminListDetailParsed> = {
     key: 'actions',
     header: t('lists.table.column.actions'),
     className: 'w-32 text-right',

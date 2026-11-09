@@ -1,8 +1,8 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { ErrorCode } from '@keimelion/sdk/enums'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { renderWithQueryClient } from '@/test/test-utils'
 
 const mockReplace = vi.fn()
@@ -17,6 +17,9 @@ vi.mock('@/data-access/users/profile.api', () => ({
 }))
 
 vi.mock('@/data-access/_shared/auth-storage', () => ({
+  getAccessToken: vi.fn(() => null),
+  getRefreshToken: vi.fn(() => null),
+  rotateTokens: vi.fn(),
   clearSession: vi.fn(),
 }))
 
@@ -41,8 +44,8 @@ vi.mock('sonner', () => ({
 import { changeMyPassword } from '@/data-access/users/profile.api'
 import { clearSession } from '@/data-access/_shared/auth-storage'
 import { LOGIN_PASSWORD_CHANGED_URL } from '@/data-access/auth/notices'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { ChangePasswordForm } from '@/features/profile/components/change-password-form'
+import { ApiError } from '@keimelion/sdk/client'
 
 function renderForm(): void {
   renderWithQueryClient(<ChangePasswordForm />)
@@ -136,7 +139,7 @@ describe('ChangePasswordForm', () => {
 
   it('surfaces INVALID_CREDENTIALS on the current-password field', async () => {
     vi.mocked(changeMyPassword).mockRejectedValue(
-      new ApiRequestError(ErrorCode.INVALID_CREDENTIALS, 'Current password is incorrect', HttpStatus.BAD_REQUEST),
+      new ApiError({ code: ErrorCode.INVALID_CREDENTIALS, message: 'Current password is incorrect', status: HttpStatus.BAD_REQUEST, metadata: {} }),
     )
 
     renderForm()
@@ -156,14 +159,9 @@ describe('ChangePasswordForm', () => {
 
   it('maps API 422 issues to the matching fields', async () => {
     vi.mocked(changeMyPassword).mockRejectedValue(
-      new ApiRequestError(
-        ErrorCode.UNPROCESSABLE_ENTITY,
-        'Validation failed',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        [
+      new ApiError({ code: ErrorCode.UNPROCESSABLE_ENTITY, message: 'Validation failed', status: HttpStatus.UNPROCESSABLE_ENTITY, metadata: { issues: [
           { path: 'newPassword', message: 'Password too weak.', code: 'custom' },
-        ],
-      ),
+        ] } }),
     )
 
     renderForm()

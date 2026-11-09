@@ -16,13 +16,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import {
-  createShopInputSchema,
-  type AdminShop,
-  type CreateShopInput,
-} from '@/data-access/shops/admin-shops.schemas'
+import { createShopInputSchema, type CreateShopInput } from '@/features/shops/shops.input-schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useAutoSlug } from '@/lib/use-auto-slug'
+import type { ShopDetailParsed } from '@keimelion/sdk/schemas'
 
 const DEFAULT_SORT_ORDER = 0
 const SORT_ORDER_MAX = 32767
@@ -40,7 +37,7 @@ type ShopFormProps =
     }
   | {
       mode: 'edit'
-      shop: AdminShop
+      shop: ShopDetailParsed
       onSubmit: (values: ShopFormValues, setError: UseFormSetError<ShopFormValues>) => void
       onDirtyChange: (isDirty: boolean) => void
       isPending: boolean

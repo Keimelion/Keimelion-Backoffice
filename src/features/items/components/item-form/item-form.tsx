@@ -18,22 +18,18 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { MAX_CATEGORIES_PER_ITEM, MAX_TAG_NAME_LENGTH, MAX_TAGS_PER_RESOURCE } from '@keimelion/sdk/schemas'
 import {
   createItemInputSchema,
   editItemFormResolverSchema,
-  ITEM_CATEGORIES_MAX,
-  ITEM_TAG_NAME_MAX_LENGTH,
-  ITEM_TAGS_MAX,
-  updateItemInputSchema,
-  type ApiAdminItem,
-  type CreateItemInput,
-  type UpdateItemInput,
-} from '@/data-access/items/items.schemas'
-import {
   EMPTY_ITEM_SOURCE_INPUT,
-  type ApiItemSource,
+  toSupportedCurrency,
+  updateItemInputSchema,
+  type CreateItemInput,
   type ItemSourceInput,
-} from '@/data-access/items/item-sources.schemas'
+  type UpdateItemInput,
+} from '@/features/items/items.input-schemas'
+import { ImageFileInput } from '@/components/shared/image-file-input'
 import { useAdminShops } from '@/features/shops/hooks/use-admin-shops'
 import { CategoriesPicker } from '@/features/items/components/item-form/categories-picker'
 import { TagsPicker } from '@/features/items/components/item-form/tags-picker'
@@ -45,8 +41,8 @@ import {
 } from '@/features/items/components/item-source-summary'
 import { ItemSourcesRecap } from '@/features/items/components/item-sources-recap'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminItemDetailParsed, ItemSourceDetailParsed } from '@keimelion/sdk/schemas'
 
-const HTTPS_PREFIX = 'https://'
 const SHOPS_FILTER = { page: 1, limit: 100, isActive: true } as const
 
 export type ItemFormCreateValues = CreateItemInput
@@ -61,18 +57,18 @@ type ItemFormProps =
     }
   | {
       mode: 'edit'
-      item: ApiAdminItem
+      item: AdminItemDetailParsed
       onSubmit: (values: ItemFormEditValues, setError: UseFormSetError<ItemFormEditValues>) => void
       onDirtyChange: (isDirty: boolean) => void
       isPending: boolean
     }
 
-function toItemSourceInput(source: ApiItemSource): ItemSourceInput {
+function toItemSourceInput(source: ItemSourceDetailParsed): ItemSourceInput {
   return {
     shopId: source.shopId,
     sourceUrl: source.sourceUrl,
     price: source.price,
-    currency: source.currency,
+    currency: toSupportedCurrency(source.currency),
   }
 }
 
@@ -81,7 +77,8 @@ function buildDefaultValues(props: ItemFormProps): ItemFormCreateValues {
     return {
       name: props.item.name,
       description: props.item.description,
-      imageUrl: props.item.imageUrl,
+      image: null,
+      clearImage: false,
       sources: props.item.sources.map(toItemSourceInput),
       categories: props.item.categories.map((category) => category.id),
       tags: props.item.tags.map((tag) => tag.name),
@@ -90,7 +87,7 @@ function buildDefaultValues(props: ItemFormProps): ItemFormCreateValues {
   return {
     name: '',
     description: null,
-    imageUrl: null,
+    image: null,
     sources: [EMPTY_ITEM_SOURCE_INPUT],
     categories: [],
     tags: [],
@@ -127,7 +124,8 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
     ? updateItemInputSchema.safeParse({
         name: values.name,
         description: values.description,
-        imageUrl: values.imageUrl,
+        image: values.image,
+        clearImage: values.clearImage,
         categories: values.categories,
         tags: values.tags,
       }).success
@@ -176,14 +174,10 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
 
-  const imagePreviewUrl =
-    typeof values.imageUrl === 'string' && values.imageUrl.startsWith(HTTPS_PREFIX)
-      ? values.imageUrl
-      : null
-
   const editItem = props.mode === 'edit' ? props.item : null
-  const previewSrc = editItem?.image?.urls.md ?? editItem?.imageUrl ?? null
-  const previewFullSrc = editItem?.image?.urls.lg ?? editItem?.imageUrl ?? null
+  const isCurrentImageCleared = values.clearImage === true
+  const previewSrc = editItem?.image?.urls.md ?? null
+  const previewFullSrc = editItem?.image?.urls.lg ?? null
 
   return (
     <Form {...form}>
@@ -195,7 +189,8 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
               const editValues: ItemFormEditValues = {
                 name: submittedValues.name,
                 description: submittedValues.description,
-                imageUrl: submittedValues.imageUrl,
+                image: submittedValues.image,
+                clearImage: submittedValues.clearImage,
                 categories: submittedValues.categories,
                 tags: submittedValues.tags,
               }
@@ -207,7 +202,7 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
         }}
         noValidate
       >
-        {isEdit && previewSrc !== null ? (
+        {isEdit && previewSrc !== null && !isCurrentImageCleared ? (
           <div className="flex justify-center pb-1">
             <ImageThumbnail
               src={previewSrc}
@@ -269,36 +264,29 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
 
         <FormField
           control={form.control}
-          name="imageUrl"
+          name="image"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('items.form.image_url_label')}</FormLabel>
+              <FormLabel>{t('items.form.image_label')}</FormLabel>
               <FormControl>
-                <Input
-                  type="url"
-                  placeholder={t('items.form.image_url_placeholder')}
+                <ImageFileInput
+                  value={field.value}
+                  currentImageUrl={previewSrc}
+                  isCurrentImageCleared={isCurrentImageCleared}
+                  previewAlt={t('items.form.image_preview_alt')}
+                  removeLabel={t('common.image_upload.remove')}
                   disabled={isPending}
-                  value={typeof field.value === 'string' ? field.value : ''}
-                  onChange={(event) => {
-                    const next = event.target.value
-                    field.onChange(next.length > 0 ? next : null)
+                  onFileChange={field.onChange}
+                  onClearCurrent={() => {
+                    form.setValue('clearImage', true, { shouldDirty: true })
                   }}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
                 />
               </FormControl>
-              <FormDescription>{t('items.form.image_url_help')}</FormDescription>
+              <FormDescription>{t('items.form.image_help')}</FormDescription>
               <FormMessage />
-              {imagePreviewUrl !== null ? (
-                <img
-                  src={imagePreviewUrl}
-                  alt={t('items.form.image_preview_alt')}
-                  className="mt-2 h-16 w-16 rounded-md border border-border object-cover"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                />
-              ) : null}
             </FormItem>
           )}
         />
@@ -314,11 +302,11 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
                   value={field.value ?? []}
                   onChange={(nextIds) => { field.onChange(nextIds) }}
                   disabled={isPending}
-                  max={ITEM_CATEGORIES_MAX}
+                  max={MAX_CATEGORIES_PER_ITEM}
                 />
               </FormControl>
               <FormDescription>
-                {t('items.form.categories_help', { max: ITEM_CATEGORIES_MAX })}
+                {t('items.form.categories_help', { max: MAX_CATEGORIES_PER_ITEM })}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -336,12 +324,12 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
                   value={field.value ?? []}
                   onChange={(nextTags) => { field.onChange(nextTags) }}
                   disabled={isPending}
-                  max={ITEM_TAGS_MAX}
-                  maxNameLength={ITEM_TAG_NAME_MAX_LENGTH}
+                  max={MAX_TAGS_PER_RESOURCE}
+                  maxNameLength={MAX_TAG_NAME_LENGTH}
                 />
               </FormControl>
               <FormDescription>
-                {t('items.form.tags_help', { max: ITEM_TAGS_MAX })}
+                {t('items.form.tags_help', { max: MAX_TAGS_PER_RESOURCE })}
               </FormDescription>
               <FormMessage />
             </FormItem>

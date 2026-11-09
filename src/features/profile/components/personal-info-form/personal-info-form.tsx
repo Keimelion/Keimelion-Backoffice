@@ -2,8 +2,8 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { ErrorCode } from '@keimelion/sdk/enums'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -24,32 +24,35 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
-import type { ApiUser } from '@/data-access/_shared/user'
-import { personalInfoFormSchema } from '@/data-access/users/profile.schemas'
-import type { PersonalInfoFormValues, UpdateProfileInput } from '@/data-access/users/profile.schemas'
+import { personalInfoFormSchema } from '@/features/profile/profile.input-schemas'
+import type { PersonalInfoFormValues } from '@/features/profile/profile.input-schemas'
 import { useUpdateProfile } from '@/features/profile/hooks/use-update-profile'
 import { RoleBadge } from '@/features/users/components/role-badge'
+import { ImageFileInput } from '@/components/shared/image-file-input'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
+import { resolveImageUploadErrorMessageId } from '@/lib/resolve-image-upload-error'
 import { translate } from '@/lib/i18n/translate'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { notifySuccess } from '@/lib/notify'
 import { pickChangedFields } from '@/lib/pick-changed-fields'
+import { ApiError } from '@keimelion/sdk/client'
+import type { UserDetailParsed, UsersUpdateProfileRequestInput } from '@keimelion/sdk/schemas'
 
 const EMAIL_INPUT_ID = 'profile-personal-info-email'
 
 const CONFLICT_FIELD = 'username'
-const EDITABLE_FIELDS = ['username', 'avatarUrl', 'isMarketingOptedIn'] as const satisfies readonly (keyof PersonalInfoFormValues)[]
-const UPDATE_ISSUE_PATHS = ['username', 'avatarUrl', 'isMarketingOptedIn'] as const
+const EDITABLE_FIELDS = ['username', 'isMarketingOptedIn'] as const satisfies readonly (keyof PersonalInfoFormValues)[]
+const UPDATE_ISSUE_PATHS = ['username', 'isMarketingOptedIn'] as const
 
 interface PersonalInfoFormProps {
-  user: ApiUser
+  user: UserDetailParsed
 }
 
-function buildDefaultValues(user: ApiUser): PersonalInfoFormValues {
+function buildDefaultValues(user: UserDetailParsed): PersonalInfoFormValues {
   return {
     username: user.username,
-    avatarUrl: user.avatarUrl,
+    avatar: null,
+    clearAvatar: false,
     isMarketingOptedIn: user.isMarketingOptedIn,
   }
 }
@@ -72,24 +75,30 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps): React.JSX.Ele
       original,
       values,
       EDITABLE_FIELDS,
-    ) as UpdateProfileInput
+    ) as UsersUpdateProfileRequestInput
 
-    if (Object.keys(patch).length === 0) return
+    if (values.clearAvatar && values.avatar === null) patch.clearAvatar = true
 
-    mutation.mutate(patch, {
+    if (Object.keys(patch).length === 0 && values.avatar === null) return
+
+    mutation.mutate({ input: patch, avatar: values.avatar }, {
       onSuccess: () => {
         notifySuccess({ title: translate('profile.personal_info.submit_success') })
-        form.reset(values)
+        form.reset({ ...values, avatar: null, clearAvatar: false })
       },
       onError: (error) => {
-        if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
+        if (error instanceof ApiError && error.status === HttpStatus.CONFLICT) {
           form.setError(CONFLICT_FIELD, { message: t('users.form.error.conflict') })
           return
         }
+        const imageErrorMessageId = resolveImageUploadErrorMessageId(error)
+        if (imageErrorMessageId !== null) {
+          form.setError('avatar', { message: t(imageErrorMessageId) })
+          return
+        }
         if (
-          error instanceof ApiRequestError
+          error instanceof ApiError
           && error.code === ErrorCode.UNPROCESSABLE_ENTITY
-          && error.issues !== null
         ) {
           const appliedCount = applyApiValidationIssues(
             error.issues,
@@ -106,6 +115,7 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps): React.JSX.Ele
   const isPending = mutation.isPending
   const { isDirty, errors } = form.formState
   const hasErrors = Object.keys(errors).length > 0
+  const isAvatarCleared = form.watch('clearAvatar')
   const canSubmit = isDirty && !hasErrors && !isPending
 
   return (
@@ -163,23 +173,28 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps): React.JSX.Ele
 
             <FormField
               control={form.control}
-              name="avatarUrl"
+              name="avatar"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('profile.personal_info.avatar_url_label')}</FormLabel>
+                  <FormLabel>{t('profile.personal_info.avatar_label')}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="url"
-                      placeholder={t('profile.personal_info.avatar_url_placeholder')}
+                    <ImageFileInput
+                      value={field.value}
+                      currentImageUrl={user.avatar?.urls.md ?? null}
+                      isCurrentImageCleared={isAvatarCleared}
+                      previewAlt={t('profile.personal_info.avatar_preview_alt')}
+                      removeLabel={t('common.image_upload.remove')}
                       disabled={isPending}
-                      value={field.value ?? ''}
-                      onChange={(event) => {
-                        const next = event.target.value
-                        field.onChange(next.length > 0 ? next : null)
+                      onFileChange={field.onChange}
+                      onClearCurrent={() => {
+                        form.setValue('clearAvatar', true, { shouldDirty: true })
                       }}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                     />
                   </FormControl>
-                  <FormDescription>{t('profile.personal_info.avatar_url_help')}</FormDescription>
+                  <FormDescription>{t('profile.personal_info.avatar_help')}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

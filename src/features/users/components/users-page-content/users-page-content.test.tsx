@@ -66,7 +66,7 @@ interface AvatarImage {
   sizeBytes: number
   width: number
   height: number
-  createdAt: string
+  createdAt: Date
   urls: { sm: string; md: string; lg: string }
 }
 
@@ -74,10 +74,9 @@ function makeUser(overrides: Partial<{
   id: string
   email: string
   username: string | null
-  deletedAt: string | null
-  bannedAt: string | null
+  deletedAt: Date | null
+  bannedAt: Date | null
   role: 'admin' | 'moderator' | 'user'
-  avatarUrl: string | null
   avatar: AvatarImage | null
 }> = {}) {
   return {
@@ -86,7 +85,7 @@ function makeUser(overrides: Partial<{
     username: overrides.username === undefined ? 'testuser' : overrides.username,
     authProvider: 'email' as const,
     role: overrides.role ?? ('user' as const),
-    avatarUrl: overrides.avatarUrl ?? null,
+    avatarImageId: null,
     avatar: overrides.avatar ?? null,
     isCgvAccepted: true,
     cgvAcceptedAt: null,
@@ -94,11 +93,12 @@ function makeUser(overrides: Partial<{
     defaultCurrency: 'EUR' as const,
     emailVerifiedAt: null,
     lastActiveAt: null,
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
+    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     bannedAt: overrides.bannedAt ?? null,
     banReason: null,
     deletedAt: overrides.deletedAt ?? null,
+    reservationsCount: 0,
   }
 }
 
@@ -144,7 +144,7 @@ describe('UsersPageContent', () => {
   it('renders UserStatusBadge as Deleted for a soft-deleted user', () => {
     vi.mocked(useUsers).mockReturnValue(
       mockUseQueryResult<UsersData>({
-        data: makeUsersData([makeUser({ deletedAt: '2024-06-01T00:00:00.000Z' })]),
+        data: makeUsersData([makeUser({ deletedAt: new Date('2024-06-01T00:00:00.000Z') })]),
       }),
     )
     renderContent()
@@ -154,7 +154,7 @@ describe('UsersPageContent', () => {
   it('renders UserStatusBadge as Banned for a banned user', () => {
     vi.mocked(useUsers).mockReturnValue(
       mockUseQueryResult<UsersData>({
-        data: makeUsersData([makeUser({ bannedAt: '2024-06-01T00:00:00.000Z' })]),
+        data: makeUsersData([makeUser({ bannedAt: new Date('2024-06-01T00:00:00.000Z') })]),
       }),
     )
     renderContent()
@@ -192,7 +192,7 @@ describe('UsersPageContent', () => {
               sizeBytes: 1024,
               width: 300,
               height: 300,
-              createdAt: '2024-01-01T00:00:00.000Z',
+              createdAt: new Date('2024-01-01T00:00:00.000Z'),
               urls: {
                 sm: 'https://cdn.example.com/avatar-sm.webp',
                 md: 'https://cdn.example.com/avatar-md.webp',
@@ -209,19 +209,6 @@ describe('UsersPageContent', () => {
     expect(img).toHaveAttribute('src', 'https://cdn.example.com/avatar-sm.webp')
   })
 
-  it('falls back to the legacy avatarUrl when no uploaded avatar is set', () => {
-    vi.mocked(useUsers).mockReturnValue(
-      mockUseQueryResult<UsersData>({
-        data: makeUsersData([
-          makeUser({ username: 'alice', avatarUrl: 'https://cdn.example.com/legacy.png' }),
-        ]),
-      }),
-    )
-    renderContent()
-    const img = within(firstDataRow()).getByAltText('alice')
-    expect(img).toHaveAttribute('src', 'https://cdn.example.com/legacy.png')
-  })
-
   it('renders row-specific action tooltips using the username when signed in as admin', () => {
     vi.mocked(useCurrentUserRole).mockReturnValue('admin')
     vi.mocked(getStoredUser).mockReturnValue({
@@ -230,15 +217,16 @@ describe('UsersPageContent', () => {
       username: 'adminuser',
       authProvider: 'email',
       role: 'admin',
-      avatarUrl: null,
+      avatarImageId: null,
+      avatar: null,
       isCgvAccepted: true,
       cgvAcceptedAt: null,
       isMarketingOptedIn: false,
       defaultCurrency: 'EUR' as const,
       emailVerifiedAt: null,
       lastActiveAt: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     })
     vi.mocked(useUsers).mockReturnValue(
       mockUseQueryResult<UsersData>({
@@ -258,15 +246,16 @@ describe('UsersPageContent', () => {
       username: 'adminuser',
       authProvider: 'email',
       role: 'admin',
-      avatarUrl: null,
+      avatarImageId: null,
+      avatar: null,
       isCgvAccepted: true,
       cgvAcceptedAt: null,
       isMarketingOptedIn: false,
       defaultCurrency: 'EUR' as const,
       emailVerifiedAt: null,
       lastActiveAt: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     })
     vi.mocked(useUsers).mockReturnValue(
       mockUseQueryResult<UsersData>({
@@ -299,15 +288,16 @@ describe('UsersPageContent', () => {
       username: 'adminuser',
       authProvider: 'email',
       role: 'admin',
-      avatarUrl: null,
+      avatarImageId: null,
+      avatar: null,
       isCgvAccepted: true,
       cgvAcceptedAt: null,
       isMarketingOptedIn: false,
       defaultCurrency: 'EUR' as const,
       emailVerifiedAt: null,
       lastActiveAt: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     })
     vi.mocked(useUsers).mockReturnValue(
       mockUseQueryResult<UsersData>({ data: makeUsersData([]) }),
@@ -324,15 +314,16 @@ describe('UsersPageContent', () => {
       username: 'adminuser',
       authProvider: 'email',
       role: 'admin',
-      avatarUrl: null,
+      avatarImageId: null,
+      avatar: null,
       isCgvAccepted: true,
       cgvAcceptedAt: null,
       isMarketingOptedIn: false,
       defaultCurrency: 'EUR' as const,
       emailVerifiedAt: null,
       lastActiveAt: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     })
     vi.mocked(useUsers).mockReturnValue(
       mockUseQueryResult<UsersData>({

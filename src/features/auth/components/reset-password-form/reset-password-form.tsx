@@ -18,7 +18,7 @@ import { PasswordInput } from '@/components/ui/password-input'
 import {
   resetPasswordInputSchema,
   type ResetPasswordInput,
-} from '@/data-access/auth/reset-password'
+} from '@/features/auth/auth.input-schemas'
 import { useResetPassword } from '@/features/auth/hooks/use-reset-password'
 import { useTranslate } from '@/lib/i18n/use-translate'
 

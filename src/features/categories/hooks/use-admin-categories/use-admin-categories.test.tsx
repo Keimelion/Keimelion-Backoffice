@@ -38,8 +38,8 @@ const MOCK_CATEGORY = {
   translations: { fr: 'Électronique', en: 'Electronics' },
   slug: 'electronics',
   depth: 0,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 beforeEach(() => {

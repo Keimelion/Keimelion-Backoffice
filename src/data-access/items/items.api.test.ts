@@ -1,15 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import MockAdapter from 'axios-mock-adapter'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
-import {
-  apiAdminItemSchema,
-  adminItemListResponseSchema,
-  createItemInputSchema,
-  listItemsQuerySchema,
-  updateItemInputSchema,
-} from './items.schemas'
+import { createApiMock, type ApiMock } from '@/test/api-mock'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import {
   createItem,
   deleteItem,
@@ -17,10 +8,11 @@ import {
   listAdminItems,
   updateItem,
 } from './items.api'
+import { ApiError } from '@keimelion/sdk/client'
 
 const MOCK_SOURCE = {
-  id: 'src-1',
-  itemId: 'item-1',
+  id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+  itemId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   shopId: null,
   shop: null,
   sourceUrl: 'https://example.com/p',
@@ -39,189 +31,25 @@ const MOCK_CATEGORY = {
 }
 
 const MOCK_ITEM = {
-  id: 'item-1',
+  id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   name: 'Blanket',
   description: null,
-  imageUrl: null,
+  imageId: null,
+  image: null,
   createdByUserId: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   sources: [MOCK_SOURCE],
   categories: [MOCK_CATEGORY],
+  tags: [],
+  reservationCount: 0,
 }
 
-describe('apiAdminItemSchema', () => {
-  it('parses a full item with sources and categories', () => {
-    const result = apiAdminItemSchema.safeParse(MOCK_ITEM)
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.categories).toHaveLength(1)
-    expect(result.data.categories[0]?.slug).toBe('food')
-  })
-
-  it('fails when sources is missing', () => {
-    const result = apiAdminItemSchema.safeParse({ ...MOCK_ITEM, sources: undefined })
-    expect(result.success).toBe(false)
-  })
-
-  it('defaults categories to an empty array when the API omits it', () => {
-    const partialItem: Record<string, unknown> = { ...MOCK_ITEM }
-    delete partialItem.categories
-    const result = apiAdminItemSchema.safeParse(partialItem)
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.categories).toEqual([])
-  })
-})
-
-describe('adminItemListResponseSchema', () => {
-  it('parses a valid list response', () => {
-    const raw = {
-      items: [MOCK_ITEM],
-      pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
-    }
-    const result = adminItemListResponseSchema.safeParse(raw)
-    expect(result.success).toBe(true)
-  })
-})
-
-describe('listItemsQuerySchema', () => {
-  it('applies defaults for page and limit', () => {
-    const result = listItemsQuerySchema.safeParse({})
-    expect(result.success).toBe(true)
-    if (!result.success) return
-    expect(result.data.page).toBe(1)
-    expect(result.data.limit).toBe(20)
-  })
-
-  it('accepts a valid sort', () => {
-    const result = listItemsQuerySchema.safeParse({ sort: 'name:asc' })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects an unknown sort field', () => {
-    const result = listItemsQuerySchema.safeParse({ sort: 'description:asc' })
-    expect(result.success).toBe(false)
-  })
-})
-
-describe('createItemInputSchema', () => {
-  const VALID_SOURCE = {
-    shopId: null,
-    sourceUrl: 'https://example.com/p',
-    price: '19.99',
-    currency: 'EUR',
-  }
-
-  const VALID_INPUT = {
-    name: 'Blanket',
-    description: null,
-    imageUrl: null,
-    sources: [VALID_SOURCE],
-  }
-
-  it('parses a valid input', () => {
-    const result = createItemInputSchema.safeParse(VALID_INPUT)
-    expect(result.success).toBe(true)
-  })
-
-  it('requires at least one source', () => {
-    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, sources: [] })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects an HTTP-only image URL', () => {
-    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, imageUrl: 'http://example.com/x.jpg' })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects an HTTP-only source URL', () => {
-    const result = createItemInputSchema.safeParse({
-      ...VALID_INPUT,
-      sources: [{ ...VALID_SOURCE, sourceUrl: 'http://insecure.com/p' }],
-    })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects an unknown field (strict)', () => {
-    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, unknown: 'x' })
-    expect(result.success).toBe(false)
-  })
-
-  it('accepts up to two valid UUID categories', () => {
-    const result = createItemInputSchema.safeParse({
-      ...VALID_INPUT,
-      categories: [
-        '11111111-1111-4111-8111-111111111111',
-        '22222222-2222-4222-8222-222222222222',
-      ],
-    })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects more than two categories', () => {
-    const result = createItemInputSchema.safeParse({
-      ...VALID_INPUT,
-      categories: [
-        '11111111-1111-4111-8111-111111111111',
-        '22222222-2222-4222-8222-222222222222',
-        '33333333-3333-4333-8333-333333333333',
-      ],
-    })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects non-UUID category ids', () => {
-    const result = createItemInputSchema.safeParse({
-      ...VALID_INPUT,
-      categories: ['not-a-uuid'],
-    })
-    expect(result.success).toBe(false)
-  })
-
-  it('accepts an empty categories array', () => {
-    const result = createItemInputSchema.safeParse({ ...VALID_INPUT, categories: [] })
-    expect(result.success).toBe(true)
-  })
-})
-
-describe('updateItemInputSchema', () => {
-  it('accepts partial updates', () => {
-    const result = updateItemInputSchema.safeParse({ name: 'New' })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects a sources field', () => {
-    const result = updateItemInputSchema.safeParse({
-      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
-    })
-    expect(result.success).toBe(false)
-  })
-
-  it('accepts a categories-only patch', () => {
-    const result = updateItemInputSchema.safeParse({
-      categories: ['11111111-1111-4111-8111-111111111111'],
-    })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects more than two categories', () => {
-    const result = updateItemInputSchema.safeParse({
-      categories: [
-        '11111111-1111-4111-8111-111111111111',
-        '22222222-2222-4222-8222-222222222222',
-        '33333333-3333-4333-8333-333333333333',
-      ],
-    })
-    expect(result.success).toBe(false)
-  })
-})
-
 describe('listAdminItems', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
     vi.clearAllMocks()
   })
 
@@ -232,7 +60,6 @@ describe('listAdminItems', () => {
         limit: '10',
         'name[ilike]': 'blanket',
         sort: 'name:asc',
-        currency: 'EUR',
       })
       return [
         HttpStatus.OK,
@@ -255,7 +82,7 @@ describe('listAdminItems', () => {
 
   it('omits optional params when not set', async () => {
     mock.onGet('/admin/items').reply((config) => {
-      expect(config.params).toEqual({ page: '1', limit: '20', currency: 'EUR' })
+      expect(config.params).toEqual({ page: '1', limit: '20' })
       return [
         HttpStatus.OK,
         {
@@ -270,24 +97,24 @@ describe('listAdminItems', () => {
 })
 
 describe('fetchAdminItem', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('returns the item on success', async () => {
-    mock.onGet('/admin/items/item-1').reply(HttpStatus.OK, { item: MOCK_ITEM })
-    const item = await fetchAdminItem('item-1')
-    expect(item.id).toBe('item-1')
+    mock.onGet('/admin/items/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa').reply(HttpStatus.OK, { item: MOCK_ITEM })
+    const item = await fetchAdminItem('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+    expect(item.id).toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
   })
 })
 
 describe('createItem', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('returns the created item on success', async () => {
@@ -295,9 +122,8 @@ describe('createItem', () => {
     const item = await createItem({
       name: 'Blanket',
       description: null,
-      imageUrl: null,
-      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
-    })
+      sources: [{ shopId: null, sourceUrl: null, price: null }],
+    }, null)
     expect(item.name).toBe('Blanket')
   })
 
@@ -312,13 +138,12 @@ describe('createItem', () => {
     await createItem({
       name: 'Blanket',
       description: null,
-      imageUrl: null,
-      sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
+      sources: [{ shopId: null, sourceUrl: null, price: null }],
       categories: [CATEGORY_ONE, CATEGORY_TWO],
-    })
+    }, null)
   })
 
-  it('throws ApiRequestError on 422', async () => {
+  it('throws ApiError on 422', async () => {
     mock.onPost('/admin/items').reply(HttpStatus.UNPROCESSABLE_ENTITY, {
       code: 'UNPROCESSABLE_ENTITY',
       message: 'Validation failed',
@@ -327,63 +152,123 @@ describe('createItem', () => {
       createItem({
         name: 'x',
         description: null,
-        imageUrl: null,
-        sources: [{ shopId: null, sourceUrl: null, price: null, currency: 'EUR' }],
-      }),
-    ).rejects.toBeInstanceOf(ApiRequestError)
+        sources: [{ shopId: null, sourceUrl: null, price: null }],
+      }, null),
+    ).rejects.toBeInstanceOf(ApiError)
+  })
+})
+
+describe('createItem with an image file', () => {
+  let mock: ApiMock
+
+  beforeEach(() => {
+    mock = createApiMock()
+  })
+
+  it('sends multipart form data with JSON-encoded sources and the image field', async () => {
+    const image = new File(['content'], 'item.png', { type: 'image/png' })
+    mock.onPost('/admin/items').reply((config) => {
+      const formData = config.data as FormData
+      expect(formData.get('name')).toBe('Blanket')
+      expect(JSON.parse(formData.get('sources') as string)).toEqual([
+        { shopId: null, sourceUrl: 'https://example.com/p', price: null, currency: 'EUR' },
+      ])
+      expect(formData.get('description')).toBeNull()
+      expect(formData.get('image')).toBeInstanceOf(File)
+      return [HttpStatus.CREATED, { item: MOCK_ITEM }]
+    })
+
+    await createItem(
+      {
+        name: 'Blanket',
+        description: null,
+        sources: [{ shopId: null, sourceUrl: 'https://example.com/p', price: null, currency: 'EUR' }],
+      },
+      image,
+    )
+  })
+})
+
+describe('updateItem with an image file', () => {
+  let mock: ApiMock
+
+  beforeEach(() => {
+    mock = createApiMock()
+  })
+
+  it('sends multipart form data and encodes a null description as an empty string', async () => {
+    const image = new File(['content'], 'item.png', { type: 'image/png' })
+    mock.onPatch(`/admin/items/${MOCK_ITEM.id}`).reply((config) => {
+      const formData = config.data as FormData
+      expect(formData.get('description')).toBe('')
+      expect(formData.get('image')).toBeInstanceOf(File)
+      expect(formData.get('clearImage')).toBeNull()
+      return [HttpStatus.OK, { item: MOCK_ITEM }]
+    })
+
+    await updateItem(MOCK_ITEM.id, { description: null }, image)
+  })
+
+  it('sends clearImage as JSON when no file is selected', async () => {
+    mock.onPatch(`/admin/items/${MOCK_ITEM.id}`).reply((config) => {
+      expect(JSON.parse(config.data as string)).toEqual({ clearImage: true })
+      return [HttpStatus.OK, { item: MOCK_ITEM }]
+    })
+
+    await updateItem(MOCK_ITEM.id, { clearImage: true }, null)
   })
 })
 
 describe('updateItem', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('returns the updated item on success', async () => {
-    mock.onPatch('/admin/items/item-1').reply(HttpStatus.OK, {
+    mock.onPatch('/admin/items/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa').reply(HttpStatus.OK, {
       item: { ...MOCK_ITEM, name: 'Renamed' },
     })
-    const item = await updateItem('item-1', { name: 'Renamed' })
+    const item = await updateItem('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', { name: 'Renamed' }, null)
     expect(item.name).toBe('Renamed')
   })
 
-  it('throws ApiRequestError on 404', async () => {
+  it('throws ApiError on 404', async () => {
     mock.onPatch('/admin/items/missing').reply(HttpStatus.NOT_FOUND, {
       code: 'NOT_FOUND',
       message: 'Not found',
     })
-    await expect(updateItem('missing', { name: 'x' })).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(updateItem('missing', { name: 'x' }, null)).rejects.toBeInstanceOf(ApiError)
   })
 
   it('forwards an empty categories array for "remove all"', async () => {
-    mock.onPatch('/admin/items/item-1').reply((config) => {
+    mock.onPatch('/admin/items/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa').reply((config) => {
       const parsed = JSON.parse(config.data as string) as { categories?: string[] }
       expect(parsed.categories).toEqual([])
       return [HttpStatus.OK, { item: MOCK_ITEM }]
     })
-    await updateItem('item-1', { categories: [] })
+    await updateItem('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', { categories: [] }, null)
   })
 })
 
 describe('deleteItem', () => {
-  let mock: MockAdapter
+  let mock: ApiMock
 
   beforeEach(() => {
-    mock = new MockAdapter(axiosInstance)
+    mock = createApiMock()
   })
 
   it('resolves on 200', async () => {
-    mock.onDelete('/admin/items/item-1').reply(HttpStatus.OK, { message: 'Item deleted' })
-    await expect(deleteItem('item-1')).resolves.toBeUndefined()
+    mock.onDelete('/admin/items/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa').reply(HttpStatus.OK, { message: 'Item deleted' })
+    await expect(deleteItem('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).resolves.toBeUndefined()
   })
 
-  it('throws ApiRequestError on 409', async () => {
-    mock.onDelete('/admin/items/item-1').reply(HttpStatus.CONFLICT, {
+  it('throws ApiError on 409', async () => {
+    mock.onDelete('/admin/items/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa').reply(HttpStatus.CONFLICT, {
       code: 'CONFLICT',
       message: 'Item referenced by list_items',
     })
-    await expect(deleteItem('item-1')).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(deleteItem('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).rejects.toBeInstanceOf(ApiError)
   })
 })

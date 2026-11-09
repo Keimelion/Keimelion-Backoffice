@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { ApiUser } from '@/data-access/_shared/user'
 import {
   SESSION_COOKIE_NAME,
   clearSession,
@@ -11,6 +10,7 @@ import {
   saveSession,
   syncSessionCookie,
 } from '@/data-access/_shared/auth-storage'
+import type { UserDetailParsed } from '@keimelion/sdk/schemas'
 
 const STORED_USER_KEY = 'keimelion_user'
 const ACCESS_TOKEN_KEY = 'keimelion_access_token'
@@ -27,25 +27,26 @@ function forceClearSessionCookie(): void {
   document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`
 }
 
-const ADMIN_USER: ApiUser = {
-  id: 'user-1',
+const ADMIN_USER: UserDetailParsed = {
+  id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
   email: 'admin@keimelion.app',
   username: 'admin',
   authProvider: 'email' as const,
   role: 'admin' as const,
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR' as const,
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
-const MODERATOR_USER: ApiUser = { ...ADMIN_USER, role: 'moderator' as const }
-const REGULAR_USER: ApiUser = { ...ADMIN_USER, role: 'user' as const }
+const MODERATOR_USER: UserDetailParsed = { ...ADMIN_USER, role: 'moderator' as const }
+const REGULAR_USER: UserDetailParsed = { ...ADMIN_USER, role: 'user' as const }
 
 beforeEach(() => {
   localStorage.clear()

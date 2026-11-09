@@ -23,13 +23,12 @@ vi.mock('@/features/occasion-types/hooks/use-admin-occasion-types', async (impor
 })
 
 import { useAdminOccasionTypes } from '@/features/occasion-types/hooks/use-admin-occasion-types'
-import type { AdminOccasionType } from '@/data-access/occasion-types/admin-occasion-types.schemas'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { OccasionTypesAdminContent } from './occasion-types-admin-content'
+import type { AdminOccasionTypeDetailParsed, PaginatedResponse } from '@keimelion/sdk/schemas'
 
 const PAGINATION = { page: 1, limit: 20, total: 1, totalPages: 1 }
 
-function makeItem(overrides: Partial<AdminOccasionType> = {}): AdminOccasionType {
+function makeItem(overrides: Partial<AdminOccasionTypeDetailParsed> = {}): AdminOccasionTypeDetailParsed {
   return {
     id: overrides.id ?? 'ot-1',
     slug: overrides.slug ?? 'birthday',
@@ -37,12 +36,12 @@ function makeItem(overrides: Partial<AdminOccasionType> = {}): AdminOccasionType
     sortOrder: overrides.sortOrder ?? 0,
     isActive: overrides.isActive ?? true,
     translations: overrides.translations ?? [{ locale: 'en', label: 'Birthday' }],
-    createdAt: overrides.createdAt ?? '2024-01-01T00:00:00.000Z',
-    updatedAt: overrides.updatedAt ?? '2024-01-01T00:00:00.000Z',
+    createdAt: overrides.createdAt ?? new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: overrides.updatedAt ?? new Date('2024-01-01T00:00:00.000Z'),
   }
 }
 
-function makeResponse(items: AdminOccasionType[]): PaginatedResponse<AdminOccasionType> {
+function makeResponse(items: AdminOccasionTypeDetailParsed[]): PaginatedResponse<AdminOccasionTypeDetailParsed> {
   return { items, pagination: { ...PAGINATION, total: items.length } }
 }
 
@@ -61,7 +60,7 @@ beforeEach(() => {
 describe('OccasionTypesAdminContent', () => {
   it('renders the create button', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({ data: makeResponse([]) }),
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({ data: makeResponse([]) }),
     )
     renderContent()
     expect(screen.getByRole('button', { name: /create occasion type/i })).toBeInTheDocument()
@@ -69,7 +68,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('renders admin column headers', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({ data: makeResponse([]) }),
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({ data: makeResponse([]) }),
     )
     renderContent()
     expect(screen.getByText('Slug')).toBeInTheDocument()
@@ -79,7 +78,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('renders edit and delete action buttons for each row', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({
         data: makeResponse([makeItem()]),
       }),
     )
@@ -90,7 +89,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('renders empty state when no items exist', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({ data: makeResponse([]) }),
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({ data: makeResponse([]) }),
     )
     renderContent()
     expect(screen.getByText('No occasion types yet')).toBeInTheDocument()
@@ -98,7 +97,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('renders inactive row with muted styling (opacity-50)', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({
         data: makeResponse([makeItem({ isActive: false })]),
       }),
     )
@@ -111,7 +110,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('shows the Active badge for active items', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({
         data: makeResponse([makeItem({ isActive: true })]),
       }),
     )
@@ -122,7 +121,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('shows the Inactive badge for inactive items', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({
         data: makeResponse([makeItem({ isActive: false })]),
       }),
     )
@@ -132,7 +131,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('renders skeleton rows while loading', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({ isLoading: true }),
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({ isLoading: true }),
     )
     renderContent()
     expect(screen.queryByText('No occasion types yet')).not.toBeInTheDocument()
@@ -140,7 +139,7 @@ describe('OccasionTypesAdminContent', () => {
 
   it('shows error state on fetch failure', () => {
     vi.mocked(useAdminOccasionTypes).mockReturnValue(
-      mockUseQueryResult<PaginatedResponse<AdminOccasionType>>({
+      mockUseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>>({
         error: new Error('Failed to load'),
       }),
     )

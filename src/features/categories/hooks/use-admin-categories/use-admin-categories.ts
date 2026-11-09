@@ -10,12 +10,8 @@ import {
   listAdminCategories,
   updateCategory,
 } from '@/data-access/categories/categories.api'
-import type {
-  ApiCategory,
-  CreateCategoryInput,
-  UpdateCategoryInput,
-} from '@/data-access/categories/categories.schemas'
 import { ITEMS_QUERY_KEY } from '@/data-access/items/items.api'
+import type { AdminCategoriesCreateRequestInput, AdminCategoriesUpdateRequestInput, AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 const ADMIN_CATEGORIES_LIST_KEY = [...CATEGORIES_QUERY_KEY, 'list'] as const
 
@@ -29,14 +25,14 @@ export function buildAdminCategoryKey(id: string): readonly ['categories', 'deta
 
 const DISABLED_ADMIN_CATEGORY_KEY = [...CATEGORIES_QUERY_KEY, 'detail', null] as const
 
-export function useAdminCategories(): UseQueryResult<ApiCategory[]> {
+export function useAdminCategories(): UseQueryResult<AdminCategoryDetailParsed[]> {
   return useQuery({
     queryKey: ADMIN_CATEGORIES_LIST_KEY,
     queryFn: listAdminCategories,
   })
 }
 
-export function useAdminCategory(id: string | null): UseQueryResult<ApiCategory> {
+export function useAdminCategory(id: string | null): UseQueryResult<AdminCategoryDetailParsed> {
   return useQuery({
     queryKey: id === null ? DISABLED_ADMIN_CATEGORY_KEY : buildAdminCategoryKey(id),
     queryFn: () => fetchAdminCategory(id ?? ''),
@@ -44,7 +40,7 @@ export function useAdminCategory(id: string | null): UseQueryResult<ApiCategory>
   })
 }
 
-export function useCreateCategory(): UseMutationResult<ApiCategory, Error, CreateCategoryInput> {
+export function useCreateCategory(): UseMutationResult<AdminCategoryDetailParsed, Error, AdminCategoriesCreateRequestInput> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createCategory,
@@ -57,10 +53,10 @@ export function useCreateCategory(): UseMutationResult<ApiCategory, Error, Creat
 
 interface UpdateCategoryVariables {
   id: string
-  input: UpdateCategoryInput
+  input: AdminCategoriesUpdateRequestInput
 }
 
-export function useUpdateCategory(): UseMutationResult<ApiCategory, Error, UpdateCategoryVariables> {
+export function useUpdateCategory(): UseMutationResult<AdminCategoryDetailParsed, Error, UpdateCategoryVariables> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }) => updateCategory(id, input),

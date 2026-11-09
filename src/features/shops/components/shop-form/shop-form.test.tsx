@@ -24,8 +24,8 @@ const MOCK_SHOP = {
   isAffiliated: false,
   sortOrder: 0,
   isActive: true,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 beforeEach(() => {

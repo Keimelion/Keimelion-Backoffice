@@ -285,7 +285,7 @@ export type ItemStatus = (typeof ItemStatuses)[keyof typeof ItemStatuses]
 if (item.status === ItemStatuses.RESERVED) { ... }
 ```
 
-Enums shared with the API come from `@keimelion/api/shared/enums/*` — never redeclare them locally. See CLAUDE.md → *Type sharing with the API* for the list of safe imports.
+Enums shared with the API come from `@keimelion/sdk/enums` — never redeclare them locally. See CLAUDE.md → *API contract: `@keimelion/sdk`*.
 
 When a dedicated helper exists for a specific enum check (e.g. `isAdmin(role)` in `data-access/_shared/auth-storage`), prefer it over an inline enum comparison — it centralises the semantic and reads better at the call site. Only fall back to `role === UserRoles.ADMIN` when no helper exists yet.
 
@@ -483,7 +483,7 @@ Form state, TanStack Query cache keys, and local component state also use camelC
 
 ## Specific error codes — no generic fallbacks
 
-When surfacing an API error to the UI, distinguish specific failure modes from generic ones. `ApiError` responses come with a `code` field (see `@keimelion/api/shared/enums/error-code`) — use it to show a targeted message.
+When surfacing an API error to the UI, distinguish specific failure modes from generic ones. SDK `ApiError` instances carry a `code` field (see `ErrorCode` in `@keimelion/sdk/enums`, plus the client codes `NETWORK_ERROR`, `TIMEOUT`, `ABORTED`, `INVALID_RESPONSE`) — use it to show a targeted message.
 
 ```typescript
 // ❌
@@ -524,7 +524,7 @@ const loginSchema = z.object({
 
 ## Generic result types — avoid repeated interfaces
 
-Reuse shared types from `@keimelion/api/shared/types/api` (`ApiError`, `PaginatedResponse<T>`) instead of redeclaring them. Only name a new result type when the shape is unique enough to be meaningful on its own.
+Reuse shared types from `@keimelion/sdk/schemas` (`PaginatedResponse<T>`) and `@keimelion/sdk/client` (`ApiError`) instead of redeclaring them. Only name a new result type when the shape is unique enough to be meaningful on its own.
 
 ---
 
@@ -650,10 +650,9 @@ All custom hooks start with `use` and live under `src/features/<feature>/hooks/`
 'use client'
 import { useQuery } from '@tanstack/react-query'
 import { fetchUsers } from '@/data-access/users/users.api'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import type { ApiUser } from '@/data-access/users/users.api'
+import type { AdminUserDetailParsed, PaginatedResponse } from '@keimelion/sdk/schemas'
 
-export function useUsers(page: number): ReturnType<typeof useQuery<PaginatedResponse<ApiUser>>> {
+export function useUsers(page: number): ReturnType<typeof useQuery<PaginatedResponse<AdminUserDetailParsed>>> {
   return useQuery({
     queryKey: ['users', page],
     queryFn: () => fetchUsers(page),
@@ -676,11 +675,11 @@ Reference implementations: `src/features/users/components/user-form/user-form.ts
 
 ## `data-access/` never touches React
 
-Files under `src/data-access/` export plain async functions that call the Keimelion API through `lib/api-client`. They import no React, no hooks, no TanStack Query. Types returned from these functions are the source of truth for what the UI receives.
+Files under `src/data-access/` export plain async functions that call the Keimelion API through `apiClient` from `src/data-access/_shared/client`. They import no React, no hooks, no TanStack Query. Types returned from these functions are the source of truth for what the UI receives.
 
-## `lib/api-client` is the only place `fetch` is called
+## `apiClient` is the only way to reach the API
 
-Every network call to the Keimelion API goes through `apiGet` / `apiPost` / `apiPatch` / `apiDelete` from `src/lib/api-client.ts`. No raw `fetch` in `data-access/`, no raw `fetch` in components. This centralises auth headers, error normalisation to `ApiError`, and base URL handling.
+Every network call to the Keimelion API goes through the single `apiClient` from `src/data-access/_shared/client`, created with `@keimelion/sdk`. No raw `fetch` in `data-access/`, no raw `fetch` in components. This centralises auth headers, locale, session refresh and `ApiError` mapping. Contract changes ship in the SDK first, then consumers bump the pinned version.
 
 ## Loading, empty, and error states are first-class
 

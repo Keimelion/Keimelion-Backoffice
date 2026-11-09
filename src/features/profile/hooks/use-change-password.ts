@@ -4,23 +4,20 @@ import { useMutation } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { changeMyPassword } from '@/data-access/users/profile.api'
-import type {
-  ChangePasswordApiInput,
-  ChangePasswordResponse,
-} from '@/data-access/users/profile.schemas'
 import { clearSession } from '@/data-access/_shared/auth-storage'
 import { stopAutoRefresh } from '@/data-access/_shared/auth-storage/refresh-scheduler'
 import { LOGIN_PASSWORD_CHANGED_URL } from '@/data-access/auth/notices'
 import { queryClient } from '@/lib/query-client'
+import type { MessageResponseParsed, UsersChangePasswordRequestInput } from '@keimelion/sdk/schemas'
 
 export function useChangePassword(): UseMutationResult<
-  ChangePasswordResponse,
+  MessageResponseParsed,
   Error,
-  ChangePasswordApiInput
+  UsersChangePasswordRequestInput
 > {
   const router = useRouter()
 
-  return useMutation<ChangePasswordResponse, Error, ChangePasswordApiInput>({
+  return useMutation<MessageResponseParsed, Error, UsersChangePasswordRequestInput>({
     meta: { silent: true, skipUnauthorizedRedirect: true },
     mutationFn: (input) => changeMyPassword(input),
     onSuccess: () => {

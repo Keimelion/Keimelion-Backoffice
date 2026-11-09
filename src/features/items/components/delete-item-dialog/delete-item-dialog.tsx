@@ -2,14 +2,14 @@
 
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
 import { useDeleteItem } from '@/features/items/hooks/use-admin-items'
-import type { ApiAdminItem } from '@/data-access/items/items.schemas'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
+import type { AdminItemDetailParsed } from '@keimelion/sdk/schemas'
 
 interface DeleteItemDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  item: ApiAdminItem
+  item: AdminItemDetailParsed
 }
 
 export function DeleteItemDialog({

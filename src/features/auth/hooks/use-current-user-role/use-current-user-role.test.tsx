@@ -3,6 +3,9 @@ import { renderHook } from '@testing-library/react'
 import { createQueryClientWrapper } from '@/test/test-utils'
 
 vi.mock('@/data-access/_shared/auth-storage', () => ({
+  getAccessToken: vi.fn(() => null),
+  getRefreshToken: vi.fn(() => null),
+  rotateTokens: vi.fn(),
   getStoredUser: vi.fn(),
 }))
 
@@ -21,15 +24,16 @@ describe('useCurrentUserRole', () => {
       username: 'adminuser',
       authProvider: 'email',
       role: 'admin',
-      avatarUrl: null,
+      avatarImageId: null,
+      avatar: null,
       isCgvAccepted: true,
       cgvAcceptedAt: null,
       isMarketingOptedIn: false,
       defaultCurrency: 'EUR' as const,
       emailVerifiedAt: null,
       lastActiveAt: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     })
 
     const { result } = renderHook(() => useCurrentUserRole(), {
@@ -56,15 +60,16 @@ describe('useCurrentUserRole', () => {
       username: 'moduser',
       authProvider: 'email',
       role: 'moderator',
-      avatarUrl: null,
+      avatarImageId: null,
+      avatar: null,
       isCgvAccepted: true,
       cgvAcceptedAt: null,
       isMarketingOptedIn: false,
       defaultCurrency: 'EUR' as const,
       emailVerifiedAt: null,
       lastActiveAt: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     })
 
     const { result } = renderHook(() => useCurrentUserRole(), {

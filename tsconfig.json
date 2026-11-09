@@ -29,9 +29,6 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@keimelion/api/*": [
-        "../Keimelion-API/src/*"
       ]
     },
     "allowJs": true,

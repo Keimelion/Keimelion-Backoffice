@@ -2,15 +2,15 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { OccasionTypeForm } from '@/features/occasion-types/components/occasion-type-form'
 import type { OccasionTypeFormValues } from '@/features/occasion-types/components/occasion-type-form'
 import { useCreateOccasionType } from '@/features/occasion-types/hooks/use-admin-occasion-types'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { ApiError } from '@keimelion/sdk/client'
 
 interface CreateOccasionTypeDialogProps {
   open: boolean
@@ -35,7 +35,7 @@ export function CreateOccasionTypeDialog({
         onOpenChange(false)
       },
       onError: (error) => {
-        if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
+        if (error instanceof ApiError && error.status === HttpStatus.CONFLICT) {
           setError('slug', { message: t('occasion_types.form.error.slug_conflict') })
           return
         }

@@ -7,20 +7,16 @@ import {
   deleteItemSource,
   updateItemSource,
 } from '@/data-access/items/item-sources.api'
-import type {
-  ApiItemSource,
-  CreateItemSourceInput,
-  UpdateItemSourceInput,
-} from '@/data-access/items/item-sources.schemas'
 import { ITEMS_QUERY_KEY } from '@/data-access/items/items.api'
 import { buildAdminItemKey } from '@/features/items/hooks/use-admin-items'
+import type { AdminItemsCreateSourceRequestInput, AdminItemsUpdateSourceRequestInput, ItemSourceDetailParsed } from '@keimelion/sdk/schemas'
 
 interface CreateItemSourceVariables {
   itemId: string
-  input: CreateItemSourceInput
+  input: AdminItemsCreateSourceRequestInput
 }
 
-export function useCreateItemSource(): UseMutationResult<ApiItemSource, Error, CreateItemSourceVariables> {
+export function useCreateItemSource(): UseMutationResult<ItemSourceDetailParsed, Error, CreateItemSourceVariables> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ itemId, input }) => createItemSource(itemId, input),
@@ -37,10 +33,10 @@ export function useCreateItemSource(): UseMutationResult<ApiItemSource, Error, C
 interface UpdateItemSourceVariables {
   itemId: string
   sourceId: string
-  input: UpdateItemSourceInput
+  input: AdminItemsUpdateSourceRequestInput
 }
 
-export function useUpdateItemSource(): UseMutationResult<ApiItemSource, Error, UpdateItemSourceVariables> {
+export function useUpdateItemSource(): UseMutationResult<ItemSourceDetailParsed, Error, UpdateItemSourceVariables> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ itemId, sourceId, input }) => updateItemSource(itemId, sourceId, input),

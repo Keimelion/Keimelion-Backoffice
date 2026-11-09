@@ -2,8 +2,9 @@
 
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react'
 import { IconButton } from '@/components/shared/icon-button'
-import type { ItemSourceInput, ItemSourceShop } from '@/data-access/items/item-sources.schemas'
+import type { ItemSourceInput } from '@/features/items/items.input-schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { ShopSummaryParsed } from '@keimelion/sdk/schemas'
 
 interface ItemSourceSummaryProps {
   values: ItemSourceInput
@@ -81,7 +82,7 @@ export function ItemSourceSummary({
 
 export function resolveShopName(
   shopId: string | null,
-  shops: readonly ItemSourceShop[],
+  shops: readonly ShopSummaryParsed[],
 ): string | null {
   if (shopId === null) return null
   return shops.find((shop) => shop.id === shopId)?.name ?? null

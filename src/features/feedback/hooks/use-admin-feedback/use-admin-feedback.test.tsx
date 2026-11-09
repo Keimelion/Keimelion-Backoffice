@@ -24,8 +24,8 @@ const MOCK_FEEDBACK = {
   description: 'The reservation badge is misaligned on mobile.',
   context: null,
   status: 'open' as const,
-  createdAt: '2024-02-01T00:00:00.000Z',
-  updatedAt: '2024-02-01T00:00:00.000Z',
+  createdAt: new Date('2024-02-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-02-01T00:00:00.000Z'),
   user: null,
 }
 

@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { useReorderMutation } from '@/components/shared/data-table'
 import type { ReorderUpdate } from '@/components/shared/data-table'
 import {
@@ -13,11 +12,8 @@ import {
   patchOccasionTypeSortOrder,
   updateOccasionType,
 } from '@/data-access/occasion-types/admin-occasion-types.api'
-import type {
-  AdminOccasionType,
-  CreateOccasionTypeInput,
-  UpdateOccasionTypeInput,
-} from '@/data-access/occasion-types/admin-occasion-types.schemas'
+import type { CreateOccasionTypeInput, UpdateOccasionTypeInput } from '@/features/occasion-types/occasion-types.input-schemas'
+import type { AdminOccasionTypeDetailParsed, PaginatedResponse } from '@keimelion/sdk/schemas'
 
 interface UseAdminOccasionTypesParams {
   page: number
@@ -32,17 +28,17 @@ export function buildAdminOccasionTypesKey(
 
 export function useAdminOccasionTypes(
   params: UseAdminOccasionTypesParams,
-): UseQueryResult<PaginatedResponse<AdminOccasionType>> {
+): UseQueryResult<PaginatedResponse<AdminOccasionTypeDetailParsed>> {
   return useQuery({
     queryKey: buildAdminOccasionTypesKey(params),
     queryFn: () => listAdminOccasionTypes(params),
   })
 }
 
-export function useCreateOccasionType(): UseMutationResult<AdminOccasionType, Error, CreateOccasionTypeInput> {
+export function useCreateOccasionType(): UseMutationResult<AdminOccasionTypeDetailParsed, Error, CreateOccasionTypeInput> {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: createOccasionType,
+    mutationFn: (input: CreateOccasionTypeInput) => createOccasionType(input),
     meta: { silent: true },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: OCCASION_TYPES_QUERY_KEY })
@@ -55,7 +51,7 @@ interface UpdateOccasionTypeVariables {
   input: UpdateOccasionTypeInput
 }
 
-export function useUpdateOccasionType(): UseMutationResult<AdminOccasionType, Error, UpdateOccasionTypeVariables> {
+export function useUpdateOccasionType(): UseMutationResult<AdminOccasionTypeDetailParsed, Error, UpdateOccasionTypeVariables> {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }) => updateOccasionType(id, input),
@@ -76,14 +72,14 @@ export function useDeleteOccasionType(): UseMutationResult<void, Error, string> 
   })
 }
 
-function reorderOccasionTypes(updates: ReorderUpdate[]): Promise<AdminOccasionType[]> {
+function reorderOccasionTypes(updates: ReorderUpdate[]): Promise<AdminOccasionTypeDetailParsed[]> {
   return Promise.all(updates.map(({ id, sortOrder }) => patchOccasionTypeSortOrder(id, sortOrder)))
 }
 
 export function useReorderOccasionTypes(
   params: UseAdminOccasionTypesParams,
-): ReturnType<typeof useReorderMutation<AdminOccasionType>> {
-  return useReorderMutation<AdminOccasionType>({
+): ReturnType<typeof useReorderMutation<AdminOccasionTypeDetailParsed>> {
+  return useReorderMutation<AdminOccasionTypeDetailParsed>({
     queryKey: buildAdminOccasionTypesKey(params),
     invalidateKey: OCCASION_TYPES_QUERY_KEY,
     mutationFn: reorderOccasionTypes,

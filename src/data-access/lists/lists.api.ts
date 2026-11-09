@@ -1,84 +1,82 @@
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { parseApiResponse } from '@/data-access/_shared/parse-response'
-import {
-  adminListItemsListResponseSchema,
-  adminListListResponseSchema,
-  adminListMutationResponseSchema,
-  type ApiAdminList,
-  type ApiAdminListItem,
-  type ListItemsPaginationQuery,
-  type ListListsQuery,
-  type UpdateListInput,
-} from './lists.schemas'
+import type { ListStatus } from '@keimelion/sdk/enums'
+import type {
+  AdminListDetailParsed,
+  AdminListsListItemsResponseParsed,
+  AdminListsListResponseParsed,
+  AdminListsUpdateRequestInput,
+} from '@keimelion/sdk/schemas'
+import { apiClient } from '@/data-access/_shared/client'
+import { emptyToUndefined } from '@/data-access/_shared/query-params'
+import type { Currency } from '@/lib/i18n/currency'
+import { useCurrencyStore } from '@/lib/i18n/currency-store'
 
 export const LISTS_QUERY_KEY = ['lists'] as const
 
-function buildListParams(input: Partial<ListListsQuery>): Record<string, string> {
-  const params: Record<string, string> = {}
-  if (input.page !== undefined) params.page = String(input.page)
-  if (input.limit !== undefined) params.limit = String(input.limit)
-  if (input.id !== undefined) params['id[eq]'] = input.id
-  if (typeof input.search === 'string' && input.search.length > 0) {
-    params['title[ilike]'] = input.search
-  }
-  if (input.listStatus !== undefined) {
-    params['listStatus[eq]'] = input.listStatus
-  }
-  if (input.occasionTypeId !== undefined) {
-    params['occasionTypeId[eq]'] = input.occasionTypeId
-  }
-  if (input.ownerUserId !== undefined) {
-    params.ownerUserId = input.ownerUserId
-  }
-  if (input.sort !== undefined) params.sort = input.sort
-  return params
+export interface ListAdminListsParams {
+  page?: number | undefined
+  limit?: number | undefined
+  id?: string | undefined
+  search?: string | undefined
+  listStatus?: ListStatus | undefined
+  occasionTypeId?: string | undefined
+  ownerUserId?: string | undefined
+  sort?: string | undefined
 }
 
-function buildListItemsParams(input: ListItemsPaginationQuery): Record<string, string> {
-  return {
-    page: String(input.page),
-    limit: String(input.limit),
-  }
+export interface ListAdminListItemsParams {
+  page: number
+  limit: number
 }
 
 export async function listAdminLists(
-  input: Partial<ListListsQuery>,
-): Promise<PaginatedResponse<ApiAdminList>> {
-  const response = await axiosInstance.get<unknown>('/admin/lists', {
-    params: buildListParams(input),
+  input: ListAdminListsParams,
+): Promise<AdminListsListResponseParsed> {
+  return apiClient.admin.lists.list({
+    page: input.page,
+    limit: input.limit,
+    sort: input.sort,
+    currency: getDisplayCurrency(),
+    ownerUserId: input.ownerUserId,
+    'id[eq]': input.id,
+    'title[ilike]': emptyToUndefined(input.search),
+    'listStatus[eq]': input.listStatus,
+    'occasionTypeId[eq]': input.occasionTypeId,
   })
-  return parseApiResponse(adminListListResponseSchema, response, 'admin lists')
 }
 
-export async function fetchAdminList(id: string): Promise<ApiAdminList> {
-  const response = await axiosInstance.get<unknown>(`/admin/lists/${id}`)
-  const parsed = parseApiResponse(adminListMutationResponseSchema, response, 'admin list')
-  return parsed.list
+export async function fetchAdminList(id: string): Promise<AdminListDetailParsed> {
+  const { list } = await apiClient.admin.lists.get(id, { currency: getDisplayCurrency() })
+  return list
 }
 
-export async function updateList(id: string, input: UpdateListInput): Promise<ApiAdminList> {
-  const response = await axiosInstance.patch<unknown>(`/admin/lists/${id}`, input)
-  const parsed = parseApiResponse(adminListMutationResponseSchema, response, 'admin list')
-  return parsed.list
+export async function updateList(
+  id: string,
+  input: AdminListsUpdateRequestInput,
+): Promise<AdminListDetailParsed> {
+  const { list } = await apiClient.admin.lists.update(id, input)
+  return list
 }
 
 export async function deleteList(id: string): Promise<void> {
-  await axiosInstance.delete<unknown>(`/admin/lists/${id}`)
+  await apiClient.admin.lists.delete(id)
 }
 
-export async function restoreList(id: string): Promise<ApiAdminList> {
-  const response = await axiosInstance.post<unknown>(`/admin/lists/${id}/restore`)
-  const parsed = parseApiResponse(adminListMutationResponseSchema, response, 'admin list')
-  return parsed.list
+export async function restoreList(id: string): Promise<AdminListDetailParsed> {
+  const { list } = await apiClient.admin.lists.restore(id)
+  return list
 }
 
 export async function listAdminListItems(
   listId: string,
-  pagination: ListItemsPaginationQuery,
-): Promise<PaginatedResponse<ApiAdminListItem>> {
-  const response = await axiosInstance.get<unknown>(`/admin/lists/${listId}/items`, {
-    params: buildListItemsParams(pagination),
+  pagination: ListAdminListItemsParams,
+): Promise<AdminListsListItemsResponseParsed> {
+  return apiClient.admin.lists.listItems(listId, {
+    page: pagination.page,
+    limit: pagination.limit,
+    currency: getDisplayCurrency(),
   })
-  return parseApiResponse(adminListItemsListResponseSchema, response, 'admin list items')
+}
+
+function getDisplayCurrency(): Currency {
+  return useCurrencyStore.getState().currency
 }

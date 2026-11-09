@@ -25,9 +25,6 @@
   "items.form.description_label": "Description",
   "items.form.description_placeholder": "Optional details to help identify this item.",
   "items.form.description_help": "Optional. Up to 5000 characters.",
-  "items.form.image_url_label": "Image URL",
-  "items.form.image_url_placeholder": "https://cdn.example.com/item.jpg",
-  "items.form.image_url_help": "Optional. Must use HTTPS.",
   "items.form.image_preview_alt": "Item image preview",
   "items.form.sources_section_title": "Sources",
   "items.form.sources_section_help": "At least one source is required.",
@@ -87,5 +84,7 @@
   "items.sources.delete_dialog.cancel": "No, keep source",
   "items.sources.mutation.created_toast": "Source added.",
   "items.sources.mutation.updated_toast": "Source updated.",
-  "items.sources.mutation.deleted_toast": "Source deleted."
+  "items.sources.mutation.deleted_toast": "Source deleted.",
+  "items.form.image_label": "Image",
+  "items.form.image_help": "Optional. JPEG, PNG or WebP."
 }

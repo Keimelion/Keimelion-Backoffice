@@ -1,15 +1,15 @@
 'use client'
 
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
-import type { ApiTag } from '@/data-access/tags/tags.schemas'
 import { useDeleteTag } from '@/features/tags/hooks/use-admin-tags'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
+import type { TagSummaryParsed } from '@keimelion/sdk/schemas'
 
 interface DeleteTagDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  tag: ApiTag
+  tag: TagSummaryParsed
 }
 
 export function DeleteTagDialog({

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import { useAdminCategories } from '@/features/categories/hooks/use-admin-categories'
 import { CategoriesTree } from '@/features/categories/components/categories-tree'
@@ -11,6 +10,7 @@ import { CreateCategoryDialog } from '@/features/categories/components/create-ca
 import { EditCategoryDialog } from '@/features/categories/components/edit-category-dialog'
 import { DeleteCategoryDialog } from '@/features/categories/components/delete-category-dialog'
 import { countDescendants } from '@/features/categories/lib/category-tree'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 export function CategoriesPageContent(): React.JSX.Element {
   const currentRole = useCurrentUserRole()
@@ -21,8 +21,8 @@ export function CategoriesPageContent(): React.JSX.Element {
 
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
   const [createParentId, setCreateParentId] = useState<string | null>(null)
-  const [editTarget, setEditTarget] = useState<ApiCategory | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<ApiCategory | null>(null)
+  const [editTarget, setEditTarget] = useState<AdminCategoryDetailParsed | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminCategoryDetailParsed | null>(null)
   const [revealParentId, setRevealParentId] = useState<string | null>(null)
 
   function openCreateDialog(parentId: string | null): void {

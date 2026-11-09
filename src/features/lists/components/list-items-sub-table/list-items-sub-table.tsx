@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useIntl } from 'react-intl'
-import { ITEM_STATUS_VALUES } from '@keimelion/api/shared/enums/item-status'
-import type { ItemStatus } from '@keimelion/api/shared/enums/item-status'
+import { ITEM_STATUS_VALUES } from '@keimelion/sdk/enums'
+import type { ItemStatus } from '@keimelion/sdk/enums'
 import { Badge } from '@/components/ui/badge'
 import { ItemStatusBadge } from '@/features/lists/components/item-status-badge'
 import { Button } from '@/components/ui/button'
@@ -18,11 +18,11 @@ import {
 } from '@/components/ui/table'
 import { ImageThumbnail } from '@/components/shared/image-thumbnail'
 import { useAdminListItems } from '@/features/lists/hooks/use-admin-list-items'
-import type { ApiAdminListItem } from '@/data-access/lists/lists.schemas'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { TranslateFn } from '@/lib/i18n/use-translate'
 import type { MessageId } from '@/lib/i18n/messages/en'
+import type { AdminListItemDetailParsed } from '@keimelion/sdk/schemas'
 
 const DEFAULT_PAGE_SIZE = 20
 const SKELETON_ROW_COUNT = 3
@@ -147,7 +147,7 @@ function renderSkeletonRows(): React.ReactNode {
 }
 
 function renderDataRows(
-  items: ApiAdminListItem[],
+  items: AdminListItemDetailParsed[],
   t: TranslateFn,
   formatCurrency: FormatCurrencyFn,
 ): React.ReactNode {
@@ -167,9 +167,9 @@ function renderDataRows(
       <TableRow key={listItem.id} className="hover:bg-transparent">
         <TableCell className="w-14">
           <ImageThumbnail
-            src={listItem.item.image?.urls.sm ?? listItem.item.imageUrl}
+            src={listItem.item.image?.urls.sm ?? null}
             alt={listItem.item.name}
-            fullSrc={listItem.item.image?.urls.lg ?? listItem.item.imageUrl}
+            fullSrc={listItem.item.image?.urls.lg ?? null}
           />
         </TableCell>
         <TableCell>
@@ -242,7 +242,7 @@ interface AveragePrice {
   currency: string
 }
 
-function resolveAveragePrice(listItem: ApiAdminListItem): AveragePrice | null {
+function resolveAveragePrice(listItem: AdminListItemDetailParsed): AveragePrice | null {
   if (listItem.averagePrice === null) return null
   const amount = Number(listItem.averagePrice)
   if (!Number.isFinite(amount)) return null

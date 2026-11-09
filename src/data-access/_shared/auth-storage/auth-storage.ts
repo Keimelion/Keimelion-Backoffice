@@ -1,6 +1,7 @@
-import { UserRoles } from '@keimelion/api/shared/enums/user-role'
-import type { UserRole } from '@keimelion/api/shared/enums/user-role'
-import { apiUserSchema, type ApiUser } from '@/data-access/_shared/user'
+import { UserRoles } from '@keimelion/sdk/enums'
+import type { UserRole } from '@keimelion/sdk/enums'
+import { userDetailSchema } from '@keimelion/sdk/schemas'
+import type { UserDetailParsed } from '@keimelion/sdk/schemas'
 
 const ACCESS_TOKEN_KEY = 'keimelion_access_token'
 const REFRESH_TOKEN_KEY = 'keimelion_refresh_token'
@@ -39,12 +40,12 @@ export function getRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY)
 }
 
-export function getStoredUser(): ApiUser | null {
+export function getStoredUser(): UserDetailParsed | null {
   const raw = localStorage.getItem(STORED_USER_KEY)
   if (!raw) return null
 
   try {
-    const parsed = apiUserSchema.safeParse(JSON.parse(raw))
+    const parsed = userDetailSchema.safeParse(JSON.parse(raw))
     if (!parsed.success) {
       localStorage.removeItem(STORED_USER_KEY)
       return null
@@ -56,7 +57,7 @@ export function getStoredUser(): ApiUser | null {
   }
 }
 
-export function saveSession(accessToken: string, refreshToken: string, user: ApiUser): void {
+export function saveSession(accessToken: string, refreshToken: string, user: UserDetailParsed): void {
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
   localStorage.setItem(STORED_USER_KEY, JSON.stringify(user))
@@ -68,7 +69,7 @@ export function rotateTokens(accessToken: string, refreshToken: string): void {
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
 }
 
-export function updateStoredUser(user: ApiUser): void {
+export function updateStoredUser(user: UserDetailParsed): void {
   localStorage.setItem(STORED_USER_KEY, JSON.stringify(user))
   writeSessionCookie(user.role)
 }

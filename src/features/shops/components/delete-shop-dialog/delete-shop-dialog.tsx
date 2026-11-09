@@ -2,14 +2,14 @@
 
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
 import { useDeleteShop } from '@/features/shops/hooks/use-admin-shops'
-import type { AdminShop } from '@/data-access/shops/admin-shops.schemas'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
+import type { ShopDetailParsed } from '@keimelion/sdk/schemas'
 
 interface DeleteShopDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  shop: AdminShop
+  shop: ShopDetailParsed
 }
 
 export function DeleteShopDialog({

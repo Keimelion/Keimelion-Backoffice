@@ -1,6 +1,6 @@
 'use client'
 
-import type { UserRole } from '@keimelion/api/shared/enums/user-role'
+import type { UserRole } from '@keimelion/sdk/enums'
 import { getStoredUser } from '@/data-access/_shared/auth-storage'
 
 export function useCurrentUserRole(): UserRole | null {

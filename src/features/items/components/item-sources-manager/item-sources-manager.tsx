@@ -4,14 +4,7 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { ApiAdminItem } from '@/data-access/items/items.schemas'
-import {
-  EMPTY_ITEM_SOURCE_INPUT,
-  type ApiItemSource,
-  type CreateItemSourceInput,
-  type ItemSourceInput,
-  type UpdateItemSourceInput,
-} from '@/data-access/items/item-sources.schemas'
+import { EMPTY_ITEM_SOURCE_INPUT, toSupportedCurrency, type ItemSourceInput } from '@/features/items/items.input-schemas'
 import { useAdminItem } from '@/features/items/hooks/use-admin-items'
 import {
   useCreateItemSource,
@@ -26,6 +19,7 @@ import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminItemDetailParsed, AdminItemsCreateSourceRequestInput, AdminItemsUpdateSourceRequestInput, ItemSourceDetailParsed } from '@keimelion/sdk/schemas'
 
 const SHOPS_FILTER = { page: 1, limit: 100, isActive: true } as const
 const EDITABLE_SOURCE_FIELDS = ['shopId', 'sourceUrl', 'price', 'currency'] as const satisfies readonly (keyof ItemSourceInput)[]
@@ -37,7 +31,7 @@ function omitKey<T>(previous: Record<string, T>, key: string): Record<string, T>
 }
 
 interface ItemSourcesManagerProps {
-  item: ApiAdminItem
+  item: AdminItemDetailParsed
 }
 
 export function ItemSourcesManager({
@@ -53,7 +47,7 @@ export function ItemSourcesManager({
   const [editingSourceIds, setEditingSourceIds] = useState<Set<string>>(() => new Set())
   const [isAddingNewRow, setIsAddingNewRow] = useState<boolean>(false)
   const [editorErrors, setEditorErrors] = useState<Record<string, string>>({})
-  const [deleteTarget, setDeleteTarget] = useState<ApiItemSource | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<ItemSourceDetailParsed | null>(null)
 
   const createMutation = useCreateItemSource()
   const updateMutation = useUpdateItemSource()
@@ -70,7 +64,7 @@ export function ItemSourcesManager({
 
   const canDeleteExisting = sources.length > 1
 
-  function handleStartEditing(source: ApiItemSource): void {
+  function handleStartEditing(source: ItemSourceDetailParsed): void {
     setEditingSourceIds((previous) => {
       const next = new Set(previous)
       next.add(source.id)
@@ -98,7 +92,7 @@ export function ItemSourcesManager({
   }
 
   function handleValidateNew(values: ItemSourceInput): void {
-    const payload: CreateItemSourceInput = values
+    const payload: AdminItemsCreateSourceRequestInput = values
     createMutation.mutate(
       { itemId: item.id, input: payload },
       {
@@ -113,13 +107,13 @@ export function ItemSourcesManager({
     )
   }
 
-  function handleValidateExisting(source: ApiItemSource, values: ItemSourceInput): void {
-    const patch: UpdateItemSourceInput = pickChangedFields(
+  function handleValidateExisting(source: ItemSourceDetailParsed, values: ItemSourceInput): void {
+    const patch: AdminItemsUpdateSourceRequestInput = pickChangedFields(
       {
         shopId: source.shopId,
         sourceUrl: source.sourceUrl,
         price: source.price,
-        currency: source.currency,
+        currency: toSupportedCurrency(source.currency),
       },
       values,
       EDITABLE_SOURCE_FIELDS,
@@ -178,7 +172,7 @@ export function ItemSourcesManager({
                       shopId: source.shopId,
                       sourceUrl: source.sourceUrl,
                       price: source.price,
-                      currency: source.currency,
+                      currency: toSupportedCurrency(source.currency),
                     }}
                     shops={shops}
                     isShopsLoading={shopsQuery.isLoading}
@@ -199,7 +193,7 @@ export function ItemSourcesManager({
                     shopId: source.shopId,
                     sourceUrl: source.sourceUrl,
                     price: source.price,
-                    currency: source.currency,
+                    currency: toSupportedCurrency(source.currency),
                   }}
                   shopName={source.shop?.name ?? null}
                   canRemove={canDeleteExisting}
