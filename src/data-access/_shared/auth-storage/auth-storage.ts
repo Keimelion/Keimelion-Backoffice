@@ -47,12 +47,12 @@ export function getStoredUser(): UserDetailParsed | null {
   try {
     const parsed = userDetailSchema.safeParse(JSON.parse(raw))
     if (!parsed.success) {
-      localStorage.removeItem(STORED_USER_KEY)
+      clearSession()
       return null
     }
     return parsed.data
   } catch {
-    localStorage.removeItem(STORED_USER_KEY)
+    clearSession()
     return null
   }
 }

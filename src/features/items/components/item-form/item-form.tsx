@@ -5,7 +5,6 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import type { Resolver, UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
-import { ImageThumbnail } from '@/components/shared/image-thumbnail'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -177,7 +176,6 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
   const editItem = props.mode === 'edit' ? props.item : null
   const isCurrentImageCleared = values.clearImage === true
   const previewSrc = editItem?.image?.urls.md ?? null
-  const previewFullSrc = editItem?.image?.urls.lg ?? null
 
   return (
     <Form {...form}>
@@ -202,17 +200,6 @@ export function ItemForm(props: ItemFormProps): React.JSX.Element {
         }}
         noValidate
       >
-        {isEdit && previewSrc !== null && !isCurrentImageCleared ? (
-          <div className="flex justify-center pb-1">
-            <ImageThumbnail
-              src={previewSrc}
-              fullSrc={previewFullSrc}
-              alt={t('items.form.image_preview_alt')}
-              size="md"
-            />
-          </div>
-        ) : null}
-
         <FormField
           control={form.control}
           name="name"

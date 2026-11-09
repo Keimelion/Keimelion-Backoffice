@@ -1,17 +1,12 @@
 import { z } from 'zod'
 import { FEEDBACK_STATUS_VALUES } from '@keimelion/sdk/enums'
-import { ADMIN_FEEDBACK_SORT_FIELDS, SORT_DIRECTIONS } from '@keimelion/sdk/schemas'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { ADMIN_FEEDBACK_SORT_FIELDS } from '@keimelion/sdk/schemas'
+import { basePaginationShape, buildSortValues } from '@/lib/list-query-input-schema'
 
 const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const dateInputSchema = z.string().regex(DATE_INPUT_PATTERN)
 
-type FeedbackSortField = (typeof ADMIN_FEEDBACK_SORT_FIELDS)[number]
-type FeedbackSortValue = `${FeedbackSortField}:${(typeof SORT_DIRECTIONS)[number]}`
-
-const SORT_VALUES = ADMIN_FEEDBACK_SORT_FIELDS.flatMap((field) =>
-  SORT_DIRECTIONS.map((direction) => `${field}:${direction}` as const),
-) as [FeedbackSortValue, ...FeedbackSortValue[]]
+const SORT_VALUES = buildSortValues(ADMIN_FEEDBACK_SORT_FIELDS)
 
 export const listFeedbackQuerySchema = z.object({
   ...basePaginationShape,

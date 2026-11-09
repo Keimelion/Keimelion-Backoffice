@@ -50,12 +50,12 @@ describe('updateMe', () => {
     expect(formData.get('image')).toBeInstanceOf(File)
   })
 
-  it('clears a null username through JSON before uploading the avatar', async () => {
+  it('uploads the avatar before clearing a null username through JSON', async () => {
     const avatar = new File(['content'], 'avatar.png', { type: 'image/png' })
 
     await updateMe({ username: null }, avatar)
 
-    expect(JSON.parse(mock.history.patch[0]?.data as string)).toEqual({ username: null })
-    expect(mock.history.patch[1]?.data).toBeInstanceOf(FormData)
+    expect(mock.history.patch[0]?.data).toBeInstanceOf(FormData)
+    expect(JSON.parse(mock.history.patch[1]?.data as string)).toEqual({ username: null })
   })
 })

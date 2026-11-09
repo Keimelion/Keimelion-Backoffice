@@ -12,6 +12,7 @@ import {
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { UserRefCell } from '@/components/shared/user-ref-cell'
+import { resolveReserverName } from '@/features/reservations/lib/resolve-reserver-name'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { listAdminReservationsQuerySchema } from '@/features/reservations/reservations.input-schemas'
 import { useAdminReservations } from '@/features/reservations/hooks/use-admin-reservations'
@@ -114,7 +115,9 @@ function buildColumns(
     {
       key: 'reserver',
       header: t('reservations.table.column.reserver'),
-      cell: (reservation) => <UserRefCell user={reservation.user} />,
+      cell: (reservation) => (
+        <UserRefCell user={reservation.user} fallback={resolveReserverName(reservation)} />
+      ),
     },
     {
       key: 'item',

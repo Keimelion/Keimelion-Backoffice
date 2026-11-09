@@ -1,13 +1,8 @@
 import { z } from 'zod'
-import { RESERVATION_SORT_FIELDS, SORT_DIRECTIONS } from '@keimelion/sdk/schemas'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { RESERVATION_SORT_FIELDS } from '@keimelion/sdk/schemas'
+import { basePaginationShape, buildSortValues } from '@/lib/list-query-input-schema'
 
-type AdminReservationSortField = (typeof RESERVATION_SORT_FIELDS)[number]
-type AdminReservationSortValue = `${AdminReservationSortField}:${(typeof SORT_DIRECTIONS)[number]}`
-
-const SORT_VALUES = RESERVATION_SORT_FIELDS.flatMap((field) =>
-  SORT_DIRECTIONS.map((direction) => `${field}:${direction}` as const),
-) as [AdminReservationSortValue, ...AdminReservationSortValue[]]
+const SORT_VALUES = buildSortValues(RESERVATION_SORT_FIELDS)
 
 export const listAdminReservationsQuerySchema = z.object({
   ...basePaginationShape,

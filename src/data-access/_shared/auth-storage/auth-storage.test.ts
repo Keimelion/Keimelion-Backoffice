@@ -128,16 +128,24 @@ describe('getStoredUser', () => {
     expect(getStoredUser()).toBeNull()
   })
 
-  it('returns null and clears key when stored JSON is tampered', () => {
+  it('returns null and clears the session when stored JSON is tampered', () => {
+    saveSession('tok', 'refresh-tok', ADMIN_USER)
     localStorage.setItem(STORED_USER_KEY, '{not valid json at all!!!}')
     expect(getStoredUser()).toBeNull()
     expect(localStorage.getItem(STORED_USER_KEY)).toBeNull()
+    expect(getAccessToken()).toBeNull()
+    expect(getRefreshToken()).toBeNull()
+    expect(readSessionCookie()).toBeNull()
   })
 
-  it('returns null and clears key when stored JSON has wrong shape', () => {
+  it('returns null and clears the session when stored JSON has wrong shape', () => {
+    saveSession('tok', 'refresh-tok', ADMIN_USER)
     localStorage.setItem(STORED_USER_KEY, JSON.stringify({ foo: 'bar' }))
     expect(getStoredUser()).toBeNull()
     expect(localStorage.getItem(STORED_USER_KEY)).toBeNull()
+    expect(getAccessToken()).toBeNull()
+    expect(getRefreshToken()).toBeNull()
+    expect(readSessionCookie()).toBeNull()
   })
 })
 

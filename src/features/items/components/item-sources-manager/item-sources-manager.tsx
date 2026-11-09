@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { EMPTY_ITEM_SOURCE_INPUT, toSupportedCurrency, type ItemSourceInput } from '@/features/items/items.input-schemas'
+import { EMPTY_ITEM_SOURCE_INPUT, findSupportedCurrency, toSupportedCurrency, type ItemSourceInput } from '@/features/items/items.input-schemas'
 import { useAdminItem } from '@/features/items/hooks/use-admin-items'
 import {
   useCreateItemSource,
@@ -108,12 +108,13 @@ export function ItemSourcesManager({
   }
 
   function handleValidateExisting(source: ItemSourceDetailParsed, values: ItemSourceInput): void {
+    const supportedCurrency = findSupportedCurrency(source.currency)
     const patch: AdminItemsUpdateSourceRequestInput = pickChangedFields(
       {
         shopId: source.shopId,
         sourceUrl: source.sourceUrl,
         price: source.price,
-        currency: toSupportedCurrency(source.currency),
+        ...(supportedCurrency !== undefined && { currency: supportedCurrency }),
       },
       values,
       EDITABLE_SOURCE_FIELDS,
@@ -193,7 +194,7 @@ export function ItemSourcesManager({
                     shopId: source.shopId,
                     sourceUrl: source.sourceUrl,
                     price: source.price,
-                    currency: toSupportedCurrency(source.currency),
+                    currency: source.currency,
                   }}
                   shopName={source.shop?.name ?? null}
                   canRemove={canDeleteExisting}

@@ -6,11 +6,10 @@ import {
   MAX_CATEGORIES_PER_ITEM,
   MAX_ITEM_DESCRIPTION_LENGTH,
   MAX_ITEM_NAME_LENGTH,
-  MAX_TAG_NAME_LENGTH,
   MAX_TAGS_PER_RESOURCE,
-  SORT_DIRECTIONS,
 } from '@keimelion/sdk/schemas'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { basePaginationShape, buildSortValues } from '@/lib/list-query-input-schema'
+import { resourceTagNameSchema } from '@/features/tags/tags.input-schemas'
 
 const SOURCE_URL_MAX_LENGTH = 2048
 const PRICE_REGEX = /^\d{1,8}(\.\d{1,2})?$/
@@ -31,8 +30,6 @@ const SOURCES_SHOP_DUPLICATE_MESSAGE = 'This shop is already used by another sou
 const CATEGORIES_MAX_MESSAGE = `An item can have at most ${String(MAX_CATEGORIES_PER_ITEM)} categories.`
 const CATEGORY_ID_INVALID_MESSAGE = 'Category id must be a UUID.'
 const TAGS_MAX_MESSAGE = `An item can have at most ${String(MAX_TAGS_PER_RESOURCE)} tags.`
-const TAG_NAME_REQUIRED_MESSAGE = 'Tag name is required.'
-const TAG_NAME_TOO_LONG_MESSAGE = `Tag name must be ${String(MAX_TAG_NAME_LENGTH)} characters or fewer.`
 
 const httpsSourceUrlSchema = z
   .url({ message: SOURCE_URL_INVALID_MESSAGE })
@@ -62,9 +59,12 @@ export const itemSourceInputSchema = itemSourceInputObjectSchema.superRefine((va
 
 export type ItemSourceInput = z.infer<typeof itemSourceInputSchema>
 
+export function findSupportedCurrency(currency: string): SupportedCurrency | undefined {
+  return currencySchema.safeParse(currency).data
+}
+
 export function toSupportedCurrency(currency: string): SupportedCurrency {
-  const parsed = currencySchema.safeParse(currency)
-  return parsed.success ? parsed.data : SupportedCurrencies.EUR
+  return findSupportedCurrency(currency) ?? SupportedCurrencies.EUR
 }
 
 export const EMPTY_ITEM_SOURCE_INPUT: ItemSourceInput = {
@@ -74,12 +74,7 @@ export const EMPTY_ITEM_SOURCE_INPUT: ItemSourceInput = {
   currency: SupportedCurrencies.EUR,
 }
 
-type AdminItemSortField = (typeof ADMIN_ITEMS_SORT_FIELDS)[number]
-type AdminItemSortValue = `${AdminItemSortField}:${(typeof SORT_DIRECTIONS)[number]}`
-
-const SORT_VALUES = ADMIN_ITEMS_SORT_FIELDS.flatMap((field) =>
-  SORT_DIRECTIONS.map((direction) => `${field}:${direction}` as const),
-) as [AdminItemSortValue, ...AdminItemSortValue[]]
+const SORT_VALUES = buildSortValues(ADMIN_ITEMS_SORT_FIELDS)
 
 export const listItemsQuerySchema = z.object({
   ...basePaginationShape,
@@ -106,13 +101,7 @@ const categoriesSchema = z
   .array(z.uuid({ message: CATEGORY_ID_INVALID_MESSAGE }))
   .max(MAX_CATEGORIES_PER_ITEM, { message: CATEGORIES_MAX_MESSAGE })
 
-const tagNameSchema = z
-  .string()
-  .trim()
-  .min(1, { message: TAG_NAME_REQUIRED_MESSAGE })
-  .max(MAX_TAG_NAME_LENGTH, { message: TAG_NAME_TOO_LONG_MESSAGE })
-
-const tagsSchema = z.array(tagNameSchema).max(MAX_TAGS_PER_RESOURCE, { message: TAGS_MAX_MESSAGE })
+const tagsSchema = z.array(resourceTagNameSchema).max(MAX_TAGS_PER_RESOURCE, { message: TAGS_MAX_MESSAGE })
 
 const imageFileSchema = z.file().nullable()
 

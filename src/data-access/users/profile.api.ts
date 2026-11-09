@@ -22,11 +22,12 @@ export async function updateMe(
     return user
   }
   const { username, ...fields } = input
-  if (username === null) await apiClient.users.updateProfile({ username: null })
   const { user } = await apiClient.users.updateProfile(
     buildProfileFormData({ ...fields, ...(typeof username === 'string' && { username }) }, avatar),
   )
-  return user
+  if (username !== null) return user
+  const { user: userWithClearedUsername } = await apiClient.users.updateProfile({ username: null })
+  return userWithClearedUsername
 }
 
 export async function changeMyPassword(

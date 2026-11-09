@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  findSupportedCurrency,
   createItemInputSchema,
   listItemsQuerySchema,
   updateItemInputSchema,
@@ -126,5 +127,15 @@ describe('updateItemInputSchema', () => {
       ],
     })
     expect(result.success).toBe(false)
+  })
+})
+
+describe('findSupportedCurrency', () => {
+  it('returns a supported currency unchanged', () => {
+    expect(findSupportedCurrency('USD')).toBe('USD')
+  })
+
+  it('returns undefined for a currency outside the supported list', () => {
+    expect(findSupportedCurrency('SEK')).toBeUndefined()
   })
 })

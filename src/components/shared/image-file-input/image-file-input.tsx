@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp'
+const PREVIEW_SIZE_PX = 64
 
 interface ImageFileInputProps extends Omit<
   React.ComponentProps<'input'>,
@@ -32,12 +34,17 @@ export function ImageFileInput({
   ...inputProps
 }: ImageFileInputProps): React.JSX.Element {
   const [inputKey, setInputKey] = useState<number>(0)
+  const [previousValue, setPreviousValue] = useState<File | null>(value)
   const selectedPreviewUrl = useObjectUrl(value)
   const visibleCurrentImage = isCurrentImageCleared ? null : currentImageUrl
   const previewUrl = selectedPreviewUrl ?? visibleCurrentImage
 
+  if (value !== previousValue) {
+    setPreviousValue(value)
+    if (value === null) setInputKey((key) => key + 1)
+  }
+
   function handleRemove(): void {
-    setInputKey((key) => key + 1)
     if (value !== null) {
       onFileChange(null)
       return
@@ -59,12 +66,15 @@ export function ImageFileInput({
       />
       {previewUrl === null ? null : (
         <div className="flex items-center gap-2">
-          <img
+          <Image
             src={previewUrl}
             alt={previewAlt}
+            width={PREVIEW_SIZE_PX}
+            height={PREVIEW_SIZE_PX}
             className="h-16 w-16 rounded-md border border-border object-cover"
             loading="lazy"
             referrerPolicy="no-referrer"
+            unoptimized
           />
           <Button
             type="button"

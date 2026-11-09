@@ -10,6 +10,7 @@ import {
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
+const REQUEST_TIMEOUT_MS = 2 * 60 * 1000
 const LOGIN_REDIRECT = '/login'
 const ACCEPT_LANGUAGE_HEADER = 'Accept-Language'
 const NO_REFRESH_TOKEN_CODE = 'NO_REFRESH_TOKEN'
@@ -19,6 +20,7 @@ let refreshPromise: Promise<string> | null = null
 
 export const apiClient: KeimelionClient = createClient({
   baseUrl: API_BASE_URL,
+  timeoutMs: REQUEST_TIMEOUT_MS,
   getToken: getAccessToken,
   fetch: fetchWithAppLocale,
   onUnauthorized: renewSession,

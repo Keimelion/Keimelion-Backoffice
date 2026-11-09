@@ -3,6 +3,7 @@ import { HttpStatus } from '@keimelion/sdk/enums'
 import { clearSession } from '@/data-access/_shared/auth-storage'
 import { translate } from '@/lib/i18n/translate'
 import { notifyError } from '@/lib/notify'
+import { shareEqualStructure } from '@/lib/share-equal-structure'
 import { ApiError } from '@keimelion/sdk/client'
 
 const STALE_TIME_MS = 1000 * 60 * 5
@@ -56,6 +57,7 @@ export function createQueryClient(): QueryClient {
     defaultOptions: {
       queries: {
         staleTime: STALE_TIME_MS,
+        structuralSharing: shareEqualStructure,
         retry: (failureCount, error) => {
           if (error instanceof ApiError && error.status < HttpStatus.INTERNAL_SERVER_ERROR) {
             return false

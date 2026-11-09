@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { ADMIN_SHOPS_SORT_FIELDS, SORT_DIRECTIONS } from '@keimelion/sdk/schemas'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { ADMIN_SHOPS_SORT_FIELDS, sortOrderSchema } from '@keimelion/sdk/schemas'
+import { basePaginationShape, buildSortValues } from '@/lib/list-query-input-schema'
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const SLUG_MIN_LENGTH = 2
@@ -9,8 +9,6 @@ const NAME_MIN_LENGTH = 1
 const NAME_MAX_LENGTH = 120
 const DOMAIN_MAX_LENGTH = 253
 const LOGO_URL_MAX_LENGTH = 2048
-const SORT_ORDER_MIN = 0
-const SORT_ORDER_MAX = 32767
 
 const SLUG_INVALID_MESSAGE =
   'Slug must be lowercase letters and digits separated by hyphens (e.g. my-shop).'
@@ -21,12 +19,7 @@ const LOGO_URL_INVALID_MESSAGE = 'Logo URL must be a valid URL.'
 const LOGO_URL_HTTPS_MESSAGE = 'Logo URL must use HTTPS.'
 const LOGO_URL_TOO_LONG_MESSAGE = 'Logo URL must be 2048 characters or fewer.'
 
-type AdminShopSortField = (typeof ADMIN_SHOPS_SORT_FIELDS)[number]
-type AdminShopSortValue = `${AdminShopSortField}:${(typeof SORT_DIRECTIONS)[number]}`
-
-const SORT_VALUES = ADMIN_SHOPS_SORT_FIELDS.flatMap((field) =>
-  SORT_DIRECTIONS.map((direction) => `${field}:${direction}` as const),
-) as [AdminShopSortValue, ...AdminShopSortValue[]]
+const SORT_VALUES = buildSortValues(ADMIN_SHOPS_SORT_FIELDS)
 
 const booleanStringSchema = z
   .enum(['true', 'false'])
@@ -66,8 +59,6 @@ const logoUrlSchema = z
   .max(LOGO_URL_MAX_LENGTH, { message: LOGO_URL_TOO_LONG_MESSAGE })
   .refine((value) => value.startsWith('https://'), { message: LOGO_URL_HTTPS_MESSAGE })
   .nullable()
-
-const sortOrderSchema = z.number().int().min(SORT_ORDER_MIN).max(SORT_ORDER_MAX)
 
 export const createShopInputSchema = z.strictObject({
   slug: slugSchema,

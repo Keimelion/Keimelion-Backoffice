@@ -1,12 +1,11 @@
 import { z } from 'zod'
+import { sortOrderSchema } from '@keimelion/sdk/schemas'
 import { DEFAULT_LOCALE, LOCALES } from '@/lib/i18n/locale'
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const SLUG_MIN_LENGTH = 2
 const SLUG_MAX_LENGTH = 60
 const EMOJI_MAX_LENGTH = 10
-const SORT_ORDER_MIN = 0
-const SORT_ORDER_MAX = 32767
 
 const SLUG_INVALID_MESSAGE =
   'Slug must be lowercase letters and digits separated by hyphens (e.g. my-occasion).'
@@ -33,7 +32,7 @@ export const createOccasionTypeInputSchema = z.object({
     .max(SLUG_MAX_LENGTH, { message: SLUG_INVALID_MESSAGE })
     .regex(SLUG_REGEX, { message: SLUG_INVALID_MESSAGE }),
   emoji: z.string().trim().max(EMOJI_MAX_LENGTH).nullable().optional(),
-  sortOrder: z.number().int().min(SORT_ORDER_MIN).max(SORT_ORDER_MAX),
+  sortOrder: sortOrderSchema,
   isActive: z.boolean(),
   translations: z.object(translationsShape),
 })

@@ -15,7 +15,7 @@ import {
 import type { DataTableColumn } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { basePaginationShape } from '@/lib/list-query-input-schema'
 import { CreateOccasionTypeDialog } from '@/features/occasion-types/components/create-occasion-type-dialog'
 import { EditOccasionTypeDialog } from '@/features/occasion-types/components/edit-occasion-type-dialog'
 import { DeleteOccasionTypeDialog } from '@/features/occasion-types/components/delete-occasion-type-dialog'

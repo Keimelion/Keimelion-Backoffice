@@ -1,18 +1,9 @@
 import { z } from 'zod'
 import { USER_ROLE_VALUES } from '@keimelion/sdk/enums'
-import { adminUsersCreateRequestSchema } from '@keimelion/sdk/schemas'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { ADMIN_USERS_SORT_FIELDS, adminUsersCreateRequestSchema } from '@keimelion/sdk/schemas'
+import { basePaginationShape, buildSortValues } from '@/lib/list-query-input-schema'
 
-const SORT_VALUES = [
-  'createdAt:desc',
-  'createdAt:asc',
-  'email:asc',
-  'email:desc',
-  'username:asc',
-  'username:desc',
-  'lastActiveAt:asc',
-  'lastActiveAt:desc',
-] as const
+const SORT_VALUES = buildSortValues(ADMIN_USERS_SORT_FIELDS)
 
 export const listUsersQuerySchema = z.object({
   ...basePaginationShape,

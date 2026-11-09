@@ -114,6 +114,13 @@ beforeEach(() => {
 })
 
 describe('ReservationsList', () => {
+  it('shows the guest reserver name when the reservation has no user', () => {
+    mockReservationsResult([{ ...BASE_RESERVATION, user: null, reserverName: 'Alice' }])
+    render(<ReservationsList />)
+
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+  })
+
   it('renders reserver, item and list as links to their respective pages', () => {
     mockReservationsResult([BASE_RESERVATION])
     render(<ReservationsList />)

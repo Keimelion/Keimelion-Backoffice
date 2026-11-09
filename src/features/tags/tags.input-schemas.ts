@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { MAX_TAG_NAME_LENGTH, MAX_TAG_SLUG_LENGTH } from '@keimelion/sdk/schemas'
-import { basePaginationShape } from '@/data-access/_shared/pagination'
+import { basePaginationShape } from '@/lib/list-query-input-schema'
 
 const TAG_NAME_MIN_LENGTH = 1
 const TAG_SLUG_MIN_LENGTH = 1
@@ -8,8 +8,16 @@ const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 const NAME_REQUIRED_MESSAGE = 'Name is required.'
 const NAME_TOO_LONG_MESSAGE = `Name must be ${String(MAX_TAG_NAME_LENGTH)} characters or fewer.`
+const RESOURCE_TAG_NAME_REQUIRED_MESSAGE = 'Tag name is required.'
+const RESOURCE_TAG_NAME_TOO_LONG_MESSAGE = `Tag name must be ${String(MAX_TAG_NAME_LENGTH)} characters or fewer.`
 const SLUG_INVALID_MESSAGE =
   'Slug must be lowercase letters and digits separated by hyphens (e.g. gaming).'
+
+export const resourceTagNameSchema = z
+  .string()
+  .trim()
+  .min(TAG_NAME_MIN_LENGTH, { message: RESOURCE_TAG_NAME_REQUIRED_MESSAGE })
+  .max(MAX_TAG_NAME_LENGTH, { message: RESOURCE_TAG_NAME_TOO_LONG_MESSAGE })
 
 export const listTagsQuerySchema = z.object({
   ...basePaginationShape,

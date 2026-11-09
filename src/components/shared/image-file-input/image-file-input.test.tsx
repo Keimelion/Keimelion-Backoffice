@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -23,6 +24,32 @@ function renderInput(overrides: Partial<React.ComponentProps<typeof ImageFileInp
   )
 }
 
+function ResettableInput(): React.JSX.Element {
+  const [value, setValue] = useState<File | null>(IMAGE_FILE)
+  return (
+    <>
+      <ImageFileInput
+        aria-label="Image"
+        value={value}
+        currentImageUrl={null}
+        isCurrentImageCleared={false}
+        previewAlt="Preview"
+        removeLabel="Remove image"
+        onFileChange={setValue}
+        onClearCurrent={vi.fn()}
+      />
+      <button
+        type="button"
+        onClick={() => {
+          setValue(null)
+        }}
+      >
+        Reset
+      </button>
+    </>
+  )
+}
+
 beforeEach(() => {
   URL.createObjectURL = vi.fn(() => 'blob:preview')
   URL.revokeObjectURL = vi.fn()
@@ -33,6 +60,15 @@ afterEach(() => {
 })
 
 describe('ImageFileInput', () => {
+  it('remounts the native input when the parent resets the value', async () => {
+    renderWithIntl(<ResettableInput />)
+    const inputBeforeReset = screen.getByLabelText('Image')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reset' }))
+
+    expect(screen.getByLabelText('Image')).not.toBe(inputBeforeReset)
+  })
+
   it('restricts the picker to the accepted image types', () => {
     renderInput()
     expect(screen.getByLabelText('Image')).toHaveAttribute(

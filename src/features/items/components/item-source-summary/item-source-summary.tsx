@@ -7,7 +7,7 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 import type { ShopSummaryParsed } from '@keimelion/sdk/schemas'
 
 interface ItemSourceSummaryProps {
-  values: ItemSourceInput
+  values: Omit<ItemSourceInput, 'currency'> & { currency: string }
   shopName: string | null
   canRemove: boolean
   isPending?: boolean
