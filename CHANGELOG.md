@@ -1,3 +1,14 @@
+## [0.2.0](https://github.com/Keimelion/Keimelion-Backoffice/compare/v0.1.0...v0.2.0) (2026-11-11)
+
+### Features
+
+* /reports list and moderate user reports (KEI-163) ([#75](https://github.com/Keimelion/Keimelion-Backoffice/issues/75)) ([ecbb64b](https://github.com/Keimelion/Keimelion-Backoffice/commit/ecbb64b9e7f59a136d6a081ef2af2927107356a0))
+* sidebar show the deployed Backoffice and API versions (KEI-181) ([#80](https://github.com/Keimelion/Keimelion-Backoffice/issues/80)) ([c3f183e](https://github.com/Keimelion/Keimelion-Backoffice/commit/c3f183e0f71751234122daad4b57b8c5c4b136e9))
+
+### Bug Fixes
+
+* /users send email, username and role as operator filters ([#58](https://github.com/Keimelion/Keimelion-Backoffice/issues/58)) ([978539e](https://github.com/Keimelion/Keimelion-Backoffice/commit/978539e51a3ea117285855514dc0e8b8a822a92a)), closes [Keimelion-API#27](https://github.com/Keimelion/Keimelion-API/issues/27)
+
 ## 0.1.0 (2026-11-02)
 
 ### Features
