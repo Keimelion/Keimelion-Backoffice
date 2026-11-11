@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
+import { DeployedVersions } from '@/features/health/components/deployed-versions'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
@@ -97,6 +98,10 @@ export function Sidebar(): React.JSX.Element {
           </div>
         ))}
       </nav>
+
+      <div className="mt-auto pt-6">
+        <DeployedVersions />
+      </div>
     </aside>
   )
 }

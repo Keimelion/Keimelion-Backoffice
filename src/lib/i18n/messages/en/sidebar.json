@@ -9,5 +9,7 @@
   "sidebar.nav.occasion_types": "Occasion Types",
   "sidebar.nav.feedback": "Feedback",
   "sidebar.nav.reports": "Reports",
-  "sidebar.nav.reservations": "Reservations"
+  "sidebar.nav.reservations": "Reservations",
+  "sidebar.versions.summary": "Backoffice {backofficeVersion} · API {apiVersion}",
+  "sidebar.versions.unknown": "—"
 }
