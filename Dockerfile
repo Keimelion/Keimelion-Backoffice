@@ -8,7 +8,9 @@ RUN npm ci
 
 FROM deps AS build
 ARG NEXT_PUBLIC_API_URL
+ARG GIT_SHA=""
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+    GIT_SHA=${GIT_SHA} \
     NEXT_TELEMETRY_DISABLED=1
 COPY . .
 RUN npm run build && npm prune --omit=dev

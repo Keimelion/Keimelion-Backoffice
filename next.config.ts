@@ -1,5 +1,6 @@
 import path from 'node:path'
 import type { NextConfig } from 'next'
+import packageJson from './package.json'
 
 const SECURITY_HEADERS = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -11,6 +12,10 @@ const SECURITY_HEADERS = [
 ]
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: packageJson.version,
+    NEXT_PUBLIC_GIT_SHA: process.env.GIT_SHA ?? '',
+  },
   sassOptions: {
     loadPaths: [path.join(process.cwd(), 'src')],
   },
