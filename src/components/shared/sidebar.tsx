@@ -52,20 +52,20 @@ export function Sidebar(): React.JSX.Element {
     .filter((items) => items.length > 0)
 
   return (
-    <aside className="flex w-64 flex-col border-r border-border bg-background px-4 py-6">
-      <Link href="/" className="mb-10 flex items-center gap-2 px-2">
+    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border bg-background px-4 py-6">
+      <Link href="/" className="mb-6 flex items-center gap-2 px-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <span className="text-lg font-bold">{BRAND_INITIAL}</span>
         </div>
         <span className="text-xl font-bold tracking-tight text-foreground">{BRAND_NAME}</span>
       </Link>
 
-      <nav className="flex flex-col">
+      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {visibleGroups.map((items, groupIndex) => (
           <div
             key={items[0]?.href ?? `group-${String(groupIndex)}`}
             className={cn(
-              'flex flex-col gap-1 py-3',
+              'flex flex-col gap-1 py-2',
               groupIndex > 0 ? 'border-t border-border' : null,
             )}
           >
@@ -78,7 +78,7 @@ export function Sidebar(): React.JSX.Element {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-out',
+                    'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out',
                     isActive
                       ? 'bg-primary/10 text-foreground'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-0.5',
@@ -99,7 +99,7 @@ export function Sidebar(): React.JSX.Element {
         ))}
       </nav>
 
-      <div className="mt-auto pt-6">
+      <div className="pt-4">
         <DeployedVersions />
       </div>
     </aside>
