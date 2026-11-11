@@ -13,7 +13,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
-      '@keimelion/api': path.resolve(import.meta.dirname, '../Keimelion-API/src'),
     },
   },
 })

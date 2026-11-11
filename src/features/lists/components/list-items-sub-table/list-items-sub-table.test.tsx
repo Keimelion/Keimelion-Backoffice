@@ -45,18 +45,20 @@ function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureO
   itemStatus: string
   sortOrder: number | null
   creatorNote: string | null
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
   item: {
     id: string
     name: string
     description: string | null
-    imageUrl: string | null
+    imageId: string | null
+    image: null
     createdByUserId: string | null
-    createdAt: string
-    updatedAt: string
+    createdAt: Date
+    updatedAt: Date
     tags: { id: string; name: string; slug: string }[]
     categories: { id: string; parentId: string | null; name: string; slug: string; depth: number }[]
+    sources: never[]
   }
   sources: {
     id: string
@@ -66,8 +68,8 @@ function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureO
     sourceUrl: string | null
     price: string | null
     currency: string
-    createdAt: string
-    updatedAt: string
+    createdAt: Date
+    updatedAt: Date
   }[]
   averagePrice: string | null
   displayCurrency: string
@@ -81,18 +83,20 @@ function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureO
     itemStatus: options.itemStatus ?? 'available',
     sortOrder: 0,
     creatorNote: null,
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-02T00:00:00.000Z',
+    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2024-01-02T00:00:00.000Z'),
     item: {
       id: 'item-1',
       name: 'Weighted blanket',
       description: 'Cozy and warm',
-      imageUrl: null,
+      imageId: null,
+      image: null,
       createdByUserId: null,
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-02T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-02T00:00:00.000Z'),
       tags: options.tags ?? [],
       categories: options.categories ?? [],
+      sources: [],
     },
     sources: prices.map((price, index) => ({
       id: `src-${String(index)}`,
@@ -102,8 +106,8 @@ function listItemWithPrices(prices: (string | null)[], options: ListItemFixtureO
       sourceUrl: 'https://example.com/p',
       price,
       currency: 'EUR',
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     })),
     averagePrice: options.averagePrice !== undefined ? options.averagePrice : null,
     displayCurrency: options.displayCurrency ?? 'EUR',

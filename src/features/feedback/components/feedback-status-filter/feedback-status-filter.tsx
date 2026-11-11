@@ -1,7 +1,7 @@
 'use client'
 
-import { FEEDBACK_STATUS_VALUES } from '@keimelion/api/shared/enums/feedback-status'
-import type { FeedbackStatus } from '@keimelion/api/shared/enums/feedback-status'
+import { FEEDBACK_STATUS_VALUES } from '@keimelion/sdk/enums'
+import type { FeedbackStatus } from '@keimelion/sdk/enums'
 import { BadgeToggleFilter } from '@/components/shared/badge-toggle-filter'
 import { FeedbackStatusBadge } from '@/features/feedback/components/feedback-status-badge'
 import { useTranslate } from '@/lib/i18n/use-translate'

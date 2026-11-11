@@ -14,13 +14,10 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  createTagInputSchema,
-  type ApiTag,
-  type CreateTagInput,
-} from '@/data-access/tags/tags.schemas'
+import { createTagInputSchema, type CreateTagInput } from '@/features/tags/tags.input-schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useAutoSlug } from '@/lib/use-auto-slug'
+import type { TagSummaryParsed } from '@keimelion/sdk/schemas'
 
 export type TagFormValues = CreateTagInput
 
@@ -33,7 +30,7 @@ type TagFormProps =
     }
   | {
       mode: 'edit'
-      tag: ApiTag
+      tag: TagSummaryParsed
       onSubmit: (values: TagFormValues, setError: UseFormSetError<TagFormValues>) => void
       onDirtyChange: (isDirty: boolean) => void
       isPending: boolean

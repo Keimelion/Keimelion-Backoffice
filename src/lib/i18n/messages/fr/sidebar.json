@@ -8,5 +8,8 @@
   "sidebar.nav.users": "Utilisateurs",
   "sidebar.nav.occasion_types": "Types d'occasion",
   "sidebar.nav.feedback": "Retours",
-  "sidebar.nav.reservations": "Réservations"
+  "sidebar.nav.reports": "Signalements",
+  "sidebar.nav.reservations": "Réservations",
+  "sidebar.versions.summary": "Backoffice {backofficeVersion} · API {apiVersion}",
+  "sidebar.versions.unknown": "—"
 }

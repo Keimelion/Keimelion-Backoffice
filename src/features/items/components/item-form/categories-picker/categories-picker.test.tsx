@@ -11,8 +11,8 @@ const CATEGORY_FOOD = {
   translations: { en: 'Food', fr: 'Alimentation' },
   slug: 'food',
   depth: 0,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 const DESSERTS_PARENT_ID = CATEGORY_FOOD.id
 const CATEGORY_DESSERTS = {
@@ -21,8 +21,8 @@ const CATEGORY_DESSERTS = {
   translations: { en: 'Desserts', fr: 'Desserts' },
   slug: 'desserts',
   depth: 1,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 const CATEGORY_FASHION = {
   id: '33333333-3333-4333-8333-333333333333',
@@ -30,8 +30,8 @@ const CATEGORY_FASHION = {
   translations: { en: 'Fashion', fr: 'Mode' },
   slug: 'fashion',
   depth: 0,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 interface MockQueryResult {

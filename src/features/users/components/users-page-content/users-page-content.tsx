@@ -14,7 +14,7 @@ import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { UserAvatar } from '@/components/shared/user-avatar'
 import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
-import { listUsersQuerySchema, type AdminApiUser } from '@/data-access/users/admin-users.schemas'
+import { listUsersQuerySchema } from '@/features/users/users.input-schemas'
 import { formatDate } from '@/lib/format-date'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useUsers } from '@/features/users/hooks/use-users'
@@ -25,6 +25,7 @@ import { UserStatusBadge } from '@/features/users/components/user-status-badge'
 import { CreateUserDialog } from '@/features/users/components/create-user-dialog'
 import { EditUserDialog } from '@/features/users/components/edit-user-dialog'
 import { DeleteUserDialog } from '@/features/users/components/delete-user-dialog'
+import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
 
 export function UsersPageContent(): React.JSX.Element {
   const t = useTranslate()
@@ -34,8 +35,8 @@ export function UsersPageContent(): React.JSX.Element {
   const currentUserId = getStoredUser()?.id ?? null
 
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
-  const [editTarget, setEditTarget] = useState<AdminApiUser | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<AdminApiUser | null>(null)
+  const [editTarget, setEditTarget] = useState<AdminUserDetailParsed | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminUserDetailParsed | null>(null)
 
   const usersQuery = useUsers({
     page: filters.page,
@@ -67,14 +68,14 @@ export function UsersPageContent(): React.JSX.Element {
     },
   ]
 
-  const usersColumns: DataTableColumn<AdminApiUser>[] = [
+  const usersColumns: DataTableColumn<AdminUserDetailParsed>[] = [
     {
       key: 'avatar',
       header: '',
       className: 'w-10',
       cell: (user) => (
         <UserAvatar
-          src={user.avatar?.urls.sm ?? user.avatarUrl}
+          src={user.avatar?.urls.sm ?? null}
           name={user.username ?? user.email}
         />
       ),
@@ -123,7 +124,7 @@ export function UsersPageContent(): React.JSX.Element {
             key: 'actions',
             header: t('users.table.column.actions'),
             className: 'w-28 text-right',
-            cell: (user: AdminApiUser) => {
+            cell: (user: AdminUserDetailParsed) => {
               const identifier = user.username ?? user.email
               const isSelf = user.id === currentUserId
               return (
@@ -154,7 +155,7 @@ export function UsersPageContent(): React.JSX.Element {
                 </div>
               )
             },
-          } satisfies DataTableColumn<AdminApiUser>,
+          } satisfies DataTableColumn<AdminUserDetailParsed>,
         ]
       : []),
   ]
@@ -231,7 +232,7 @@ export function UsersPageContent(): React.JSX.Element {
   )
 }
 
-function resolveRowClassName(user: AdminApiUser): string | undefined {
+function resolveRowClassName(user: AdminUserDetailParsed): string | undefined {
   if (user.deletedAt !== null) return 'opacity-50'
   return undefined
 }

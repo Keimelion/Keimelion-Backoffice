@@ -13,14 +13,15 @@ import type { DataTableColumn, FilterDefinition } from '@/components/shared/data
 import { IconButton } from '@/components/shared/icon-button'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
-import { listTagsQuerySchema, type ApiTag } from '@/data-access/tags/tags.schemas'
+import { listTagsQuerySchema } from '@/features/tags/tags.input-schemas'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import { useAdminTags } from '@/features/tags/hooks/use-admin-tags'
 import { CreateTagDialog } from '@/features/tags/components/create-tag-dialog'
 import { DeleteTagDialog } from '@/features/tags/components/delete-tag-dialog'
 import { EditTagDialog } from '@/features/tags/components/edit-tag-dialog'
-import { TagsForbidden } from '@/features/tags/components/tags-forbidden'
+import { ForbiddenState } from '@/components/shared/forbidden-state'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { TagSummaryParsed } from '@keimelion/sdk/schemas'
 
 const SEARCH_PARAM = 'search'
 const PAGE_PARAM = 'page'
@@ -34,15 +35,15 @@ export function TagsPageContent(): React.JSX.Element {
   const isCurrentUserAdmin = currentRole !== null && isAdmin(currentRole)
 
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
-  const [editTarget, setEditTarget] = useState<ApiTag | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<ApiTag | null>(null)
+  const [editTarget, setEditTarget] = useState<TagSummaryParsed | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<TagSummaryParsed | null>(null)
 
   const tagsQuery = useAdminTags(filters)
   const tags = tagsQuery.data?.items ?? []
   const total = tagsQuery.data?.pagination.total ?? 0
 
   if (!isCurrentUserAdmin) {
-    return <TagsForbidden />
+    return <ForbiddenState namespace="tags.admin.forbidden" />
   }
 
   const tagsFilters: FilterDefinition[] = [
@@ -54,7 +55,7 @@ export function TagsPageContent(): React.JSX.Element {
     },
   ]
 
-  const columns: DataTableColumn<ApiTag>[] = [
+  const columns: DataTableColumn<TagSummaryParsed>[] = [
     {
       key: 'name',
       header: t('tags.table.column.name'),

@@ -1,18 +1,18 @@
 'use client'
 
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
 import { useDeleteItemSource } from '@/features/items/hooks/use-item-source-mutations'
-import type { ApiItemSource } from '@/data-access/items/item-sources.schemas'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { translate } from '@/lib/i18n/translate'
 import { notifyError, notifySuccess } from '@/lib/notify'
+import { ApiError } from '@keimelion/sdk/client'
+import type { ItemSourceDetailParsed } from '@keimelion/sdk/schemas'
 
 interface DeleteItemSourceDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   itemId: string
-  source: ApiItemSource
+  source: ItemSourceDetailParsed
 }
 
 export function DeleteItemSourceDialog({
@@ -29,7 +29,7 @@ export function DeleteItemSourceDialog({
       notifySuccess({ title: translate('items.sources.mutation.deleted_toast') })
       onOpenChange(false)
     } catch (error) {
-      if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
+      if (error instanceof ApiError && error.status === HttpStatus.CONFLICT) {
         notifyError({ title: translate('items.form.error.last_source_cannot_be_removed') })
         return
       }

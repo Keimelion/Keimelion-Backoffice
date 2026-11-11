@@ -10,6 +10,7 @@ import lists from './fr/lists.json'
 import occasionTypes from './fr/occasion-types.json'
 import profile from './fr/profile.json'
 import query from './fr/query.json'
+import reports from './fr/reports.json'
 import reservations from './fr/reservations.json'
 import shops from './fr/shops.json'
 import sidebar from './fr/sidebar.json'
@@ -30,6 +31,7 @@ export const frMessages = {
   ...profile,
   ...sidebar,
   ...feedback,
+  ...reports,
   ...reservations,
   ...errorMessages,
   ...query,

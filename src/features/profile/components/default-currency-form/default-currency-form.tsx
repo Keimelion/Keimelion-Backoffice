@@ -1,6 +1,6 @@
 'use client'
 
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
+import { ErrorCode } from '@keimelion/sdk/enums'
 import {
   Card,
   CardContent,
@@ -15,16 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
-import type { ApiUser } from '@/data-access/_shared/user'
 import { useUpdateProfile } from '@/features/profile/hooks/use-update-profile'
 import { CURRENCIES, CURRENCY_NATIVE_SYMBOLS, type Currency } from '@/lib/i18n/currency'
 import { translate } from '@/lib/i18n/translate'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { notifyError, notifySuccess } from '@/lib/notify'
+import { ApiError } from '@keimelion/sdk/client'
+import type { UserDetailParsed } from '@keimelion/sdk/schemas'
 
 interface DefaultCurrencyFormProps {
-  user: ApiUser
+  user: UserDetailParsed
 }
 
 export function DefaultCurrencyForm({ user }: DefaultCurrencyFormProps): React.JSX.Element {
@@ -36,14 +36,14 @@ export function DefaultCurrencyForm({ user }: DefaultCurrencyFormProps): React.J
     const next = nextValue as Currency
     if (next === user.defaultCurrency) return
     mutation.mutate(
-      { defaultCurrency: next },
+      { input: { defaultCurrency: next }, avatar: null },
       {
         onSuccess: () => {
           notifySuccess({ title: translate('profile.currency.submit_success') })
         },
         onError: (error) => {
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && error.code === ErrorCode.UNPROCESSABLE_ENTITY
           ) {
             notifyError({ title: translate('query.error.default'), description: error.message })

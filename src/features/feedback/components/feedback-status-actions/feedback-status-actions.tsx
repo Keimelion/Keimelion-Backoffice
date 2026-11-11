@@ -2,20 +2,17 @@
 
 import { Archive, Eye, Undo2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import {
-  FeedbackStatuses,
-  type FeedbackStatus,
-} from '@keimelion/api/shared/enums/feedback-status'
+import { FeedbackStatuses, type FeedbackStatus } from '@keimelion/sdk/enums'
 import { IconButton } from '@/components/shared/icon-button'
-import type { ApiAdminFeedback } from '@/data-access/feedback/feedback.schemas'
 import { useUpdateFeedbackStatus } from '@/features/feedback/hooks/use-update-feedback-status'
 import { translate } from '@/lib/i18n/translate'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { notifyError, notifySuccess } from '@/lib/notify'
+import type { AdminFeedbackDetailParsed } from '@keimelion/sdk/schemas'
 
 interface FeedbackStatusActionsProps {
-  feedback: ApiAdminFeedback
+  feedback: AdminFeedbackDetailParsed
 }
 
 interface StatusActionConfig {

@@ -25,9 +25,6 @@
   "items.form.description_label": "Description",
   "items.form.description_placeholder": "Détails optionnels pour identifier cet article.",
   "items.form.description_help": "Optionnel. Jusqu'à 5000 caractères.",
-  "items.form.image_url_label": "URL de l'image",
-  "items.form.image_url_placeholder": "https://cdn.exemple.com/article.jpg",
-  "items.form.image_url_help": "Optionnel. Doit utiliser HTTPS.",
   "items.form.image_preview_alt": "Aperçu de l'image de l'article",
   "items.form.sources_section_title": "Sources",
   "items.form.sources_section_help": "Au moins une source est requise.",
@@ -87,5 +84,7 @@
   "items.sources.delete_dialog.cancel": "Non, conserver la source",
   "items.sources.mutation.created_toast": "Source ajoutée.",
   "items.sources.mutation.updated_toast": "Source mise à jour.",
-  "items.sources.mutation.deleted_toast": "Source supprimée."
+  "items.sources.mutation.deleted_toast": "Source supprimée.",
+  "items.form.image_label": "Image",
+  "items.form.image_help": "Optionnel. JPEG, PNG ou WebP."
 }

@@ -48,8 +48,8 @@ export function UserMenu(): React.JSX.Element {
           <span className="text-xs text-muted-foreground">{currentUser.email}</span>
         </div>
         <Avatar className="h-9 w-9">
-          {currentUser.avatarUrl ? (
-            <AvatarImage src={currentUser.avatarUrl} alt={displayName} />
+          {currentUser.avatar ? (
+            <AvatarImage src={currentUser.avatar.urls.sm} alt={displayName} />
           ) : null}
           <AvatarFallback className="bg-primary text-sm font-semibold text-primary-foreground">
             {initials}

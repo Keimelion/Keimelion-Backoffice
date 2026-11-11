@@ -18,23 +18,24 @@ vi.mock('@/lib/query-client', async () => {
 })
 
 import { login } from '@/data-access/auth/login'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
+import { ApiError } from '@keimelion/sdk/client'
 
 const ADMIN_USER = {
-  id: 'u1',
+  id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
   email: 'admin@keimelion.app',
   username: 'admin',
   authProvider: 'email' as const,
   role: 'admin' as const,
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR' as const,
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 const STANDARD_USER = { ...ADMIN_USER, role: 'user' as const }
@@ -83,9 +84,9 @@ describe('useLogin', () => {
     expect(result.current.error?.message).toContain('not authorized')
   })
 
-  it('surfaces the ApiRequestError when login() rejects on malformed payload', async () => {
+  it('surfaces the ApiError when login() rejects on malformed payload', async () => {
     vi.mocked(login).mockRejectedValue(
-      new ApiRequestError('INVALID_RESPONSE', 'The server returned an unexpected login payload.', 200),
+      new ApiError({ code: 'INVALID_RESPONSE', message: 'The server returned an unexpected login payload.', status: 200, metadata: {} }),
     )
 
     const { result } = renderHook(() => useLogin(), { wrapper: createQueryClientWrapper() })
@@ -96,6 +97,6 @@ describe('useLogin', () => {
     })
 
     expect(getAccessToken()).toBeNull()
-    expect(result.current.error).toBeInstanceOf(ApiRequestError)
+    expect(result.current.error).toBeInstanceOf(ApiError)
   })
 })

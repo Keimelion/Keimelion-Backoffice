@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookmarkCheck, CalendarHeart, FolderTree, LayoutDashboard, ListTodo, MessageSquareWarning, PackageOpen, Store, Tag, Users } from 'lucide-react'
+import { BookmarkCheck, CalendarHeart, Flag, FolderTree, LayoutDashboard, ListTodo, MessageSquareWarning, PackageOpen, Store, Tag, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isAdmin } from '@/data-access/_shared/auth-storage'
 import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
+import { DeployedVersions } from '@/features/health/components/deployed-versions'
 import type { MessageId } from '@/lib/i18n/messages/en'
 import { useTranslate } from '@/lib/i18n/use-translate'
 
@@ -27,6 +28,7 @@ const NAV_GROUPS: readonly (readonly NavItem[])[] = [
     { labelId: 'sidebar.nav.items', href: '/items', icon: PackageOpen, adminOnly: true },
     { labelId: 'sidebar.nav.reservations', href: '/reservations', icon: BookmarkCheck, adminOnly: true },
     { labelId: 'sidebar.nav.feedback', href: '/feedback', icon: MessageSquareWarning, adminOnly: true },
+    { labelId: 'sidebar.nav.reports', href: '/reports', icon: Flag, adminOnly: true },
   ],
   [
     { labelId: 'sidebar.nav.categories', href: '/categories', icon: FolderTree, adminOnly: true },
@@ -96,6 +98,10 @@ export function Sidebar(): React.JSX.Element {
           </div>
         ))}
       </nav>
+
+      <div className="mt-auto pt-6">
+        <DeployedVersions />
+      </div>
     </aside>
   )
 }

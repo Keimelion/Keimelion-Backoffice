@@ -11,15 +11,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 interface MoveCategoryDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  category: ApiCategory
+  category: AdminCategoryDetailParsed
   currentParentName: string | null
   newParentName: string | null
   onConfirm: () => Promise<void>

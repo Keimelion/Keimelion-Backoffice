@@ -1,20 +1,20 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import MockAdapter from 'axios-mock-adapter'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApiMock, type ApiMock } from '@/test/api-mock'
 import { renderWithIntl } from '@/test/test-utils'
 
 vi.stubEnv('NEXT_PUBLIC_API_URL', 'http://localhost:3000')
 
 const { CurrencyPicker } = await import('./currency-picker')
 const { useCurrencyStore } = await import('@/lib/i18n/currency-store')
-const { axiosInstance } = await import('@/data-access/_shared/axios')
+const { listAdminLists } = await import('@/data-access/lists/lists.api')
 
-let mock: MockAdapter
+let mock: ApiMock
 
 beforeEach(() => {
   useCurrencyStore.setState({ currency: 'EUR' })
-  mock = new MockAdapter(axiosInstance)
+  mock = createApiMock()
 })
 
 afterEach(() => {
@@ -57,7 +57,7 @@ describe('CurrencyPicker', () => {
     await user.click(screen.getByRole('button', { name: /select currency/i }))
     await user.click(screen.getByRole('menuitem', { name: /JPY/ }))
 
-    await axiosInstance.get('/admin/lists')
+    await listAdminLists({})
 
     expect(mock.history.get[0]?.params).toMatchObject({ currency: 'JPY' })
   })

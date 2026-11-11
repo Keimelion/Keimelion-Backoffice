@@ -1,16 +1,18 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { ErrorCode } from '@keimelion/sdk/enums'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { renderWithQueryClient } from '@/test/test-utils'
-import type { ApiUser } from '@/data-access/_shared/user'
 
 vi.mock('@/data-access/users/profile.api', () => ({
   updateMe: vi.fn(),
 }))
 
 vi.mock('@/data-access/_shared/auth-storage', () => ({
+  getAccessToken: vi.fn(() => null),
+  getRefreshToken: vi.fn(() => null),
+  rotateTokens: vi.fn(),
   updateStoredUser: vi.fn(),
 }))
 
@@ -38,27 +40,29 @@ vi.mock('sonner', () => ({
 }))
 
 import { updateMe } from '@/data-access/users/profile.api'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
 import { DefaultCurrencyForm } from '@/features/profile/components/default-currency-form'
+import { ApiError } from '@keimelion/sdk/client'
+import type { UserDetailParsed } from '@keimelion/sdk/schemas'
 
-const BASE_USER: ApiUser = {
+const BASE_USER: UserDetailParsed = {
   id: 'u-1',
   email: 'admin@keimelion.app',
   username: 'admin',
   authProvider: 'email',
   role: 'admin',
-  avatarUrl: null,
+  avatarImageId: null,
+  avatar: null,
   isCgvAccepted: true,
   cgvAcceptedAt: null,
   isMarketingOptedIn: false,
   defaultCurrency: 'EUR',
   emailVerifiedAt: null,
   lastActiveAt: null,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
-function renderForm(user: ApiUser = BASE_USER): void {
+function renderForm(user: UserDetailParsed = BASE_USER): void {
   renderWithQueryClient(<DefaultCurrencyForm user={user} />)
 }
 
@@ -82,7 +86,7 @@ describe('DefaultCurrencyForm', () => {
     await userEvent.click(option)
 
     await waitFor(() => {
-      expect(updateMe).toHaveBeenCalledWith({ defaultCurrency: 'USD' })
+      expect(updateMe).toHaveBeenCalledWith({ defaultCurrency: 'USD' }, null)
     })
   })
 
@@ -103,11 +107,7 @@ describe('DefaultCurrencyForm', () => {
 
   it('reports an API 422 as a toast error', async () => {
     vi.mocked(updateMe).mockRejectedValue(
-      new ApiRequestError(
-        ErrorCode.UNPROCESSABLE_ENTITY,
-        'currency must be one of…',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      ),
+      new ApiError({ code: ErrorCode.UNPROCESSABLE_ENTITY, message: 'currency must be one of…', status: HttpStatus.UNPROCESSABLE_ENTITY, metadata: {} }),
     )
 
     renderForm()

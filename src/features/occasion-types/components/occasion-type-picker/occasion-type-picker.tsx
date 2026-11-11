@@ -12,10 +12,10 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { ApiOccasionType } from '@/data-access/occasion-types/occasion-types.schemas'
 import { useOccasionTypes } from '@/features/occasion-types/hooks/use-occasion-types'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
+import type { OccasionTypeSummaryParsed } from '@keimelion/sdk/schemas'
 
 const NONE_VALUE = '__none__'
 
@@ -135,7 +135,7 @@ export function OccasionTypePicker({
 }
 
 interface OccasionRowProps {
-  occasion: ApiOccasionType
+  occasion: OccasionTypeSummaryParsed
   isSelected: boolean
   onSelect: (id: string) => void
 }

@@ -2,14 +2,13 @@
 
 import { useState } from 'react'
 import type { UseFormSetError } from 'react-hook-form'
-import { ErrorCode } from '@keimelion/api/shared/enums/error-code'
-import { HttpStatus } from '@keimelion/api/shared/enums/http'
+import { ErrorCode } from '@keimelion/sdk/enums'
+import { HttpStatus } from '@keimelion/sdk/enums'
 import { FormDialog } from '@/components/shared/form-dialog'
 import { ListForm } from '@/features/lists/components/list-form'
 import type { ListFormEditValues } from '@/features/lists/components/list-form'
 import { useUpdateList } from '@/features/lists/hooks/use-admin-lists'
-import type { ApiAdminList, UpdateListInput } from '@/data-access/lists/lists.schemas'
-import { ApiRequestError } from '@/data-access/_shared/api-error'
+import type { UpdateListInput } from '@/features/lists/lists.input-schemas'
 import { applyApiValidationIssues } from '@/lib/apply-api-validation-issues'
 import { collapseTagsIssuePaths } from '@/lib/collapse-tags-issue-paths'
 import { haveSameUnorderedValues } from '@/lib/have-same-unordered-values'
@@ -17,13 +16,15 @@ import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { pickChangedFields } from '@/lib/pick-changed-fields'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import { ApiError } from '@keimelion/sdk/client'
+import type { AdminListDetailParsed } from '@keimelion/sdk/schemas'
 
 const UPDATE_LIST_ISSUE_PATHS = ['title', 'description', 'occasionTypeId', 'tags'] as const
 
 interface EditListDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  list: ApiAdminList
+  list: AdminListDetailParsed
 }
 
 const EDITABLE_LIST_FIELDS = ['title', 'description', 'occasionTypeId'] as const satisfies readonly (keyof ListFormEditValues)[]
@@ -65,21 +66,20 @@ export function EditListDialog({
           onOpenChange(false)
         },
         onError: (error) => {
-          if (error instanceof ApiRequestError && error.status === HttpStatus.CONFLICT) {
+          if (error instanceof ApiError && error.status === HttpStatus.CONFLICT) {
             setError('title', { message: t('lists.form.error.conflict') })
             return
           }
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && error.code === ErrorCode.TAG_INVALID_NAME
           ) {
             setError('tags', { message: t('lists.form.error.tag_invalid_name') })
             return
           }
           if (
-            error instanceof ApiRequestError
+            error instanceof ApiError
             && error.code === ErrorCode.UNPROCESSABLE_ENTITY
-            && error.issues !== null
           ) {
             const appliedCount = applyApiValidationIssues(
               collapseTagsIssuePaths(error.issues),

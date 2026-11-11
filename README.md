@@ -13,15 +13,9 @@
 
 > Prerequisites:
 > - **Node.js v20+**
-> - The [Keimelion API](https://github.com/Keimelion/Keimelion-API) cloned **as a sibling directory** — TypeScript path aliases resolve to `../Keimelion-API/src/*` for shared enum and type imports.
-> - The API running locally (see its README).
+> - A running Keimelion API, reachable at `NEXT_PUBLIC_API_URL` (see its README).
 
 ```bash
-# Expected layout: both repos side-by-side
-# <parent>/
-#   ├── Keimelion-API/
-#   └── Keimelion-Backoffice/  ← you are here
-
 npm install
 cp .env.example .env.local
 npm run dev
@@ -50,7 +44,7 @@ npx shadcn add <component-name>
 | Theme | [next-themes](https://github.com/pacocoursey/next-themes) — light / dark / system |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com) |
 | Font | [Inter](https://fonts.google.com/specimen/Inter) via `next/font` |
-| HTTP client | [axios](https://axios-http.com) — shared instance with auth + `Accept-Language` interceptors |
+| HTTP client | [`@keimelion/sdk`](https://www.npmjs.com/package/@keimelion/sdk) — single `apiClient` with auth, `Accept-Language` and session refresh |
 | Data fetching | [TanStack Query v5](https://tanstack.com/query) |
 | Client state | [Zustand](https://zustand-demo.pmnd.rs) — locale store |
 | Validation | [Zod](https://zod.dev) |
@@ -79,7 +73,7 @@ Toggle in the topbar swaps light ↔ dark via the [View Transitions API](https:/
 
 ### Internationalization
 
-Locale picker in the topbar (🇫🇷 Français / 🇬🇧 English). Selection is persisted to `localStorage['keimelion.locale']` and exposed via a Zustand store consumed both by React components and by the shared axios instance, which attaches `Accept-Language: <locale>` to every outbound request. TanStack Query keys include the locale so switching languages triggers automatic refetches. Initial locale resolves from storage first, then `navigator.language`, falling back to `en`. Supported locales are defined once in the API (`@keimelion/api/shared/enums/locale`) and re-exported from `src/lib/i18n/locale.ts`.
+Locale picker in the topbar (🇫🇷 Français / 🇬🇧 English). Selection is persisted to `localStorage['keimelion.locale']` and exposed via a Zustand store consumed both by React components and by the shared SDK client, which attaches `Accept-Language: <locale>` to every outbound request. TanStack Query keys include the locale so switching languages triggers automatic refetches. Initial locale resolves from storage first, then `navigator.language`, falling back to `en`. Supported locales are defined once in `@keimelion/sdk/enums` and re-exported from `src/lib/i18n/locale.ts`.
 
 ---
 
@@ -95,9 +89,8 @@ src/
 │   └── shared/             # sidebar, user-menu, theme-toggle, locale-picker, page-header, data-table…
 ├── data-access/            # All API calls — mirrors db/ in the API
 │   ├── _shared/            # Shared infra (the `_` prefix marks non-resource helpers)
-│   │   ├── axios/          # Shared axios instance — auth bearer + Accept-Language interceptors, 401 refresh retry
+│   │   ├── client/         # apiClient — the single SDK client (auth, locale, session refresh)
 │   │   ├── auth-storage/   # Access token, refresh token, current user, session cookie
-│   │   ├── api-error.ts    # ApiRequestError class thrown by the axios response interceptor
 │   │   ├── parse-response/ # Zod-validated response parser
 │   │   ├── query-params/   # buildListSearchParams — pagination + filter serialization
 │   │   └── user.ts         # Shared ApiUser type (mirrors API BaseUser with string dates)
@@ -128,17 +121,17 @@ src/
 
 ---
 
-## Type sharing with the API
+## API contract
 
-Types are shared directly from the API source via `tsconfig.json` path aliases — no build step or publish required.
+The Backoffice depends on the API only through HTTP and the published [`@keimelion/sdk`](https://www.npmjs.com/package/@keimelion/sdk) package. Enums, schemas, types and the HTTP client all come from the SDK.
 
 ```ts
-import type { AuthProvider } from '@keimelion/api/shared/enums/auth-provider'
-import type { UserRole } from '@keimelion/api/shared/enums/user-role'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
+import { ApiError } from '@keimelion/sdk/client'
+import { UserRoles } from '@keimelion/sdk/enums'
+import type { PaginatedResponse } from '@keimelion/sdk/schemas'
 ```
 
-Only import files with no Drizzle ORM dependencies (enums, `shared/types/api`). `ApiUser` is defined locally in `data-access/auth/auth.api.ts` with string dates to accurately match the JSON response.
+Contract changes ship in the SDK first, then consumers bump the pinned version. The repo works when cloned alone: `npm ci`, lint, typecheck, tests, build and `docker build .` need nothing outside this directory.
 
 ---
 

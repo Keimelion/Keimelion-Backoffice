@@ -1,15 +1,12 @@
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
-import { axiosInstance } from '@/data-access/_shared/axios'
-import { parseApiResponse } from '@/data-access/_shared/parse-response'
-import { buildQueryParams } from '@/data-access/_shared/query-params'
+import type { Locale } from '@keimelion/sdk/enums'
+import type {
+  AdminOccasionTypeDetailParsed,
+  AdminOccasionTypesCreateRequestInput,
+  AdminOccasionTypesListResponseParsed,
+  AdminOccasionTypesUpdateRequestInput,
+} from '@keimelion/sdk/schemas'
+import { apiClient } from '@/data-access/_shared/client'
 import { LOCALES } from '@/lib/i18n/locale'
-import {
-  adminOccasionTypeListResponseSchema,
-  adminOccasionTypeMutationResponseSchema,
-  type AdminOccasionType,
-  type CreateOccasionTypeInput,
-  type UpdateOccasionTypeInput,
-} from './admin-occasion-types.schemas'
 
 export const OCCASION_TYPES_QUERY_KEY = ['occasion-types'] as const
 
@@ -18,31 +15,52 @@ interface ListAdminOccasionTypesParams {
   limit?: number
 }
 
-export async function listAdminOccasionTypes(
-  params: ListAdminOccasionTypesParams,
-): Promise<PaginatedResponse<AdminOccasionType>> {
-  const response = await axiosInstance.get<unknown>('/admin/occasion-types', {
-    params: buildQueryParams(params),
-  })
-  return parseApiResponse(adminOccasionTypeListResponseSchema, response, 'admin occasion types')
-}
+type OccasionTypeTranslationLabels = Partial<Record<Locale, string | null | undefined>>
 
-interface OccasionTypeTranslationPayload {
-  locale: string
-  label: string | null
-}
-
-interface OccasionTypeMutationPayload {
+export interface CreateOccasionTypePayload {
   slug: string
-  emoji: string | null
+  emoji?: string | null | undefined
   sortOrder: number
   isActive: boolean
-  translations: OccasionTypeTranslationPayload[]
+  translations: OccasionTypeTranslationLabels
 }
 
-type UpdateOccasionTypePayload = Partial<Omit<OccasionTypeMutationPayload, 'slug'>>
+export type UpdateOccasionTypePayload = Partial<Omit<CreateOccasionTypePayload, 'slug'>>
 
-function buildCreatePayload(input: CreateOccasionTypeInput): OccasionTypeMutationPayload {
+export async function listAdminOccasionTypes(
+  params: ListAdminOccasionTypesParams,
+): Promise<AdminOccasionTypesListResponseParsed> {
+  return apiClient.admin.occasionTypes.list(params)
+}
+
+export async function createOccasionType(
+  input: CreateOccasionTypePayload,
+): Promise<AdminOccasionTypeDetailParsed> {
+  const { occasionType } = await apiClient.admin.occasionTypes.create(buildCreatePayload(input))
+  return occasionType
+}
+
+export async function updateOccasionType(
+  id: string,
+  input: UpdateOccasionTypePayload,
+): Promise<AdminOccasionTypeDetailParsed> {
+  const { occasionType } = await apiClient.admin.occasionTypes.update(id, buildUpdatePayload(input))
+  return occasionType
+}
+
+export async function deleteOccasionType(id: string): Promise<void> {
+  await apiClient.admin.occasionTypes.delete(id)
+}
+
+export async function patchOccasionTypeSortOrder(
+  id: string,
+  sortOrder: number,
+): Promise<AdminOccasionTypeDetailParsed> {
+  const { occasionType } = await apiClient.admin.occasionTypes.update(id, { sortOrder })
+  return occasionType
+}
+
+function buildCreatePayload(input: CreateOccasionTypePayload): AdminOccasionTypesCreateRequestInput {
   const translations = LOCALES.flatMap((locale) => {
     const label = input.translations[locale]
     if (typeof label !== 'string' || label.length === 0) return []
@@ -57,8 +75,8 @@ function buildCreatePayload(input: CreateOccasionTypeInput): OccasionTypeMutatio
   }
 }
 
-function buildUpdatePayload(input: UpdateOccasionTypeInput): UpdateOccasionTypePayload {
-  const payload: UpdateOccasionTypePayload = {}
+function buildUpdatePayload(input: UpdateOccasionTypePayload): AdminOccasionTypesUpdateRequestInput {
+  const payload: AdminOccasionTypesUpdateRequestInput = {}
   if (input.emoji !== undefined) payload.emoji = input.emoji
   if (input.sortOrder !== undefined) payload.sortOrder = input.sortOrder
   if (input.isActive !== undefined) payload.isActive = input.isActive
@@ -69,29 +87,4 @@ function buildUpdatePayload(input: UpdateOccasionTypeInput): UpdateOccasionTypeP
     })
   }
   return payload
-}
-
-export async function createOccasionType(input: CreateOccasionTypeInput): Promise<AdminOccasionType> {
-  const response = await axiosInstance.post<unknown>('/admin/occasion-types', buildCreatePayload(input))
-  const parsed = parseApiResponse(adminOccasionTypeMutationResponseSchema, response, 'admin occasion type')
-  return parsed.occasionType
-}
-
-export async function updateOccasionType(
-  id: string,
-  input: UpdateOccasionTypeInput,
-): Promise<AdminOccasionType> {
-  const response = await axiosInstance.patch<unknown>(`/admin/occasion-types/${id}`, buildUpdatePayload(input))
-  const parsed = parseApiResponse(adminOccasionTypeMutationResponseSchema, response, 'admin occasion type')
-  return parsed.occasionType
-}
-
-export async function deleteOccasionType(id: string): Promise<void> {
-  await axiosInstance.delete<unknown>(`/admin/occasion-types/${id}`)
-}
-
-export async function patchOccasionTypeSortOrder(id: string, sortOrder: number): Promise<AdminOccasionType> {
-  const response = await axiosInstance.patch<unknown>(`/admin/occasion-types/${id}`, { sortOrder })
-  const parsed = parseApiResponse(adminOccasionTypeMutationResponseSchema, response, 'admin occasion type')
-  return parsed.occasionType
 }

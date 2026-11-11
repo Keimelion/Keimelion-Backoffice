@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react'
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import type { ApiAdminFeedback } from '@/data-access/feedback/feedback.schemas'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { renderWithQueryClient } from '@/test/test-utils'
 import { FeedbackList } from './feedback-list'
@@ -30,13 +29,14 @@ vi.mock('@/features/feedback/hooks/use-update-feedback-status', () => ({
 }))
 
 import { useAdminFeedback } from '@/features/feedback/hooks/use-admin-feedback'
+import type { AdminFeedbackDetailParsed } from '@keimelion/sdk/schemas'
 
 type UseAdminFeedbackReturn = ReturnType<typeof useAdminFeedback>
 
 const FEEDBACK_ID = '11111111-1111-4111-8111-111111111111'
 const USER_ID = '22222222-2222-4222-8222-222222222222'
 
-const BASE_FEEDBACK: ApiAdminFeedback = {
+const BASE_FEEDBACK: AdminFeedbackDetailParsed = {
   id: FEEDBACK_ID,
   userId: USER_ID,
   title: 'Reservation badge misaligned',
@@ -44,8 +44,8 @@ const BASE_FEEDBACK: ApiAdminFeedback = {
     'The reservation badge is misaligned on mobile when the list has more than ten items with reservations.',
   context: { route: '/lists/42' },
   status: 'open',
-  createdAt: '2024-02-01T00:00:00.000Z',
-  updatedAt: '2024-02-01T00:00:00.000Z',
+  createdAt: new Date('2024-02-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-02-01T00:00:00.000Z'),
   user: {
     id: USER_ID,
     username: 'reporter',
@@ -53,7 +53,7 @@ const BASE_FEEDBACK: ApiAdminFeedback = {
   },
 }
 
-function mockFeedbackResult(data: ApiAdminFeedback[] | null, overrides: Partial<UseAdminFeedbackReturn> = {}): void {
+function mockFeedbackResult(data: AdminFeedbackDetailParsed[] | null, overrides: Partial<UseAdminFeedbackReturn> = {}): void {
   const response =
     data === null
       ? undefined

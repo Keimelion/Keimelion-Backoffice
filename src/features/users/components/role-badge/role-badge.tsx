@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { MessageId } from '@/lib/i18n/messages/en'
-import type { UserRole } from '@keimelion/api/shared/enums/user-role'
+import type { UserRole } from '@keimelion/sdk/enums'
 
 interface RoleBadgeProps {
   role: UserRole

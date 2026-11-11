@@ -16,9 +16,9 @@ const MOCK_ITEM = {
   emoji: '🎂',
   sortOrder: 0,
   isActive: true,
-  translations: [{ locale: 'en', label: 'Birthday' }],
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  translations: [{ locale: 'en' as const, label: 'Birthday' }],
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
 
 const MOCK_RESPONSE = {

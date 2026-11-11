@@ -2,10 +2,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
-import type { PaginatedResponse } from '@keimelion/api/shared/types/api'
 import { notifyError, notifySuccess } from '@/lib/notify'
 import { translate } from '@/lib/i18n/translate'
 import type { MessageId } from '@/lib/i18n/messages/en'
+import type { PaginatedResponse } from '@keimelion/sdk/schemas'
 
 export interface ReorderUpdate {
   id: string

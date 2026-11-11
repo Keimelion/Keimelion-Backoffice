@@ -15,17 +15,17 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useDeleteCategory } from '@/features/categories/hooks/use-admin-categories'
 import { resolveCategoryName } from '@/features/categories/lib/resolve-category-name'
-import type { ApiCategory } from '@/data-access/categories/categories.schemas'
 import { useLocaleStore } from '@/lib/i18n/locale-store'
 import { translate } from '@/lib/i18n/translate'
 import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { cn } from '@/lib/utils'
+import type { AdminCategoryDetailParsed } from '@keimelion/sdk/schemas'
 
 interface DeleteCategoryDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  category: ApiCategory
+  category: AdminCategoryDetailParsed
   descendantCount: number
 }
 

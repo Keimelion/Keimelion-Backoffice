@@ -1,16 +1,17 @@
 'use client'
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
-import type { ApiAdminReservation } from '@/data-access/reservations/reservations.schemas'
 import { useDeleteAdminReservation } from '@/features/reservations/hooks/use-delete-admin-reservation'
+import { resolveReserverName } from '@/features/reservations/lib/resolve-reserver-name'
 import { translate } from '@/lib/i18n/translate'
 import { notifyError, notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
+import type { AdminReservationDetailParsed } from '@keimelion/sdk/schemas'
 
 interface CancelReservationDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  reservation: ApiAdminReservation
+  reservation: AdminReservationDetailParsed
   onCancelled?: () => void
 }
 
@@ -23,7 +24,7 @@ export function CancelReservationDialog({
   const t = useTranslate()
   const mutation = useDeleteAdminReservation()
 
-  const reserverName = reservation.user.username ?? reservation.user.email
+  const reserverName = resolveReserverName(reservation)
 
   async function handleConfirm(): Promise<void> {
     await new Promise<void>((resolve) => {
