@@ -23,7 +23,6 @@ const MOCK_SHOP = {
   logoUrl: null,
   isAffiliated: false,
   sortOrder: 0,
-  isActive: true,
   createdAt: new Date('2024-01-01T00:00:00.000Z'),
   updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
@@ -48,7 +47,7 @@ describe('ShopForm (create mode)', () => {
     expect(screen.getByText('Logo URL')).toBeInTheDocument()
     expect(screen.getByText('Sort order')).toBeInTheDocument()
     expect(screen.getByText('Affiliated program')).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.queryByText('Active')).not.toBeInTheDocument()
   })
 
   it('keeps the submit button disabled while required fields are missing', () => {

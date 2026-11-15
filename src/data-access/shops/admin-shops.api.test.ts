@@ -17,7 +17,6 @@ const MOCK_SHOP = {
   logoUrl: 'https://cdn.example.com/amazon.png',
   isAffiliated: false,
   sortOrder: 0,
-  isActive: true,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 }
@@ -36,7 +35,6 @@ describe('listAdminShops', () => {
         page: '2',
         limit: '10',
         'name[ilike]': 'amazon',
-        'isActive[eq]': 'true',
         'isAffiliated[eq]': 'false',
         sort: 'name:asc',
       })
@@ -53,7 +51,6 @@ describe('listAdminShops', () => {
       page: 2,
       limit: 10,
       search: 'amazon',
-      isActive: true,
       isAffiliated: false,
       sort: 'name:asc',
     })
@@ -94,7 +91,6 @@ describe('createShop', () => {
       logoUrl: 'https://cdn.example.com/amazon.png',
       isAffiliated: false,
       sortOrder: 0,
-      isActive: true,
     })
     expect(shop.slug).toBe('amazon')
   })
@@ -112,7 +108,6 @@ describe('createShop', () => {
         logoUrl: null,
         isAffiliated: false,
         sortOrder: 0,
-        isActive: true,
       }),
     ).rejects.toBeInstanceOf(ApiError)
   })

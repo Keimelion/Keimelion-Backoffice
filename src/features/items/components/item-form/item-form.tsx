@@ -42,7 +42,7 @@ import { ItemSourcesRecap } from '@/features/items/components/item-sources-recap
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { AdminItemDetailParsed, ItemSourceDetailParsed } from '@keimelion/sdk/schemas'
 
-const SHOPS_FILTER = { page: 1, limit: 100, isActive: true } as const
+const SHOPS_FILTER = { page: 1, limit: 100 } as const
 
 export type ItemFormCreateValues = CreateItemInput
 export type ItemFormEditValues = UpdateItemInput

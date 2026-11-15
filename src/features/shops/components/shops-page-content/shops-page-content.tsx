@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   ClearFiltersButton,
@@ -30,14 +29,12 @@ import { useTranslate } from '@/lib/i18n/use-translate'
 import type { ShopDetailParsed } from '@keimelion/sdk/schemas'
 
 const SEARCH_PARAM = 'search'
-const IS_ACTIVE_PARAM = 'isActive'
 const IS_AFFILIATED_PARAM = 'isAffiliated'
 const SORT_PARAM = 'sort'
 const HTTPS_PREFIX = 'https://'
 
 const CLEARABLE_PARAMS = [
   SEARCH_PARAM,
-  IS_ACTIVE_PARAM,
   IS_AFFILIATED_PARAM,
   SORT_PARAM,
 ]
@@ -47,11 +44,6 @@ function resolveLogoUrl(shop: ShopDetailParsed): string | null {
     return shop.logoUrl
   }
   return null
-}
-
-function resolveRowClassName(shop: ShopDetailParsed): string | undefined {
-  if (!shop.isActive) return 'opacity-50'
-  return undefined
 }
 
 export function ShopsPageContent(): React.JSX.Element {
@@ -96,16 +88,6 @@ export function ShopsPageContent(): React.JSX.Element {
       paramName: SEARCH_PARAM,
       label: t('shops.filters.search_label'),
       placeholder: t('shops.filters.search_placeholder'),
-    },
-    {
-      type: 'select',
-      paramName: IS_ACTIVE_PARAM,
-      label: t('shops.filters.is_active_label'),
-      placeholder: t('shops.filters.all_option'),
-      options: [
-        { value: 'true', label: t('shops.admin.badge.active') },
-        { value: 'false', label: t('shops.admin.badge.inactive') },
-      ],
     },
     {
       type: 'select',
@@ -163,17 +145,6 @@ export function ShopsPageContent(): React.JSX.Element {
       header: t('shops.table.column.is_affiliated'),
       className: 'w-40 whitespace-nowrap',
       cell: (shop) => <IsAffiliatedBadge isAffiliated={shop.isAffiliated} />,
-    },
-    {
-      key: 'isActive',
-      header: t('shops.table.column.is_active'),
-      className: 'w-24',
-      cell: (shop) =>
-        shop.isActive ? (
-          <Badge variant="default">{t('shops.admin.badge.active')}</Badge>
-        ) : (
-          <Badge variant="secondary">{t('shops.admin.badge.inactive')}</Badge>
-        ),
     },
     {
       key: 'createdAt',
@@ -237,7 +208,6 @@ export function ShopsPageContent(): React.JSX.Element {
         emptyLabel={t('shops.table.empty')}
         skeletonRowCount={filters.limit}
         onRetry={() => { void shopsQuery.refetch() }}
-        getRowClassName={resolveRowClassName}
         getRowLabel={(shop) => shop.name}
         isReorderMode={isReorderMode && isCurrentUserAdmin}
         onReorder={setPendingOrder}

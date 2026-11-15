@@ -13,7 +13,6 @@ export interface ListAdminShopsParams {
   page?: number | undefined
   limit?: number | undefined
   search?: string | undefined
-  isActive?: boolean | undefined
   isAffiliated?: boolean | undefined
   sort?: string | undefined
 }
@@ -26,7 +25,6 @@ export async function listAdminShops(
     limit: input.limit,
     sort: input.sort,
     'name[ilike]': emptyToUndefined(input.search),
-    'isActive[eq]': input.isActive,
     'isAffiliated[eq]': input.isAffiliated,
   })
 }

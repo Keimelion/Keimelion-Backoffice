@@ -20,7 +20,7 @@ interface EditShopDialogProps {
   shop: ShopDetailParsed
 }
 
-const EDITABLE_SHOP_FIELDS = ['name', 'domain', 'logoUrl', 'isAffiliated', 'sortOrder', 'isActive'] as const satisfies readonly (keyof ShopFormValues)[]
+const EDITABLE_SHOP_FIELDS = ['name', 'domain', 'logoUrl', 'isAffiliated', 'sortOrder'] as const satisfies readonly (keyof ShopFormValues)[]
 
 export function EditShopDialog({
   open,
