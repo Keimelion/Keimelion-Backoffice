@@ -52,7 +52,6 @@ function buildDefaultValues(props: ShopFormProps): ShopFormValues {
       logoUrl: props.shop.logoUrl,
       isAffiliated: props.shop.isAffiliated,
       sortOrder: props.shop.sortOrder,
-      isActive: props.shop.isActive,
     }
   }
   return {
@@ -62,7 +61,6 @@ function buildDefaultValues(props: ShopFormProps): ShopFormValues {
     logoUrl: null,
     isAffiliated: false,
     sortOrder: DEFAULT_SORT_ORDER,
-    isActive: true,
   }
 }
 
@@ -249,23 +247,6 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
             )}
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="isActive"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center gap-3">
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isPending}
-                />
-              </FormControl>
-              <FormLabel className="mb-0">{t('shops.form.is_active_label')}</FormLabel>
-            </FormItem>
-          )}
-        />
 
         {form.formState.errors.root ? (
           <p className="text-sm font-medium text-destructive">

@@ -21,7 +21,7 @@ import { notifySuccess } from '@/lib/notify'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import type { AdminItemDetailParsed, AdminItemsCreateSourceRequestInput, AdminItemsUpdateSourceRequestInput, ItemSourceDetailParsed } from '@keimelion/sdk/schemas'
 
-const SHOPS_FILTER = { page: 1, limit: 100, isActive: true } as const
+const SHOPS_FILTER = { page: 1, limit: 100 } as const
 const EDITABLE_SOURCE_FIELDS = ['shopId', 'sourceUrl', 'price', 'currency'] as const satisfies readonly (keyof ItemSourceInput)[]
 const PENDING_ROW_KEY = '__pending_new_source__'
 

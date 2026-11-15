@@ -28,7 +28,6 @@ const booleanStringSchema = z
 export const listShopsQuerySchema = z.object({
   ...basePaginationShape,
   search: z.string().trim().min(1).optional(),
-  isActive: booleanStringSchema.optional(),
   isAffiliated: booleanStringSchema.optional(),
   sort: z.enum(SORT_VALUES).optional(),
 })
@@ -67,7 +66,6 @@ export const createShopInputSchema = z.strictObject({
   logoUrl: logoUrlSchema,
   isAffiliated: z.boolean(),
   sortOrder: sortOrderSchema,
-  isActive: z.boolean(),
 })
 
 export type CreateShopInput = z.infer<typeof createShopInputSchema>

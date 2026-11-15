@@ -37,7 +37,6 @@ const MOCK_SHOP = {
   logoUrl: null,
   isAffiliated: false,
   sortOrder: 0,
-  isActive: true,
   createdAt: new Date('2024-01-01T00:00:00.000Z'),
   updatedAt: new Date('2024-01-01T00:00:00.000Z'),
 }
@@ -60,9 +59,9 @@ describe('buildAdminShopsKey', () => {
   })
 
   it('strips undefined and empty values from the normalized filters', () => {
-    const key = buildAdminShopsKey({ page: 1, search: undefined, isActive: undefined })
+    const key = buildAdminShopsKey({ page: 1, search: undefined, isAffiliated: undefined })
     expect('search' in key[2]).toBe(false)
-    expect('isActive' in key[2]).toBe(false)
+    expect('isAffiliated' in key[2]).toBe(false)
   })
 
   it('sorts filter keys for cache stability', () => {
@@ -107,7 +106,6 @@ describe('useCreateShop', () => {
       logoUrl: null,
       isAffiliated: false,
       sortOrder: 0,
-      isActive: true,
     })
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)

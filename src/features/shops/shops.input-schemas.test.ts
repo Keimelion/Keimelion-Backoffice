@@ -16,12 +16,10 @@ describe('listShopsQuerySchema', () => {
 
   it('coerces boolean string filters', () => {
     const result = listShopsQuerySchema.safeParse({
-      isActive: 'true',
       isAffiliated: 'false',
     })
     expect(result.success).toBe(true)
     if (!result.success) return
-    expect(result.data.isActive).toBe(true)
     expect(result.data.isAffiliated).toBe(false)
   })
 
@@ -46,7 +44,6 @@ describe('createShopInputSchema', () => {
     logoUrl: 'https://cdn.example.com/amazon.png',
     isAffiliated: false,
     sortOrder: 0,
-    isActive: true,
   }
 
   it('parses a valid input', () => {
