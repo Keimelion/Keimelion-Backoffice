@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import type { UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { TranslatedConfirmDialog } from '@/components/shared/translated-confirm-dialog'
 import { createShopInputSchema, type CreateShopInput } from '@/features/shops/shops.input-schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { useAutoSlug } from '@/lib/use-auto-slug'
@@ -68,6 +69,8 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
   const { mode, onSubmit, onDirtyChange, isPending } = props
   const t = useTranslate()
   const isEdit = mode === 'edit'
+  const isPersistedAffiliated = props.mode === 'edit' && props.shop.isAffiliated
+  const [isDisableAffiliationDialogOpen, setIsDisableAffiliationDialogOpen] = useState<boolean>(false)
 
   const form = useForm<ShopFormValues>({
     resolver: zodResolver(createShopInputSchema),
@@ -92,6 +95,18 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
     : isEdit
       ? t('shops.form.submit_edit')
       : t('shops.form.submit_create')
+
+  function handleIsAffiliatedChange(checked: boolean, onChange: (value: boolean) => void): void {
+    if (!checked && isPersistedAffiliated) {
+      setIsDisableAffiliationDialogOpen(true)
+      return
+    }
+    onChange(checked)
+  }
+
+  function confirmDisableAffiliation(): void {
+    form.setValue('isAffiliated', false, { shouldDirty: true, shouldTouch: true })
+  }
 
   const logoPreviewUrl =
     typeof values.logoUrl === 'string' && values.logoUrl.startsWith(HTTPS_PREFIX)
@@ -238,7 +253,9 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
                 <FormControl>
                   <Switch
                     checked={field.value}
-                    onCheckedChange={field.onChange}
+                    onCheckedChange={(checked) => {
+                      handleIsAffiliatedChange(checked, field.onChange)
+                    }}
                     disabled={isPending}
                   />
                 </FormControl>
@@ -260,6 +277,16 @@ export function ShopForm(props: ShopFormProps): React.JSX.Element {
           </Button>
         </div>
       </form>
+
+      {isDisableAffiliationDialogOpen ? (
+        <TranslatedConfirmDialog
+          open
+          onOpenChange={setIsDisableAffiliationDialogOpen}
+          namespace="shops.form.disable_affiliation_dialog"
+          onConfirm={confirmDisableAffiliation}
+          destructive
+        />
+      ) : null}
     </Form>
   )
 }
