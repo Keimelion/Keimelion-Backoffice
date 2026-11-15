@@ -162,3 +162,93 @@ describe('ShopForm (edit mode)', () => {
     expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument()
   })
 })
+
+describe('ShopForm (disabling affiliation)', () => {
+  const AFFILIATED_SHOP = { ...MOCK_SHOP, isAffiliated: true }
+  const DIALOG_TITLE = 'Disable affiliation?'
+
+  function renderAffiliatedEditForm(onSubmit = vi.fn()): void {
+    renderWithQueryClient(
+      <ShopForm
+        mode="edit"
+        shop={AFFILIATED_SHOP}
+        onSubmit={onSubmit}
+        onDirtyChange={vi.fn()}
+        isPending={false}
+      />,
+    )
+  }
+
+  it('opens a warning dialog when unchecking a persisted affiliation', async () => {
+    renderAffiliatedEditForm()
+    await userEvent.click(screen.getByRole('switch', { name: 'Affiliated program' }))
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
+    expect(screen.getByText(DIALOG_TITLE)).toBeInTheDocument()
+    expect(screen.getByText(/delete every affiliate link/i)).toBeInTheDocument()
+  })
+
+  it('keeps the switch checked and sends nothing when the admin cancels', async () => {
+    const onSubmit = vi.fn()
+    renderAffiliatedEditForm(onSubmit)
+    const affiliatedSwitch = screen.getByRole('switch', { name: 'Affiliated program' })
+    await userEvent.click(affiliatedSwitch)
+    await userEvent.click(await screen.findByRole('button', { name: 'No, keep affiliation' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    })
+    expect(affiliatedSwitch).toBeChecked()
+    expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('unchecks the switch on confirm and submits isAffiliated false on save', async () => {
+    const onSubmit = vi.fn()
+    renderAffiliatedEditForm(onSubmit)
+    const affiliatedSwitch = screen.getByRole('switch', { name: 'Affiliated program' })
+    await userEvent.click(affiliatedSwitch)
+    await userEvent.click(await screen.findByRole('button', { name: 'Yes, disable affiliation' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    })
+    expect(affiliatedSwitch).not.toBeChecked()
+    expect(onSubmit).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledTimes(1)
+    })
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ isAffiliated: false })
+  })
+
+  it('does not prompt when re-unchecking a shop that was not affiliated', async () => {
+    renderWithQueryClient(
+      <ShopForm
+        mode="edit"
+        shop={MOCK_SHOP}
+        onSubmit={vi.fn()}
+        onDirtyChange={vi.fn()}
+        isPending={false}
+      />,
+    )
+    const affiliatedSwitch = screen.getByRole('switch', { name: 'Affiliated program' })
+    await userEvent.click(affiliatedSwitch)
+    await userEvent.click(affiliatedSwitch)
+    expect(affiliatedSwitch).not.toBeChecked()
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+
+  it('does not prompt in create mode', async () => {
+    renderWithQueryClient(
+      <ShopForm
+        mode="create"
+        onSubmit={vi.fn()}
+        onDirtyChange={vi.fn()}
+        isPending={false}
+      />,
+    )
+    const affiliatedSwitch = screen.getByRole('switch', { name: 'Affiliated program' })
+    await userEvent.click(affiliatedSwitch)
+    await userEvent.click(affiliatedSwitch)
+    expect(affiliatedSwitch).not.toBeChecked()
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+})
