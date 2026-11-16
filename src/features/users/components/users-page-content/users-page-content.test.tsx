@@ -389,14 +389,18 @@ describe('UsersPageContent', () => {
       expect(vi.mocked(useUsers)).toHaveBeenLastCalledWith(
         expect.objectContaining({ status: ['invited', 'pending_deletion'] }),
       )
-      expect(screen.getByLabelText('Status')).toHaveTextContent('Pending deletion, Invited')
+      const trigger = screen.getByLabelText('Status')
+      expect(trigger).toHaveTextContent('Pending deletion+1')
+      expect(trigger).toHaveAttribute('title', 'Pending deletion, Invited')
     })
 
     it('adds a status picked in the dropdown to the URL in the SDK status order', async () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('status=invited'))
       renderContent()
       await userEvent.click(screen.getByLabelText('Status'))
-      await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Pending deletion' }))
+      const option = await screen.findByRole('menuitemcheckbox', { name: 'Pending deletion' })
+      expect(option.querySelector('.bg-orange-500')).not.toBeNull()
+      await userEvent.click(option)
       expect(replaceMock).toHaveBeenLastCalledWith('?status=pending_deletion%2Cinvited', { scroll: false })
     })
 

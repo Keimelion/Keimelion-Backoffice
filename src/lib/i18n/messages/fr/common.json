@@ -28,5 +28,6 @@
   "common.image_upload.remove": "Retirer l'image",
   "common.image_upload.error.invalid": "Ce fichier n'est pas une image valide.",
   "common.image_upload.error.invalid_type": "Seules les images JPEG, PNG et WebP sont acceptées.",
-  "common.image_upload.error.too_large": "Cette image est trop volumineuse."
+  "common.image_upload.error.too_large": "Cette image est trop volumineuse.",
+  "common.filters.more_selected": "+{count}"
 }

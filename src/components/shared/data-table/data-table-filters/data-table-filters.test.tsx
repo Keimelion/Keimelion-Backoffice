@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
 import userEvent from '@testing-library/user-event'
+import { renderWithIntl } from '@/test/test-utils'
 
 const replaceMock = vi.fn()
 const useSearchParamsMock = vi.fn(() => new URLSearchParams())
@@ -76,12 +77,16 @@ const STATUS_FILTER: FilterDefinition[] = [
     label: 'Status',
     placeholder: 'All statuses',
     options: [
-      { value: 'open', label: 'Open' },
+      { value: 'open', label: 'Open', content: <span data-testid="badge-open">Open</span> },
       { value: 'reviewed', label: 'Reviewed' },
-      { value: 'closed', label: 'Closed' },
+      { value: 'closed', label: 'Closed', content: <span data-testid="badge-closed">Closed</span> },
     ],
   },
 ]
+
+function renderStatusFilter(): void {
+  renderWithIntl(<DataTableFilters filters={STATUS_FILTER} />)
+}
 
 describe('DataTableFilters multi-select', () => {
   beforeEach(() => {
@@ -89,14 +94,39 @@ describe('DataTableFilters multi-select', () => {
   })
 
   it('shows the placeholder when nothing is selected', () => {
-    render(<DataTableFilters filters={STATUS_FILTER} />)
+    renderStatusFilter()
     expect(screen.getByLabelText('Status')).toHaveTextContent('All statuses')
   })
 
-  it('lists the selected option labels and checks them in the menu', async () => {
+  it('renders option content when provided and falls back to the plain label', async () => {
+    renderStatusFilter()
+    await userEvent.click(screen.getByLabelText('Status'))
+    const openOption = await screen.findByRole('menuitemcheckbox', { name: 'Open' })
+    expect(within(openOption).getByTestId('badge-open')).toBeInTheDocument()
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Reviewed' })).toHaveTextContent('Reviewed')
+  })
+
+  it('shows the single selected option content in the trigger', () => {
+    useSearchParamsMock.mockReturnValue(new URLSearchParams('status=closed'))
+    renderStatusFilter()
+    const trigger = screen.getByLabelText('Status')
+    expect(within(trigger).getByTestId('badge-closed')).toBeInTheDocument()
+    expect(trigger).not.toHaveTextContent('+')
+  })
+
+  it('shows the first selected option plus a +N counter for the others', () => {
+    useSearchParamsMock.mockReturnValue(new URLSearchParams('status=closed,reviewed,open'))
+    renderStatusFilter()
+    const trigger = screen.getByLabelText('Status')
+    expect(within(trigger).getByTestId('badge-open')).toBeInTheDocument()
+    expect(within(trigger).queryByTestId('badge-closed')).not.toBeInTheDocument()
+    expect(trigger).toHaveTextContent('+2')
+    expect(trigger).toHaveAttribute('title', 'Open, Reviewed, Closed')
+  })
+
+  it('checks the selected options in the menu', async () => {
     useSearchParamsMock.mockReturnValue(new URLSearchParams('status=closed,open'))
-    render(<DataTableFilters filters={STATUS_FILTER} />)
-    expect(screen.getByLabelText('Status')).toHaveTextContent('Open, Closed')
+    renderStatusFilter()
     await userEvent.click(screen.getByLabelText('Status'))
     expect(await screen.findByRole('menuitemcheckbox', { name: 'Open' })).toHaveAttribute(
       'aria-checked',
@@ -110,7 +140,7 @@ describe('DataTableFilters multi-select', () => {
 
   it('writes the selection in option order, comma-separated, and resets the page', async () => {
     useSearchParamsMock.mockReturnValue(new URLSearchParams('status=closed&page=2'))
-    render(<DataTableFilters filters={STATUS_FILTER} />)
+    renderStatusFilter()
     await userEvent.click(screen.getByLabelText('Status'))
     await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Open' }))
     expect(replaceMock).toHaveBeenLastCalledWith('?status=open%2Cclosed', { scroll: false })
@@ -118,7 +148,7 @@ describe('DataTableFilters multi-select', () => {
 
   it('removes the param when the last option is unchecked', async () => {
     useSearchParamsMock.mockReturnValue(new URLSearchParams('status=open'))
-    render(<DataTableFilters filters={STATUS_FILTER} />)
+    renderStatusFilter()
     await userEvent.click(screen.getByLabelText('Status'))
     await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Open' }))
     expect(replaceMock).toHaveBeenLastCalledWith('?', { scroll: false })

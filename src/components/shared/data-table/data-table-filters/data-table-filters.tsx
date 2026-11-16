@@ -2,6 +2,7 @@
 
 import { ChevronDown, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -17,8 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useUrlParams } from '@/components/shared/use-url-params'
+import { useTranslate } from '@/lib/i18n/use-translate'
 import { MULTI_VALUE_SEPARATOR } from '@/lib/url-params'
-import { cn } from '@/lib/utils'
 
 interface TextFilterDefinition {
   type: 'text'
@@ -41,12 +42,18 @@ interface SelectFilterDefinition {
   options: SelectOption[]
 }
 
+interface MultiSelectOption {
+  value: string
+  label: string
+  content?: ReactNode
+}
+
 interface MultiSelectFilterDefinition {
   type: 'multi-select'
   paramName: string
   label: string
   placeholder: string
-  options: SelectOption[]
+  options: MultiSelectOption[]
 }
 
 export type FilterDefinition =
@@ -61,6 +68,8 @@ interface DataTableFiltersProps {
 const DEBOUNCE_DELAY_MS = 300
 const ALL_VALUE = '__all__'
 const SELECTED_LABELS_SEPARATOR = ', '
+const TRUNCATED_CONTENT_CLASSES =
+  'flex min-w-0 truncate [&>*]:block [&>*]:min-w-0 [&>*]:overflow-hidden [&>*]:text-ellipsis'
 
 export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.Element {
   const { searchParams } = useUrlParams()
@@ -196,9 +205,6 @@ function MultiSelectFilter({ definition, currentValue }: MultiSelectFilterProps)
   const triggerId = `multi-select-${definition.paramName}`
   const selectedValues = currentValue.length > 0 ? currentValue.split(MULTI_VALUE_SEPARATOR) : []
   const selectedOptions = definition.options.filter((option) => selectedValues.includes(option.value))
-  const triggerLabel = selectedOptions.length > 0
-    ? selectedOptions.map((option) => option.label).join(SELECTED_LABELS_SEPARATOR)
-    : definition.placeholder
 
   const handleToggle = (toggledValue: string): void => {
     const nextValues = definition.options
@@ -218,11 +224,13 @@ function MultiSelectFilter({ definition, currentValue }: MultiSelectFilterProps)
       <DropdownMenu>
         <DropdownMenuTrigger
           id={triggerId}
+          title={selectedOptions.map((option) => option.label).join(SELECTED_LABELS_SEPARATOR)}
           className="flex h-8 w-40 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
-          <span className={cn('truncate', selectedOptions.length === 0 && 'text-muted-foreground')}>
-            {triggerLabel}
-          </span>
+          <MultiSelectTriggerValue
+            selectedOptions={selectedOptions}
+            placeholder={definition.placeholder}
+          />
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -233,11 +241,37 @@ function MultiSelectFilter({ definition, currentValue }: MultiSelectFilterProps)
               onCheckedChange={() => { handleToggle(option.value) }}
               onSelect={(event) => { event.preventDefault() }}
             >
-              {option.label}
+              {option.content ?? option.label}
             </DropdownMenuCheckboxItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
+  )
+}
+
+interface MultiSelectTriggerValueProps {
+  selectedOptions: MultiSelectOption[]
+  placeholder: string
+}
+
+function MultiSelectTriggerValue({
+  selectedOptions,
+  placeholder,
+}: MultiSelectTriggerValueProps): React.JSX.Element {
+  const t = useTranslate()
+  const [firstOption, ...otherOptions] = selectedOptions
+  if (firstOption === undefined) {
+    return <span className="truncate text-muted-foreground">{placeholder}</span>
+  }
+  return (
+    <span className="flex min-w-0 items-center gap-1">
+      <span className={TRUNCATED_CONTENT_CLASSES}>{firstOption.content ?? firstOption.label}</span>
+      {otherOptions.length > 0 ? (
+        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+          {t('common.filters.more_selected', { count: otherOptions.length })}
+        </span>
+      ) : null}
+    </span>
   )
 }

@@ -79,6 +79,7 @@ export function UsersPageContent(): React.JSX.Element {
       options: USER_STATUS_VALUES.map((status) => ({
         value: status,
         label: t(`users.status.${status}`),
+        content: <UserStatusBadge status={status} />,
       })),
     },
   ]
