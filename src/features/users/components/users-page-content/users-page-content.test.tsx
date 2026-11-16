@@ -1,8 +1,11 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { mockUseQueryResult, renderWithQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type * as AuthStorageModule from '@/data-access/_shared/auth-storage'
+import { UserStatuses } from '@keimelion/sdk/enums'
+import type { UserStatus } from '@keimelion/sdk/enums'
 
 const replaceMock = vi.fn()
 const useSearchParamsMock = vi.fn(() => new URLSearchParams())
@@ -77,6 +80,7 @@ function makeUser(overrides: Partial<{
   deletedAt: Date | null
   bannedAt: Date | null
   role: 'admin' | 'moderator' | 'user'
+  status: UserStatus
   avatar: AvatarImage | null
 }> = {}) {
   return {
@@ -98,6 +102,8 @@ function makeUser(overrides: Partial<{
     bannedAt: overrides.bannedAt ?? null,
     banReason: null,
     deletedAt: overrides.deletedAt ?? null,
+    activatedAt: null,
+    status: overrides.status ?? UserStatuses.ACTIVE,
     reservationsCount: 0,
   }
 }
@@ -133,32 +139,19 @@ describe('UsersPageContent', () => {
     expect(within(firstDataRow()).getByText('Moderator')).toBeInTheDocument()
   })
 
-  it('renders UserStatusBadge as Active for a normal user', () => {
+  it.each([
+    [UserStatuses.ACTIVE, 'Active'],
+    [UserStatuses.INACTIVE, 'Inactive'],
+    [UserStatuses.UNVERIFIED, 'Unverified'],
+    [UserStatuses.INVITED, 'Invited'],
+    [UserStatuses.BANNED, 'Banned'],
+    [UserStatuses.PENDING_DELETION, 'Pending deletion'],
+  ])('renders the %s status badge from the stored status', (status, label) => {
     vi.mocked(useUsers).mockReturnValue(
-      mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser()]) }),
+      mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser({ status })]) }),
     )
     renderContent()
-    expect(within(firstDataRow()).getByText('Active')).toBeInTheDocument()
-  })
-
-  it('renders UserStatusBadge as Deleted for a soft-deleted user', () => {
-    vi.mocked(useUsers).mockReturnValue(
-      mockUseQueryResult<UsersData>({
-        data: makeUsersData([makeUser({ deletedAt: new Date('2024-06-01T00:00:00.000Z') })]),
-      }),
-    )
-    renderContent()
-    expect(within(firstDataRow()).getByText('Deleted')).toBeInTheDocument()
-  })
-
-  it('renders UserStatusBadge as Banned for a banned user', () => {
-    vi.mocked(useUsers).mockReturnValue(
-      mockUseQueryResult<UsersData>({
-        data: makeUsersData([makeUser({ bannedAt: new Date('2024-06-01T00:00:00.000Z') })]),
-      }),
-    )
-    renderContent()
-    expect(within(firstDataRow()).getByText('Banned')).toBeInTheDocument()
+    expect(within(firstDataRow()).getByText(label)).toBeInTheDocument()
   })
 
   it('shows empty state message when no users match', () => {
@@ -372,6 +365,67 @@ describe('UsersPageContent', () => {
     it('status column header does not render as a button', () => {
       renderContent()
       expect(screen.queryByRole('button', { name: /sort by status/i })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('status filter', () => {
+    beforeEach(() => {
+      vi.mocked(useUsers).mockReturnValue(
+        mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser()]) }),
+      )
+    })
+
+    function statusFilterButton(label: string): HTMLElement {
+      const group = screen.getByRole('group', { name: 'Status' })
+      return within(group).getByRole('button', { name: label })
+    }
+
+    it('requests the default list without a status filter', () => {
+      renderContent()
+      expect(vi.mocked(useUsers)).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: undefined }),
+      )
+    })
+
+    it('passes the statuses kept in the URL to the users query', () => {
+      useSearchParamsMock.mockReturnValue(new URLSearchParams('status=invited,pending_deletion'))
+      renderContent()
+      expect(vi.mocked(useUsers)).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: ['invited', 'pending_deletion'] }),
+      )
+      expect(statusFilterButton('Invited')).toHaveAttribute('aria-pressed', 'true')
+      expect(statusFilterButton('Active')).toHaveAttribute('aria-pressed', 'false')
+    })
+
+    it('adds a status to the URL selection in the SDK status order', async () => {
+      useSearchParamsMock.mockReturnValue(new URLSearchParams('status=invited'))
+      renderContent()
+      await userEvent.click(statusFilterButton('Pending deletion'))
+      expect(replaceMock).toHaveBeenLastCalledWith('?status=pending_deletion%2Cinvited', { scroll: false })
+    })
+
+    it('removes the status param when the last selected status is toggled off', async () => {
+      useSearchParamsMock.mockReturnValue(new URLSearchParams('status=invited'))
+      renderContent()
+      await userEvent.click(statusFilterButton('Invited'))
+      expect(replaceMock).toHaveBeenLastCalledWith('?', { scroll: false })
+    })
+  })
+
+  describe('user details', () => {
+    it('expands an invited row with the resend invitation action for admins', async () => {
+      vi.mocked(useCurrentUserRole).mockReturnValue('admin')
+      vi.mocked(useUsers).mockReturnValue(
+        mockUseQueryResult<UsersData>({
+          data: makeUsersData([makeUser({ status: UserStatuses.INVITED })]),
+        }),
+      )
+      renderContent()
+      expect(screen.queryByRole('button', { name: 'Resend invitation' })).not.toBeInTheDocument()
+
+      await userEvent.click(within(firstDataRow()).getByText('user@keimelion.app'))
+
+      expect(await screen.findByRole('button', { name: 'Resend invitation' })).toBeInTheDocument()
     })
   })
 })

@@ -1,6 +1,7 @@
 export {
   useCreateAdminUser,
   useDeleteAdminUser,
+  useResendStaffInvitation,
   useUpdateAdminUser,
   useUsers,
   buildUsersListKey,

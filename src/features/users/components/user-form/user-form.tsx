@@ -2,9 +2,10 @@
 
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import type { UseFormSetError } from 'react-hook-form'
+import type { Resolver, UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { USER_ROLE_VALUES, UserRoles } from '@keimelion/sdk/enums'
+import { STAFF_ROLE_VALUES, USER_ROLE_VALUES, UserRoles } from '@keimelion/sdk/enums'
+import type { UserRole } from '@keimelion/sdk/enums'
 import { UserAvatar } from '@/components/shared/user-avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,15 +25,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createAdminUserInputSchema, updateAdminUserInputSchema, type CreateAdminUserInput, type UpdateAdminUserInput } from '@/features/users/users.input-schemas'
+import {
+  createAdminUserInputSchema,
+  editUserFormResolverSchema,
+  updateAdminUserInputSchema,
+  type CreateAdminUserInput,
+  type UpdateAdminUserInput,
+} from '@/features/users/users.input-schemas'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
 
-const DEFAULT_ROLE = UserRoles.USER
+const DEFAULT_STAFF_ROLE = UserRoles.MODERATOR
 
 export type UserFormCreateValues = CreateAdminUserInput
 export type UserFormEditValues = UpdateAdminUserInput
+
+interface UserFormValues extends Omit<UserFormCreateValues, 'role'> {
+  role: UserRole
+}
 
 type UserFormProps =
   | {
@@ -49,7 +60,7 @@ type UserFormProps =
       isPending: boolean
     }
 
-function buildDefaultValues(props: UserFormProps): UserFormCreateValues {
+function buildDefaultValues(props: UserFormProps): UserFormValues {
   if (props.mode === 'edit') {
     return {
       email: props.user.email,
@@ -57,7 +68,7 @@ function buildDefaultValues(props: UserFormProps): UserFormCreateValues {
       role: props.user.role,
     }
   }
-  return { email: '', username: null, role: DEFAULT_ROLE }
+  return { email: '', username: null, role: DEFAULT_STAFF_ROLE }
 }
 
 export function UserForm(props: UserFormProps): React.JSX.Element {
@@ -65,8 +76,12 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
   const t = useTranslate()
   const isEdit = mode === 'edit'
 
-  const form = useForm<UserFormCreateValues>({
-    resolver: zodResolver(createAdminUserInputSchema),
+  const roleOptions = isEdit ? USER_ROLE_VALUES : STAFF_ROLE_VALUES
+
+  const form = useForm<UserFormValues>({
+    resolver: (isEdit
+      ? zodResolver(editUserFormResolverSchema)
+      : zodResolver(createAdminUserInputSchema)) as Resolver<UserFormValues>,
     mode: 'onTouched',
     reValidateMode: 'onChange',
     defaultValues: buildDefaultValues(props),
@@ -95,7 +110,9 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
               props.onSubmit({ role: submittedValues.role }, form.setError)
               return
             }
-            props.onSubmit(submittedValues, form.setError)
+            const createInput = createAdminUserInputSchema.safeParse(submittedValues)
+            if (!createInput.success) return
+            props.onSubmit(createInput.data, form.setError)
           })(event)
         }}
         noValidate
@@ -177,7 +194,7 @@ export function UserForm(props: UserFormProps): React.JSX.Element {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {USER_ROLE_VALUES.map((role) => (
+                  {roleOptions.map((role) => (
                     <SelectItem key={role} value={role}>
                       <RoleBadge role={role} />
                     </SelectItem>

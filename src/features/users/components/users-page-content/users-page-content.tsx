@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +11,7 @@ import {
 } from '@/components/shared/data-table'
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
+import { useExpandedRowIds } from '@/components/shared/use-expanded-row-ids'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { UserAvatar } from '@/components/shared/user-avatar'
 import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
@@ -22,6 +23,8 @@ import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { ROLE_PARAM, RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
+import { STATUS_PARAM, UserStatusFilter } from '@/features/users/components/user-status-filter'
+import { UserDetailsRow } from '@/features/users/components/user-details-row'
 import { CreateUserDialog } from '@/features/users/components/create-user-dialog'
 import { EditUserDialog } from '@/features/users/components/edit-user-dialog'
 import { DeleteUserDialog } from '@/features/users/components/delete-user-dialog'
@@ -45,10 +48,24 @@ export function UsersPageContent(): React.JSX.Element {
     email: filters.email,
     username: filters.username,
     role: filters.role,
+    status: filters.status,
     sort: filters.sort,
   })
 
-  const data = usersQuery.data?.items ?? []
+  const data = useMemo(() => usersQuery.data?.items ?? [], [usersQuery.data])
+  const { expandedIds, toggleExpanded } = useExpandedRowIds(data)
+
+  const renderExpandedRow = useMemo(
+    () => (user: AdminUserDetailParsed) => (
+      <UserDetailsRow user={user} canManageUsers={isCurrentUserAdmin} />
+    ),
+    [isCurrentUserAdmin],
+  )
+
+  const isRowExpanded = useMemo(
+    () => (user: AdminUserDetailParsed) => expandedIds.has(user.id),
+    [expandedIds],
+  )
   const total = usersQuery.data?.pagination.total ?? 0
 
   const emptyLabel = t('users.table.empty')
@@ -115,7 +132,7 @@ export function UsersPageContent(): React.JSX.Element {
       key: 'status',
       header: t('users.table.column.status'),
       cell: (user) => (
-        <UserStatusBadge deletedAt={user.deletedAt} bannedAt={user.bannedAt} />
+        <UserStatusBadge status={user.status} />
       ),
     },
     ...(isCurrentUserAdmin
@@ -163,6 +180,7 @@ export function UsersPageContent(): React.JSX.Element {
   const usersClearableParams = [
     ...usersFilters.map((filter) => filter.paramName),
     ROLE_PARAM,
+    STATUS_PARAM,
     'id',
   ]
 
@@ -177,11 +195,17 @@ export function UsersPageContent(): React.JSX.Element {
         skeletonRowCount={filters.limit}
         onRetry={() => { void usersQuery.refetch() }}
         getRowClassName={resolveRowClassName}
+        getRowLabel={(user) => user.username ?? user.email}
+        renderExpandedRow={renderExpandedRow}
+        isRowExpanded={isRowExpanded}
+        onRowClick={(user) => { toggleExpanded(user.id) }}
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={usersFilters} />
             <div className="mb-1.5 h-6 w-px self-end bg-border" />
             <RoleFilter />
+            <div className="mb-1.5 h-6 w-px self-end bg-border" />
+            <UserStatusFilter selectedStatuses={filters.status ?? []} />
             <ClearFiltersButton paramNames={usersClearableParams} />
             {isCurrentUserAdmin ? (
               <div className="ml-auto">
