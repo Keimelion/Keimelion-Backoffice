@@ -18,7 +18,6 @@
   "users.role.moderator": "Moderator",
   "users.role.user": "User",
   "users.status.active": "Active",
-  "users.status.deleted": "Deleted",
   "users.status.banned": "Banned",
   "users.actions.create_button": "Create user",
   "users.create.dialog_title": "Create user",
@@ -29,7 +28,7 @@
   "users.form.username_placeholder": "username",
   "users.form.username_help": "Optional. 3–30 characters.",
   "users.form.role_label": "Role",
-  "users.form.role_help_create": "The role granted to this user on creation.",
+  "users.form.role_help_create": "The staff role granted to this account. Regular users sign up from the app.",
   "users.form.role_change_warning": "Changing this user's role will sign them out of all sessions.",
   "users.form.invitation_note": "The user will receive an email to set their password.",
   "users.form.submit_create": "Create",
@@ -44,5 +43,13 @@
   "users.delete_dialog.confirm": "Yes, delete user",
   "users.delete_dialog.cancel": "No, keep account",
   "users.actions.edit_own_tooltip": "You cannot edit your own account.",
-  "users.actions.delete_own_tooltip": "You cannot delete your own account."
+  "users.actions.delete_own_tooltip": "You cannot delete your own account.",
+  "users.filters.status_label": "Status",
+  "users.filters.status_all": "All statuses",
+  "users.status.inactive": "Inactive",
+  "users.status.unverified": "Unverified",
+  "users.status.invited": "Invited",
+  "users.status.pending_deletion": "Pending deletion",
+  "users.actions.resend_invitation": "Resend invitation to {name}",
+  "users.mutation.invitation_resent_toast": "Invitation email resent to {email}."
 }

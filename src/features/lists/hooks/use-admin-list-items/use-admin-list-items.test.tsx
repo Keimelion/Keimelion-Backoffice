@@ -25,6 +25,7 @@ const MOCK_LIST_ITEM = {
   itemStatus: 'available' as const,
   sortOrder: 0,
   creatorNote: null,
+  customName: null,
   createdAt: new Date('2024-01-01T00:00:00.000Z'),
   updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   item: {
@@ -33,6 +34,7 @@ const MOCK_LIST_ITEM = {
     description: null,
     imageId: null,
     image: null,
+    gtin: null,
     createdByUserId: null,
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: new Date('2024-01-01T00:00:00.000Z'),

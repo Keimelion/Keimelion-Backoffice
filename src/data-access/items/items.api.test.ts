@@ -36,6 +36,7 @@ const MOCK_ITEM = {
   description: null,
   imageId: null,
   image: null,
+  gtin: null,
   createdByUserId: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',

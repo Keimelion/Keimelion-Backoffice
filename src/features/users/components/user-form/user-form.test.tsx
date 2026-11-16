@@ -35,6 +35,8 @@ const MOCK_USER: AdminUserDetailParsed = {
   bannedAt: null,
   banReason: null,
   deletedAt: null,
+  activatedAt: new Date('2024-01-02T00:00:00.000Z'),
+  status: 'active' as const,
   reservationsCount: 0,
 }
 
@@ -143,7 +145,42 @@ describe('UserForm (create mode)', () => {
   })
 })
 
+describe('UserForm (create mode) staff roles', () => {
+  it('only offers staff roles and defaults to moderator', async () => {
+    renderCreateForm()
+    const combobox = screen.getByRole('combobox')
+    expect(combobox).toHaveTextContent('Moderator')
+    await userEvent.click(combobox)
+    expect(await screen.findByRole('option', { name: 'Admin' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'User' })).not.toBeInTheDocument()
+  })
+
+  it('submits the staff role with the create values', async () => {
+    const onSubmit = vi.fn()
+    renderCreateForm(onSubmit)
+    await userEvent.type(screen.getByPlaceholderText(EMAIL_PLACEHOLDER), 'new@keimelion.app')
+    await userEvent.click(screen.getByRole('button', { name: /create/i }))
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(
+        { email: 'new@keimelion.app', username: null, role: 'moderator' },
+        expect.any(Function),
+      )
+    })
+  })
+})
+
 describe('UserForm (edit mode)', () => {
+  it('offers the user role and submits a staff account downgrade', async () => {
+    const onSubmit = vi.fn()
+    renderEditForm({ ...MOCK_USER, role: 'moderator', status: 'invited' }, onSubmit)
+    await userEvent.click(screen.getByRole('combobox'))
+    await userEvent.click(await screen.findByRole('option', { name: 'User' }))
+    await userEvent.click(screen.getByRole('button', { name: /save/i }))
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({ role: 'user' }, expect.any(Function))
+    })
+  })
+
   it('renders only the role field', () => {
     renderEditForm()
     expect(screen.getByText('Role')).toBeInTheDocument()

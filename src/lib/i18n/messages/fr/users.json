@@ -18,7 +18,6 @@
   "users.role.moderator": "Modérateur",
   "users.role.user": "Utilisateur",
   "users.status.active": "Actif",
-  "users.status.deleted": "Supprimé",
   "users.status.banned": "Banni",
   "users.actions.create_button": "Créer un utilisateur",
   "users.create.dialog_title": "Créer un utilisateur",
@@ -29,7 +28,7 @@
   "users.form.username_placeholder": "nom_utilisateur",
   "users.form.username_help": "Optionnel. 3 à 30 caractères.",
   "users.form.role_label": "Rôle",
-  "users.form.role_help_create": "Le rôle accordé à cet utilisateur à la création.",
+  "users.form.role_help_create": "Le rôle staff accordé à ce compte. Les utilisateurs standards s'inscrivent depuis l'application.",
   "users.form.role_change_warning": "Modifier le rôle de cet utilisateur le déconnectera de toutes ses sessions.",
   "users.form.invitation_note": "L'utilisateur recevra un e-mail pour définir son mot de passe.",
   "users.form.submit_create": "Créer",
@@ -44,5 +43,13 @@
   "users.delete_dialog.confirm": "Oui, supprimer l'utilisateur",
   "users.delete_dialog.cancel": "Non, conserver le compte",
   "users.actions.edit_own_tooltip": "Vous ne pouvez pas modifier votre propre compte.",
-  "users.actions.delete_own_tooltip": "Vous ne pouvez pas supprimer votre propre compte."
+  "users.actions.delete_own_tooltip": "Vous ne pouvez pas supprimer votre propre compte.",
+  "users.filters.status_label": "Statut",
+  "users.filters.status_all": "Tous les statuts",
+  "users.status.inactive": "Inactif",
+  "users.status.unverified": "Non vérifié",
+  "users.status.invited": "Invité",
+  "users.status.pending_deletion": "Suppression en attente",
+  "users.actions.resend_invitation": "Renvoyer l'invitation à {name}",
+  "users.mutation.invitation_resent_toast": "E-mail d'invitation renvoyé à {email}."
 }

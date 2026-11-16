@@ -1,7 +1,8 @@
-import type { UserRole } from '@keimelion/sdk/enums'
+import type { UserRole, UserStatus } from '@keimelion/sdk/enums'
 import type {
   AdminUserDetailParsed,
   AdminUsersCreateRequestInput,
+  AdminUsersListFilters,
   AdminUsersListResponseParsed,
   AdminUsersUpdateRequestInput,
 } from '@keimelion/sdk/schemas'
@@ -17,8 +18,11 @@ export interface ListUsersParams {
   email?: string | undefined
   username?: string | undefined
   role?: UserRole | undefined
+  status?: readonly UserStatus[] | undefined
   sort?: string | undefined
 }
+
+type StatusFilterQuery = Pick<AdminUsersListFilters, 'status[eq]' | 'status[in][]'>
 
 export async function listUsers(input: ListUsersParams): Promise<AdminUsersListResponseParsed> {
   return apiClient.admin.users.list({
@@ -29,7 +33,15 @@ export async function listUsers(input: ListUsersParams): Promise<AdminUsersListR
     'email[ilike]': emptyToUndefined(input.email),
     'username[ilike]': emptyToUndefined(input.username),
     'role[eq]': input.role,
+    ...buildStatusFilter(input.status ?? []),
   })
+}
+
+export function buildStatusFilter(statuses: readonly UserStatus[]): StatusFilterQuery {
+  const [onlyStatus, ...otherStatuses] = statuses
+  if (onlyStatus === undefined) return {}
+  if (otherStatuses.length === 0) return { 'status[eq]': onlyStatus }
+  return { 'status[in][]': statuses }
 }
 
 export async function createAdminUser(
@@ -49,4 +61,9 @@ export async function updateAdminUser(
 
 export async function deleteAdminUser(id: string): Promise<void> {
   await apiClient.admin.users.delete(id)
+}
+
+export async function resendStaffInvitation(id: string): Promise<AdminUserDetailParsed> {
+  const { user } = await apiClient.admin.users.resendInvitation(id)
+  return user
 }

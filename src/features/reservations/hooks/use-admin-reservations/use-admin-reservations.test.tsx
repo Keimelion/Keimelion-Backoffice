@@ -35,6 +35,7 @@ const MOCK_RESPONSE: Awaited<ReturnType<typeof listAdminReservations>> = {
           description: null,
           imageId: null,
           image: null,
+          gtin: null,
           createdByUserId: null,
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),

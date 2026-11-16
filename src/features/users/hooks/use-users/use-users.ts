@@ -8,6 +8,7 @@ import {
   createAdminUser,
   deleteAdminUser,
   listUsers,
+  resendStaffInvitation,
   updateAdminUser,
 } from '@/data-access/users/admin-users.api'
 import type { ListUsersQuery } from '@/features/users/users.input-schemas'
@@ -19,8 +20,10 @@ export function buildUsersListKey(
   filters: UsersListFilters,
 ): readonly ['users', 'list', UsersListFilters] {
   const normalized = normalizeFilters(filters)
-  return [...ADMIN_USERS_QUERY_KEY, 'list', normalized] as const
+  return [...USERS_LIST_QUERY_KEY, normalized] as const
 }
+
+const USERS_LIST_QUERY_KEY = [...ADMIN_USERS_QUERY_KEY, 'list'] as const
 
 export function useUsers(filters: UsersListFilters): UseQueryResult<PaginatedResponse<AdminUserDetailParsed>> {
   return useQuery({
@@ -64,4 +67,32 @@ export function useDeleteAdminUser(): UseMutationResult<void, Error, string> {
       await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
     },
   })
+}
+
+export function useResendStaffInvitation(): UseMutationResult<AdminUserDetailParsed, Error, string> {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: resendStaffInvitation,
+    meta: { silent: true },
+    onSuccess: (user) => {
+      queryClient.setQueriesData<PaginatedResponse<AdminUserDetailParsed>>(
+        { queryKey: USERS_LIST_QUERY_KEY },
+        (page) => replaceUserInPage(page, user),
+      )
+    },
+    onError: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY })
+    },
+  })
+}
+
+function replaceUserInPage(
+  page: PaginatedResponse<AdminUserDetailParsed> | undefined,
+  user: AdminUserDetailParsed,
+): PaginatedResponse<AdminUserDetailParsed> | undefined {
+  if (page === undefined) return undefined
+  return {
+    ...page,
+    items: page.items.map((item) => (item.id === user.id ? user : item)),
+  }
 }
