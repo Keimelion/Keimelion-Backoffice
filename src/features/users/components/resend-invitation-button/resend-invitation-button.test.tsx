@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ErrorCode, HttpStatus } from '@keimelion/sdk/enums'
 import { apiErrorBody, createApiMock, type ApiMock } from '@/test/api-mock'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { renderWithQueryClient } from '@/test/test-utils'
 import { USER_ID, buildAdminUser } from '@/features/users/users.test-fixtures'
 import { ResendInvitationButton } from './resend-invitation-button'
@@ -27,8 +28,12 @@ afterEach(() => {
 })
 
 async function clickResend(): Promise<void> {
-  renderWithQueryClient(<ResendInvitationButton user={USER} />)
-  await userEvent.click(screen.getByRole('button', { name: 'Resend invitation' }))
+  renderWithQueryClient(
+    <TooltipProvider delayDuration={0}>
+      <ResendInvitationButton user={USER} />
+    </TooltipProvider>,
+  )
+  await userEvent.click(screen.getByRole('button', { name: `Resend invitation to ${USER.email}` }))
 }
 
 describe('ResendInvitationButton', () => {

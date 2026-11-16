@@ -4,7 +4,7 @@ import { Send } from 'lucide-react'
 import { ApiError } from '@keimelion/sdk/client'
 import { ErrorCode } from '@keimelion/sdk/enums'
 import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
-import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/shared/icon-button'
 import { useResendStaffInvitation } from '@/features/users/hooks/use-users'
 import { translate } from '@/lib/i18n/translate'
 import { useTranslate } from '@/lib/i18n/use-translate'
@@ -35,12 +35,13 @@ export function ResendInvitationButton({ user }: ResendInvitationButtonProps): R
   }
 
   return (
-    <Button size="sm" variant="outline" disabled={mutation.isPending} onClick={handleClick}>
-      <Send className="mr-2 h-4 w-4" />
-      {mutation.isPending
-        ? t('users.actions.resend_invitation_pending')
-        : t('users.actions.resend_invitation')}
-    </Button>
+    <IconButton
+      label={t('users.actions.resend_invitation', { name: user.username ?? user.email })}
+      disabled={mutation.isPending}
+      onClick={handleClick}
+    >
+      <Send />
+    </IconButton>
   )
 }
 

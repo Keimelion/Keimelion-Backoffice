@@ -1,7 +1,13 @@
 'use client'
 
-import { Search } from 'lucide-react'
+import { ChevronDown, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -11,6 +17,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useUrlParams } from '@/components/shared/use-url-params'
+import { MULTI_VALUE_SEPARATOR } from '@/lib/url-params'
+import { cn } from '@/lib/utils'
 
 interface TextFilterDefinition {
   type: 'text'
@@ -33,7 +41,18 @@ interface SelectFilterDefinition {
   options: SelectOption[]
 }
 
-export type FilterDefinition = TextFilterDefinition | SelectFilterDefinition
+interface MultiSelectFilterDefinition {
+  type: 'multi-select'
+  paramName: string
+  label: string
+  placeholder: string
+  options: SelectOption[]
+}
+
+export type FilterDefinition =
+  | TextFilterDefinition
+  | SelectFilterDefinition
+  | MultiSelectFilterDefinition
 
 interface DataTableFiltersProps {
   filters: FilterDefinition[]
@@ -41,29 +60,40 @@ interface DataTableFiltersProps {
 
 const DEBOUNCE_DELAY_MS = 300
 const ALL_VALUE = '__all__'
+const SELECTED_LABELS_SEPARATOR = ', '
 
 export function DataTableFilters({ filters }: DataTableFiltersProps): React.JSX.Element {
   const { searchParams } = useUrlParams()
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {filters.map((filter) =>
-        filter.type === 'text' ? (
-          <TextFilter
-            key={filter.paramName}
-            definition={filter}
-            currentValue={searchParams.get(filter.paramName) ?? ''}
-          />
-        ) : (
-          <SelectFilter
-            key={filter.paramName}
-            definition={filter}
-            currentValue={searchParams.get(filter.paramName) ?? ''}
-          />
-        ),
-      )}
+      {filters.map((filter) => (
+        <FilterControl
+          key={filter.paramName}
+          definition={filter}
+          currentValue={searchParams.get(filter.paramName) ?? ''}
+        />
+      ))}
     </div>
   )
+}
+
+interface FilterControlProps {
+  definition: FilterDefinition
+  currentValue: string
+}
+
+function FilterControl({ definition, currentValue }: FilterControlProps): React.JSX.Element {
+  switch (definition.type) {
+    case 'text':
+      return <TextFilter definition={definition} currentValue={currentValue} />
+    case 'select':
+      return <SelectFilter definition={definition} currentValue={currentValue} />
+    case 'multi-select':
+      return <MultiSelectFilter definition={definition} currentValue={currentValue} />
+    default:
+      return definition satisfies never
+  }
 }
 
 interface TextFilterProps {
@@ -152,6 +182,62 @@ function SelectFilter({ definition, currentValue }: SelectFilterProps): React.JS
           ))}
         </SelectContent>
       </Select>
+    </div>
+  )
+}
+
+interface MultiSelectFilterProps {
+  definition: MultiSelectFilterDefinition
+  currentValue: string
+}
+
+function MultiSelectFilter({ definition, currentValue }: MultiSelectFilterProps): React.JSX.Element {
+  const { setFilterParam } = useUrlParams()
+  const triggerId = `multi-select-${definition.paramName}`
+  const selectedValues = currentValue.length > 0 ? currentValue.split(MULTI_VALUE_SEPARATOR) : []
+  const selectedOptions = definition.options.filter((option) => selectedValues.includes(option.value))
+  const triggerLabel = selectedOptions.length > 0
+    ? selectedOptions.map((option) => option.label).join(SELECTED_LABELS_SEPARATOR)
+    : definition.placeholder
+
+  const handleToggle = (toggledValue: string): void => {
+    const nextValues = definition.options
+      .map((option) => option.value)
+      .filter((value) => (value === toggledValue) !== selectedValues.includes(value))
+    setFilterParam(definition.paramName, nextValues.join(MULTI_VALUE_SEPARATOR))
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label
+        htmlFor={triggerId}
+        className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+      >
+        {definition.label}
+      </label>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          id={triggerId}
+          className="flex h-8 w-40 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <span className={cn('truncate', selectedOptions.length === 0 && 'text-muted-foreground')}>
+            {triggerLabel}
+          </span>
+          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {definition.options.map((option) => (
+            <DropdownMenuCheckboxItem
+              key={option.value}
+              checked={selectedValues.includes(option.value)}
+              onCheckedChange={() => { handleToggle(option.value) }}
+              onSelect={(event) => { event.preventDefault() }}
+            >
+              {option.label}
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }

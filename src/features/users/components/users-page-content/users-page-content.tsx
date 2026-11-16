@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,7 +11,6 @@ import {
 } from '@/components/shared/data-table'
 import type { DataTableColumn, FilterDefinition } from '@/components/shared/data-table'
 import { IconButton } from '@/components/shared/icon-button'
-import { useExpandedRowIds } from '@/components/shared/use-expanded-row-ids'
 import { useListSearchParams } from '@/components/shared/use-list-search-params'
 import { UserAvatar } from '@/components/shared/user-avatar'
 import { getStoredUser, isAdmin } from '@/data-access/_shared/auth-storage'
@@ -23,12 +22,14 @@ import { useCurrentUserRole } from '@/features/auth/hooks/use-current-user-role'
 import { RoleBadge } from '@/features/users/components/role-badge'
 import { ROLE_PARAM, RoleFilter } from '@/features/users/components/role-filter'
 import { UserStatusBadge } from '@/features/users/components/user-status-badge'
-import { STATUS_PARAM, UserStatusFilter } from '@/features/users/components/user-status-filter'
-import { UserDetailsRow } from '@/features/users/components/user-details-row'
+import { ResendInvitationButton } from '@/features/users/components/resend-invitation-button'
 import { CreateUserDialog } from '@/features/users/components/create-user-dialog'
 import { EditUserDialog } from '@/features/users/components/edit-user-dialog'
 import { DeleteUserDialog } from '@/features/users/components/delete-user-dialog'
+import { USER_STATUS_VALUES, UserStatuses } from '@keimelion/sdk/enums'
 import type { AdminUserDetailParsed } from '@keimelion/sdk/schemas'
+
+const STATUS_PARAM = 'status'
 
 export function UsersPageContent(): React.JSX.Element {
   const t = useTranslate()
@@ -52,20 +53,7 @@ export function UsersPageContent(): React.JSX.Element {
     sort: filters.sort,
   })
 
-  const data = useMemo(() => usersQuery.data?.items ?? [], [usersQuery.data])
-  const { expandedIds, toggleExpanded } = useExpandedRowIds(data)
-
-  const renderExpandedRow = useMemo(
-    () => (user: AdminUserDetailParsed) => (
-      <UserDetailsRow user={user} canManageUsers={isCurrentUserAdmin} />
-    ),
-    [isCurrentUserAdmin],
-  )
-
-  const isRowExpanded = useMemo(
-    () => (user: AdminUserDetailParsed) => expandedIds.has(user.id),
-    [expandedIds],
-  )
+  const data = usersQuery.data?.items ?? []
   const total = usersQuery.data?.pagination.total ?? 0
 
   const emptyLabel = t('users.table.empty')
@@ -82,6 +70,16 @@ export function UsersPageContent(): React.JSX.Element {
       paramName: 'username',
       label: t('users.filters.username_label'),
       placeholder: t('users.filters.username_placeholder'),
+    },
+    {
+      type: 'multi-select',
+      paramName: STATUS_PARAM,
+      label: t('users.filters.status_label'),
+      placeholder: t('users.filters.status_all'),
+      options: USER_STATUS_VALUES.map((status) => ({
+        value: status,
+        label: t(`users.status.${status}`),
+      })),
     },
   ]
 
@@ -117,6 +115,13 @@ export function UsersPageContent(): React.JSX.Element {
       cell: (user) => <RoleBadge role={user.role} />,
     },
     {
+      key: 'status',
+      header: t('users.table.column.status'),
+      cell: (user) => (
+        <UserStatusBadge status={user.status} />
+      ),
+    },
+    {
       key: 'createdAt',
       header: t('users.table.column.created'),
       sortable: true,
@@ -128,24 +133,20 @@ export function UsersPageContent(): React.JSX.Element {
       sortable: true,
       cell: (user) => (user.lastActiveAt !== null ? formatDate(user.lastActiveAt) : '—'),
     },
-    {
-      key: 'status',
-      header: t('users.table.column.status'),
-      cell: (user) => (
-        <UserStatusBadge status={user.status} />
-      ),
-    },
     ...(isCurrentUserAdmin
       ? [
           {
             key: 'actions',
             header: t('users.table.column.actions'),
-            className: 'w-28 text-right',
+            className: 'w-36 text-right',
             cell: (user: AdminUserDetailParsed) => {
               const identifier = user.username ?? user.email
               const isSelf = user.id === currentUserId
               return (
                 <div className="flex justify-end gap-1">
+                  {user.status === UserStatuses.INVITED ? (
+                    <ResendInvitationButton user={user} />
+                  ) : null}
                   <IconButton
                     label={
                       isSelf
@@ -180,7 +181,6 @@ export function UsersPageContent(): React.JSX.Element {
   const usersClearableParams = [
     ...usersFilters.map((filter) => filter.paramName),
     ROLE_PARAM,
-    STATUS_PARAM,
     'id',
   ]
 
@@ -195,17 +195,11 @@ export function UsersPageContent(): React.JSX.Element {
         skeletonRowCount={filters.limit}
         onRetry={() => { void usersQuery.refetch() }}
         getRowClassName={resolveRowClassName}
-        getRowLabel={(user) => user.username ?? user.email}
-        renderExpandedRow={renderExpandedRow}
-        isRowExpanded={isRowExpanded}
-        onRowClick={(user) => { toggleExpanded(user.id) }}
         toolbar={
           <div className="flex flex-wrap items-end gap-3">
             <DataTableFilters filters={usersFilters} />
             <div className="mb-1.5 h-6 w-px self-end bg-border" />
             <RoleFilter />
-            <div className="mb-1.5 h-6 w-px self-end bg-border" />
-            <UserStatusFilter selectedStatuses={filters.status ?? []} />
             <ClearFiltersButton paramNames={usersClearableParams} />
             {isCurrentUserAdmin ? (
               <div className="ml-auto">

@@ -2,14 +2,13 @@ import { z } from 'zod'
 import { USER_ROLE_VALUES, USER_STATUS_VALUES } from '@keimelion/sdk/enums'
 import { ADMIN_USERS_SORT_FIELDS, adminUsersCreateRequestSchema } from '@keimelion/sdk/schemas'
 import { basePaginationShape, buildSortValues } from '@/lib/list-query-input-schema'
+import { MULTI_VALUE_SEPARATOR } from '@/lib/url-params'
 
 const SORT_VALUES = buildSortValues(ADMIN_USERS_SORT_FIELDS)
 
-export const STATUS_PARAM_SEPARATOR = ','
-
 const statusParamSchema = z
   .string()
-  .transform((value) => value.split(STATUS_PARAM_SEPARATOR))
+  .transform((value) => value.split(MULTI_VALUE_SEPARATOR))
   .pipe(z.array(z.enum(USER_STATUS_VALUES)).min(1))
 
 export const listUsersQuerySchema = z.object({

@@ -45,15 +45,11 @@
   "users.actions.edit_own_tooltip": "You cannot edit your own account.",
   "users.actions.delete_own_tooltip": "You cannot delete your own account.",
   "users.filters.status_label": "Status",
+  "users.filters.status_all": "All statuses",
   "users.status.inactive": "Inactive",
   "users.status.unverified": "Unverified",
   "users.status.invited": "Invited",
   "users.status.pending_deletion": "Pending deletion",
-  "users.details.status": "Status",
-  "users.details.activated_at": "Activated",
-  "users.details.email_verified_at": "Email verified",
-  "users.details.banned_at": "Banned",
-  "users.actions.resend_invitation": "Resend invitation",
-  "users.actions.resend_invitation_pending": "Sending…",
+  "users.actions.resend_invitation": "Resend invitation to {name}",
   "users.mutation.invitation_resent_toast": "Invitation email resent to {email}."
 }

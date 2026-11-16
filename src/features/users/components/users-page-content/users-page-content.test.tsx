@@ -375,16 +375,12 @@ describe('UsersPageContent', () => {
       )
     })
 
-    function statusFilterButton(label: string): HTMLElement {
-      const group = screen.getByRole('group', { name: 'Status' })
-      return within(group).getByRole('button', { name: label })
-    }
-
     it('requests the default list without a status filter', () => {
       renderContent()
       expect(vi.mocked(useUsers)).toHaveBeenLastCalledWith(
         expect.objectContaining({ status: undefined }),
       )
+      expect(screen.getByLabelText('Status')).toHaveTextContent('All statuses')
     })
 
     it('passes the statuses kept in the URL to the users query', () => {
@@ -393,39 +389,69 @@ describe('UsersPageContent', () => {
       expect(vi.mocked(useUsers)).toHaveBeenLastCalledWith(
         expect.objectContaining({ status: ['invited', 'pending_deletion'] }),
       )
-      expect(statusFilterButton('Invited')).toHaveAttribute('aria-pressed', 'true')
-      expect(statusFilterButton('Active')).toHaveAttribute('aria-pressed', 'false')
+      expect(screen.getByLabelText('Status')).toHaveTextContent('Pending deletion, Invited')
     })
 
-    it('adds a status to the URL selection in the SDK status order', async () => {
+    it('adds a status picked in the dropdown to the URL in the SDK status order', async () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('status=invited'))
       renderContent()
-      await userEvent.click(statusFilterButton('Pending deletion'))
+      await userEvent.click(screen.getByLabelText('Status'))
+      await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Pending deletion' }))
       expect(replaceMock).toHaveBeenLastCalledWith('?status=pending_deletion%2Cinvited', { scroll: false })
     })
 
-    it('removes the status param when the last selected status is toggled off', async () => {
+    it('removes the status param when the last selected status is unchecked', async () => {
       useSearchParamsMock.mockReturnValue(new URLSearchParams('status=invited'))
       renderContent()
-      await userEvent.click(statusFilterButton('Invited'))
+      await userEvent.click(screen.getByLabelText('Status'))
+      await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Invited' }))
       expect(replaceMock).toHaveBeenLastCalledWith('?', { scroll: false })
     })
   })
 
-  describe('user details', () => {
-    it('expands an invited row with the resend invitation action for admins', async () => {
-      vi.mocked(useCurrentUserRole).mockReturnValue('admin')
+  it('places the status column right after the role column', () => {
+    vi.mocked(useUsers).mockReturnValue(
+      mockUseQueryResult<UsersData>({ data: makeUsersData([makeUser()]) }),
+    )
+    renderContent()
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent)
+    const roleIndex = headers.indexOf('Role')
+    expect(roleIndex).toBeGreaterThan(-1)
+    expect(headers[roleIndex + 1]).toBe('Status')
+  })
+
+  describe('resend invitation action', () => {
+    const RESEND_LABEL = 'Resend invitation to user@keimelion.app'
+
+    function renderWithStatus(status: UserStatus, role: 'admin' | 'moderator'): void {
+      vi.mocked(useCurrentUserRole).mockReturnValue(role)
       vi.mocked(useUsers).mockReturnValue(
         mockUseQueryResult<UsersData>({
-          data: makeUsersData([makeUser({ status: UserStatuses.INVITED })]),
+          data: makeUsersData([makeUser({ status, username: null })]),
         }),
       )
       renderContent()
-      expect(screen.queryByRole('button', { name: 'Resend invitation' })).not.toBeInTheDocument()
+    }
 
-      await userEvent.click(within(firstDataRow()).getByText('user@keimelion.app'))
+    it('renders the action on an invited row for an admin', () => {
+      renderWithStatus(UserStatuses.INVITED, 'admin')
+      expect(within(firstDataRow()).getByRole('button', { name: RESEND_LABEL })).toBeEnabled()
+    })
 
-      expect(await screen.findByRole('button', { name: 'Resend invitation' })).toBeInTheDocument()
+    it.each([
+      UserStatuses.ACTIVE,
+      UserStatuses.INACTIVE,
+      UserStatuses.UNVERIFIED,
+      UserStatuses.BANNED,
+      UserStatuses.PENDING_DELETION,
+    ])('does not render the action on a %s row', (status) => {
+      renderWithStatus(status, 'admin')
+      expect(screen.queryByRole('button', { name: RESEND_LABEL })).not.toBeInTheDocument()
+    })
+
+    it('does not render the action for a moderator viewer', () => {
+      renderWithStatus(UserStatuses.INVITED, 'moderator')
+      expect(screen.queryByRole('button', { name: RESEND_LABEL })).not.toBeInTheDocument()
     })
   })
 })

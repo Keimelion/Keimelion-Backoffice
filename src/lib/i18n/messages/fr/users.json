@@ -45,15 +45,11 @@
   "users.actions.edit_own_tooltip": "Vous ne pouvez pas modifier votre propre compte.",
   "users.actions.delete_own_tooltip": "Vous ne pouvez pas supprimer votre propre compte.",
   "users.filters.status_label": "Statut",
+  "users.filters.status_all": "Tous les statuts",
   "users.status.inactive": "Inactif",
   "users.status.unverified": "Non vérifié",
   "users.status.invited": "Invité",
   "users.status.pending_deletion": "Suppression en attente",
-  "users.details.status": "Statut",
-  "users.details.activated_at": "Activé le",
-  "users.details.email_verified_at": "E-mail vérifié le",
-  "users.details.banned_at": "Banni le",
-  "users.actions.resend_invitation": "Renvoyer l'invitation",
-  "users.actions.resend_invitation_pending": "Envoi…",
+  "users.actions.resend_invitation": "Renvoyer l'invitation à {name}",
   "users.mutation.invitation_resent_toast": "E-mail d'invitation renvoyé à {email}."
 }
