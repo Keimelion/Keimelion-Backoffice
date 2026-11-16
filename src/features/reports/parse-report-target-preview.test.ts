@@ -10,7 +10,7 @@ describe('parseReportTargetPreview', () => {
         targetSnapshot: {
           title: 'Birthday',
           description: 'My wishes',
-          listStatus: 'archived',
+          listStatus: 'deleted',
           owner: { username: 'alice' },
           tags: [{ name: 'urgent' }],
         },
@@ -19,10 +19,20 @@ describe('parseReportTargetPreview', () => {
     expect(preview).toMatchObject({
       title: 'Birthday',
       description: 'My wishes',
-      listStatus: 'archived',
+      listStatus: 'deleted',
       ownerName: 'alice',
       tags: ['urgent'],
     })
+  })
+
+  it('returns a null listStatus for a legacy archived snapshot', () => {
+    const preview = parseReportTargetPreview(
+      buildReport({
+        targetType: 'list',
+        targetSnapshot: { title: 'Birthday', listStatus: 'archived' },
+      }),
+    )
+    expect(preview).toMatchObject({ title: 'Birthday', listStatus: null })
   })
 
   it('reads an item snapshot', () => {
