@@ -1,6 +1,6 @@
 'use client'
 
-import { Archive, CircleDot, Trash2 } from 'lucide-react'
+import { CircleDot, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ListStatus } from '@keimelion/sdk/enums'
 import { Badge } from '@/components/ui/badge'
@@ -18,11 +18,6 @@ const STATUS_VISUALS: Record<ListStatus, StatusVisuals> = {
     className: 'border-transparent bg-emerald-500 text-white hover:bg-emerald-500/80',
     Icon: CircleDot,
     messageId: 'lists.status.active',
-  },
-  archived: {
-    className: 'border-transparent bg-slate-500 text-white hover:bg-slate-500/80',
-    Icon: Archive,
-    messageId: 'lists.status.archived',
   },
   deleted: {
     className: 'border-transparent bg-rose-500 text-white hover:bg-rose-500/80',

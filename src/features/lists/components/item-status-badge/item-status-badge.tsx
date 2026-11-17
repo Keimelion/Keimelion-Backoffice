@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle2, Clock, PackageCheck } from 'lucide-react'
+import { CheckCircle2, Clock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ItemStatus } from '@keimelion/sdk/enums'
 import { Badge } from '@/components/ui/badge'
@@ -23,11 +23,6 @@ const STATUS_VISUALS: Record<ItemStatus, StatusVisuals> = {
     className: 'border-transparent bg-amber-500 text-white hover:bg-amber-500/80',
     Icon: Clock,
     messageId: 'lists.sub_table.item_status.reserved',
-  },
-  purchased: {
-    className: 'border-transparent bg-slate-500 text-white hover:bg-slate-500/80',
-    Icon: PackageCheck,
-    messageId: 'lists.sub_table.item_status.purchased',
   },
 }
 
