@@ -1,5 +1,3 @@
-@use 'styles/tokens' as *;
-
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] {
   position: relative;
   overflow: hidden;
@@ -63,24 +61,37 @@
     animation-play-state: paused;
   }
 
-  @each $type, $color in $variants {
-    &[data-type='#{$type}'] {
-      [data-close-button] {
-        color: $color;
-        opacity: 1;
-
-        &:hover {
-          background: rgba($color, 0.12);
-        }
-      }
-
-      &::after {
-        background: $color;
-        opacity: 1;
-      }
-    }
+  &[data-type='error'] {
+    --toast-variant: var(--variant-error);
   }
 
+  &[data-type='success'] {
+    --toast-variant: var(--variant-success);
+  }
+
+  &[data-type='warning'] {
+    --toast-variant: var(--variant-warning);
+  }
+
+  &[data-type='info'] {
+    --toast-variant: var(--variant-info);
+  }
+
+  &:is([data-type='error'], [data-type='success'], [data-type='warning'], [data-type='info']) {
+    [data-close-button] {
+      color: var(--toast-variant);
+      opacity: 1;
+
+      &:hover {
+        background: color-mix(in srgb, var(--toast-variant) 12%, transparent);
+      }
+    }
+
+    &::after {
+      background: var(--toast-variant);
+      opacity: 1;
+    }
+  }
 }
 
 @keyframes keimelion-toast-shrink {

@@ -1,8 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TranslatedAuthCard } from '@/components/shared/translated-auth-card'
@@ -20,14 +18,13 @@ import {
   forgotPasswordInputSchema,
   type ForgotPasswordInput,
 } from '@/features/auth/auth.input-schemas'
-import { NOTICE_PARAM, resolveNoticeMessageId } from '@/data-access/auth/notices'
 import { useForgotPassword } from '@/features/auth/hooks/use-forgot-password'
+import { useNoticeToast } from '@/features/auth/hooks/use-notice-toast'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { notifyError } from '@/lib/notify'
 
 export function ForgotPasswordForm(): React.JSX.Element {
   const forgotPassword = useForgotPassword()
-  const searchParams = useSearchParams()
   const t = useTranslate()
 
   const form = useForm<ForgotPasswordInput>({
@@ -37,11 +34,7 @@ export function ForgotPasswordForm(): React.JSX.Element {
     defaultValues: { email: '' },
   })
 
-  useEffect(() => {
-    const messageId = resolveNoticeMessageId(searchParams.get(NOTICE_PARAM))
-    if (messageId === null) return
-    notifyError({ title: t(messageId) })
-  }, [searchParams, t])
+  useNoticeToast(notifyError)
 
   const handleSubmit = (values: ForgotPasswordInput): void => {
     forgotPassword.mutate(values)

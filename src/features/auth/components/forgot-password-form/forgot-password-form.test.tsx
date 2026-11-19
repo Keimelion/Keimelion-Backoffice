@@ -7,6 +7,7 @@ const mockReplace = vi.fn()
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
+  usePathname: () => '/forgot-password',
   useSearchParams: () => new URLSearchParams(),
 }))
 

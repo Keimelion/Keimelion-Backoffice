@@ -54,7 +54,7 @@ Requires `NOTION_TOKEN` in the shell env (integration token from `https://www.no
 **Valid statuses** (exact case): `Todo` | `In Progress` | `In Review` | `Done` | `Validated`.
 
 ## Stack
-- **Framework**: Next.js 15 (App Router, RSC)
+- **Framework**: Next.js 16 (App Router, RSC, Turbopack)
 - **UI**: React 19, Tailwind CSS v4, shadcn/ui
 - **Data fetching**: TanStack Query v5
 - **Language**: TypeScript strict

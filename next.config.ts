@@ -1,4 +1,3 @@
-import path from 'node:path'
 import type { NextConfig } from 'next'
 import packageJson from './package.json'
 
@@ -12,12 +11,10 @@ const SECURITY_HEADERS = [
 ]
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   env: {
     NEXT_PUBLIC_APP_VERSION: packageJson.version,
     NEXT_PUBLIC_GIT_SHA: process.env.GIT_SHA ?? '',
-  },
-  sassOptions: {
-    loadPaths: [path.join(process.cwd(), 'src')],
   },
   poweredByHeader: false,
   async headers() {

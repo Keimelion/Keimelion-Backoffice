@@ -1,0 +1,62 @@
+:root {
+  --brand-navy: #023047;
+  --brand-amber: #ffb703;
+
+  --variant-error: #ef4444;
+  --variant-success: #22c55e;
+  --variant-warning: #f59e0b;
+  --variant-info: #3b82f6;
+
+  --stone-50: #fafaf9;
+  --stone-100: #f5f5f4;
+  --stone-200: #e7e5e4;
+  --stone-400: #a8a29e;
+  --stone-500: #78716c;
+  --stone-800: #292524;
+  --stone-900: #1c1917;
+  --stone-950: #0c0a09;
+
+  --background: #ffffff;
+  --foreground: var(--stone-900);
+  --card: #ffffff;
+  --card-foreground: var(--stone-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--stone-900);
+  --primary: var(--brand-amber);
+  --primary-foreground: var(--brand-navy);
+  --secondary: var(--stone-100);
+  --secondary-foreground: var(--stone-900);
+  --muted: var(--stone-100);
+  --muted-foreground: var(--stone-500);
+  --accent: var(--stone-100);
+  --accent-foreground: var(--stone-900);
+  --destructive: #dc2626;
+  --destructive-foreground: var(--stone-50);
+  --border: var(--stone-200);
+  --input: var(--stone-200);
+  --ring: var(--brand-amber);
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: var(--stone-950);
+  --foreground: var(--stone-50);
+  --card: var(--stone-900);
+  --card-foreground: var(--stone-50);
+  --popover: var(--stone-900);
+  --popover-foreground: var(--stone-50);
+  --primary: var(--brand-amber);
+  --primary-foreground: var(--brand-navy);
+  --secondary: var(--stone-800);
+  --secondary-foreground: var(--stone-50);
+  --muted: var(--stone-800);
+  --muted-foreground: var(--stone-400);
+  --accent: var(--stone-800);
+  --accent-foreground: var(--stone-50);
+  --destructive: #7f1d1d;
+  --destructive-foreground: var(--stone-50);
+  --border: var(--stone-800);
+  --input: var(--stone-800);
+  --ring: var(--brand-amber);
+}

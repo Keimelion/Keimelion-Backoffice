@@ -3,9 +3,15 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithQueryClient } from '@/test/test-utils'
 
+const navigation = vi.hoisted(() => ({
+  searchParams: new URLSearchParams(),
+  router: { push: vi.fn(), replace: vi.fn() },
+}))
+
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => navigation.router,
+  usePathname: () => '/login',
+  useSearchParams: () => navigation.searchParams,
 }))
 
 vi.mock(import('@/data-access/auth/login'), async (importOriginal) => {
@@ -37,6 +43,7 @@ vi.mock('sonner', () => ({
   },
 }))
 
+import { toast } from 'sonner'
 import { login } from '@/data-access/auth/login'
 import { LoginForm } from '@/features/auth/components/login-form'
 
@@ -65,6 +72,7 @@ function renderLoginForm(): void {
 beforeEach(() => {
   localStorage.clear()
   vi.clearAllMocks()
+  navigation.searchParams = new URLSearchParams()
 })
 
 describe('LoginForm', () => {
@@ -116,5 +124,20 @@ describe('LoginForm', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('Password')).toHaveValue('')
     })
+  })
+
+  it('shows the notice toast only once when the form re-renders', async () => {
+    navigation.searchParams = new URLSearchParams({ notice: 'password-updated' })
+
+    renderLoginForm()
+
+    await userEvent.type(screen.getByLabelText('Email'), 'admin@keimelion.app')
+
+    expect(toast.success).toHaveBeenCalledTimes(1)
+    expect(toast.success).toHaveBeenCalledWith(
+      'Password updated. Please sign in with your new password.',
+      { description: undefined, action: undefined },
+    )
+    expect(navigation.router.replace).toHaveBeenCalledWith('/login')
   })
 })

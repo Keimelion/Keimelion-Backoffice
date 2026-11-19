@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TranslatedAuthCard } from '@/components/shared/translated-auth-card'
@@ -18,14 +17,13 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { loginInputSchema, type LoginInput } from '@/features/auth/auth.input-schemas'
-import { NOTICE_PARAM, resolveNoticeMessageId } from '@/data-access/auth/notices'
 import { useLogin } from '@/features/auth/hooks/use-login'
+import { useNoticeToast } from '@/features/auth/hooks/use-notice-toast'
 import { useTranslate } from '@/lib/i18n/use-translate'
 import { notifySuccess } from '@/lib/notify'
 
 export function LoginForm(): React.JSX.Element {
   const login = useLogin()
-  const searchParams = useSearchParams()
   const t = useTranslate()
 
   const form = useForm<LoginInput>({
@@ -35,11 +33,7 @@ export function LoginForm(): React.JSX.Element {
     defaultValues: { email: '', password: '' },
   })
 
-  useEffect(() => {
-    const messageId = resolveNoticeMessageId(searchParams.get(NOTICE_PARAM))
-    if (messageId === null) return
-    notifySuccess({ title: t(messageId) })
-  }, [searchParams, t])
+  useNoticeToast(notifySuccess)
 
   useEffect(() => {
     if (login.isError) {
