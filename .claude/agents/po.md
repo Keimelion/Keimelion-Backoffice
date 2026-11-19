@@ -87,7 +87,7 @@ Tickets live in the shared backlog database (`66c4450ed2d04ad68c1b06e522169e6c`)
 - **Application**: Keimelion — collaborative wishlist app for life events (weddings, births, birthdays…)
 - **This repo**: Keimelion Backoffice — internal admin UI for support/moderation
 - **Users**: internal admins/moderators (not end users)
-- **Stack**: Next.js 15 (App Router, RSC), React 19, Tailwind v4, shadcn/ui, TanStack Query v5, TypeScript strict
+- **Stack**: Next.js 16 (App Router, RSC, Turbopack), React 19, Tailwind v4, shadcn/ui, TanStack Query v5, TypeScript strict
 - **Depends on**: the Keimelion API — every Backoffice feature consumes an API endpoint. If a needed endpoint does not exist, the API ticket is a blocker.
 
 ## Responsibilities

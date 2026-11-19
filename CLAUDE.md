@@ -17,15 +17,15 @@ The user is French-speaking and may write to you in French — respond in French
 
 ## Project
 
-Backoffice admin for Keimelion, a collaborative wishlist app. Built with Next.js (App Router) and TypeScript, consuming the Keimelion REST API.
+Backoffice admin for Keimelion, a collaborative wishlist app. Built with Next.js 16 (App Router, Turbopack) and TypeScript, consuming the Keimelion REST API.
 
 ## Stack
 
-- **Framework**: Next.js 15 (App Router, RSC)
+- **Framework**: Next.js 16 (App Router, RSC, Turbopack for dev and build, `output: 'standalone'`)
 - **Language**: TypeScript strict
-- **Styling**: Tailwind CSS v4 + shadcn/ui
+- **Styling**: Tailwind CSS v4 + shadcn/ui. No Sass/SCSS: design tokens are CSS variables in `src/styles/tokens.css` (`:root` + `.dark`), mapped to Tailwind through `@theme inline` in `src/app/globals.css`. The few component rules Tailwind cannot express live in a colocated plain `.css` file (native nesting) imported from `src/app/layout.tsx`
 - **Data fetching**: TanStack Query v5
-- **Tests**: Vitest + React Testing Library (jsdom env, `src/test/setup.ts`)
+- **Tests**: Vitest + React Testing Library (jsdom env, `src/test/setup.ts`) for unit and component tests under `src/`; Playwright smoke specs under `e2e/` against the production build with the API mocked by route interception (`e2e/support/mock-api.ts`)
 - **Linting**: ESLint with `typescript-eslint` strict + stylistic type-checked
 - **Formatting**: Prettier (same config as API)
 
@@ -66,7 +66,7 @@ Every user-facing string in the Backoffice is rendered through `react-intl`. The
 - **`React.JSX.Element` return type** on all components
 - **Props as interface** — `interface ComponentProps { ... }`, not inline type or `type`
 - **One component per file** — file name matches component name in kebab-case (`user-form.tsx` exports `UserForm`)
-- **Folder-per-component when 2+ files** — if a component has more than one file (a `.tsx` plus `.test.tsx`, `.scss`, `.stories.tsx`…), wrap them in a folder named after the component and add an `index.ts` that re-exports so imports stay short. Example: `components/ui/input/{input.tsx, input.scss, index.ts}` — imported as `@/components/ui/input`. Single-file components stay flat.
+- **Folder-per-component when 2+ files** — if a component has more than one file (a `.tsx` plus `.test.tsx`, `.css`, `.stories.tsx`…), wrap them in a folder named after the component and add an `index.ts` that re-exports so imports stay short. Example: `components/ui/input/{input.tsx, input.css, index.ts}` — imported as `@/components/ui/input`. Single-file components stay flat.
 - **Hooks prefix** — all custom hooks start with `use` (`useUsers`, `useLogin`)
 - **One form for create + update** — single component with a `mode: 'create' | 'edit'` discriminated union prop; never two parallel forms (`UserForm`, not `UserCreateForm` + `UserEditForm`). See `.claude/coding-standards.md` for the pattern; reference: `src/features/users/components/user-form/user-form.tsx`.
 
@@ -108,6 +108,8 @@ src/
     users/
       components/       # UsersTable, UserForm, etc.
       hooks/            # useUsers, useUser, useUpdateUser, useDeleteUser
+  styles/
+    tokens.css          # Design tokens as CSS variables (:root + .dark), consumed by @theme inline in app/globals.css
   lib/
     query-client.ts     # TanStack Query client configuration + global mutation error toast
     i18n/               # Client-side i18n infrastructure
@@ -119,6 +121,7 @@ src/
   proxy.ts              # Edge proxy entry (Next.js 16 — formerly middleware.ts). Next.js requires this exact path. Keep thin: composes helpers from middlewares/
   middlewares/          # Individual middleware helpers, each returns NextResponse | null (null = pass through)
     require-session.ts  # Gates dashboard routes on the session cookie
+e2e/                    # Playwright smoke specs; support/ holds the typed API fixtures (SDK *Input types) and the route-interception mock
 ```
 
 ### data-access/ layer
@@ -156,12 +159,14 @@ import type { AdminItemDetailParsed, PaginatedResponse } from '@keimelion/sdk/sc
 ## Commands
 
 ```bash
-npm run dev        # Start dev server (port 3001 — the API uses 3000)
-npm run build      # Production build
+npm run dev        # Start dev server with Turbopack (port 3001 — the API uses 3000)
+npm run build      # Production build with Turbopack (output: standalone)
+npm start          # Serve the standalone build on port 3001 (copies .next/static next to server.js)
 npm run lint       # ESLint
 npm run format     # Prettier
 npm test           # Vitest single-pass
 npm run test:watch # Vitest watch mode
+npm run test:e2e   # Playwright smoke specs (e2e/) against the built app; run `npm run build` first. Locally reuses a server already on 3001
 ```
 
 ## Environment

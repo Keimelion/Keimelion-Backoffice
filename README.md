@@ -38,7 +38,7 @@ npx shadcn add <component-name>
 
 | Layer | Tech |
 |---|---|
-| Framework | [Next.js 15](https://nextjs.org) — App Router, React Server Components |
+| Framework | [Next.js 16](https://nextjs.org) — App Router, React Server Components, Turbopack, standalone output |
 | UI | [shadcn/ui](https://ui.shadcn.com) — Radix primitives + Tailwind |
 | Icons | [lucide-react](https://lucide.dev) |
 | Theme | [next-themes](https://github.com/pacocoursey/next-themes) — light / dark / system |
@@ -48,13 +48,13 @@ npx shadcn add <component-name>
 | Data fetching | [TanStack Query v5](https://tanstack.com/query) |
 | Client state | [Zustand](https://zustand-demo.pmnd.rs) — locale store |
 | Validation | [Zod](https://zod.dev) |
-| Tests | [Vitest](https://vitest.dev) + [React Testing Library](https://testing-library.com/react) — jsdom |
+| Tests | [Vitest](https://vitest.dev) + [React Testing Library](https://testing-library.com/react) — jsdom; [Playwright](https://playwright.dev) smoke specs with a mocked API |
 
 ---
 
 ## Design system
 
-Design tokens live in **`src/styles/_tokens.scss`** as the single source of truth — brand palette, neutral scale (stone), semantic maps for light + dark modes, and notification variant colors. `src/styles/theme.scss` reads those maps and emits `:root {}` + `.dark {}` CSS custom properties, which Tailwind consumes via `@theme inline` in `src/app/globals.css`. Component SCSS files (`sonner.scss`, etc.) `@use` the partial to reference the same SCSS values (e.g. `$variants` map for toast colors) — one place to change a color, everything downstream stays in sync.
+Design tokens live in **`src/styles/tokens.css`** as the single source of truth — brand palette, neutral scale (stone), semantic tokens for light (`:root`) and dark (`.dark`) modes, and notification variant colors, all as CSS custom properties. Tailwind consumes them via `@theme inline` in `src/app/globals.css`. Component CSS files (`sonner.css`, etc., plain CSS with native nesting) reference the same variables (e.g. `--variant-error` for toast colors) — one place to change a color, everything downstream stays in sync.
 
 ### Brand palette (Refreshing Summer Fun)
 
@@ -109,7 +109,7 @@ src/
 │   └── utils.ts            # cn() — class-merge helper for shadcn components
 ├── middleware.ts           # Edge middleware entry (Next.js requires this path); composes helpers from middlewares/
 ├── middlewares/            # Individual middleware helpers (require-session.ts, …) — each returns NextResponse | null
-├── styles/                 # Design tokens (SCSS) → CSS custom properties consumed by Tailwind
+├── styles/                 # Design tokens (tokens.css) — CSS custom properties consumed by Tailwind
 └── test/                   # Vitest setup + shared testing utilities (query-test-utils, …)
 ```
 
@@ -138,13 +138,14 @@ Contract changes ship in the SDK first, then consumers bump the pinned version. 
 ## Commands
 
 ```bash
-npm run dev         # Development server (hot reload, port 3001)
-npm run build       # Production build
-npm run start       # Start production server
+npm run dev         # Development server with Turbopack (hot reload, port 3001)
+npm run build       # Production build with Turbopack (output: standalone)
+npm run start       # Serve the standalone build on port 3001
 npm run lint        # ESLint
 npm run format      # Prettier
 npm test            # Vitest — single pass
 npm run test:watch  # Vitest — watch mode
+npm run test:e2e    # Playwright smoke specs against the built app (API mocked)
 ```
 
 ---
