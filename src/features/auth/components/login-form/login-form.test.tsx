@@ -3,10 +3,14 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithQueryClient } from '@/test/test-utils'
 
-const navigation = vi.hoisted(() => ({ searchParams: new URLSearchParams() }))
+const navigation = vi.hoisted(() => ({
+  searchParams: new URLSearchParams(),
+  router: { push: vi.fn(), replace: vi.fn() },
+}))
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => navigation.router,
+  usePathname: () => '/login',
   useSearchParams: () => navigation.searchParams,
 }))
 
@@ -134,5 +138,6 @@ describe('LoginForm', () => {
       'Password updated. Please sign in with your new password.',
       { description: undefined, action: undefined },
     )
+    expect(navigation.router.replace).toHaveBeenCalledWith('/login')
   })
 })
