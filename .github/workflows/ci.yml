@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   ci:
-    uses: Keimelion/Keimelion-Infra/.github/workflows/node-ci.yml@v0.5.0
+    uses: Keimelion/Keimelion-Infra/.github/workflows/node-ci.yml@v0.5.1
 
   # Playwright smoke specs against the standalone build, the API is mocked by route interception.
   e2e:
@@ -50,7 +50,7 @@ jobs:
 
   pr-title:
     if: github.event_name == 'pull_request'
-    uses: Keimelion/Keimelion-Infra/.github/workflows/pr-title.yml@v0.5.0
+    uses: Keimelion/Keimelion-Infra/.github/workflows/pr-title.yml@v0.5.1
 
   # Patch/minor Dependabot bumps merge themselves once ci, e2e and pr-title are green.
   dependabot-automerge:
@@ -59,4 +59,4 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: Keimelion/Keimelion-Infra/.github/workflows/dependabot-automerge.yml@v0.5.0
+    uses: Keimelion/Keimelion-Infra/.github/workflows/dependabot-automerge.yml@v0.5.1
